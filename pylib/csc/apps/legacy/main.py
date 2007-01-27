@@ -12,7 +12,7 @@ This frontend is poorly documented, deprecated, and undoubtedly full of bugs.
 """
 import curses.ascii, re, os
 from helpers import menu, inputbox, msgbox, reset
-from csc.admin import accounts, members, terms
+from csc.adm import accounts, members, terms
 
 # color of the ceo border
 BORDER_COLOR = curses.COLOR_RED

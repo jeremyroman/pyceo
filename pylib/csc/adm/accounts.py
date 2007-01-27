@@ -1,8 +1,8 @@
 # $Id: accounts.py 44 2006-12-31 07:09:27Z mspang $
 # UNIX Accounts Module
 import re
-from csc.backend import ldapi, krb
-from csc.lib import read_config
+from csc.backends import ldapi, krb
+from csc.common.conf import read_config
 
 CONFIG_FILE = '/etc/csc/accounts.cf'
 

@@ -17,7 +17,7 @@ clean:
 	dh_clean
 	rm -f build-stamp
 	rm -rf build/
-	find py/ -name '*.pyc' -print0 | xargs -0 rm -f
+	find pylib/ -name '*.pyc' -print0 | xargs -0 rm -f
 
 install: build
 	dh_testdir
@@ -25,12 +25,12 @@ install: build
 	dh_clean -k 
 
 	# configuration files will contain sensitive information
-	chmod 600 etc/csc/*
+	chmod 600 etc/*
 	
-	dh_installdirs etc usr/lib/$(PYTHON)/site-packages usr/share/csc \
+	dh_installdirs etc/csc usr/lib/$(PYTHON)/site-packages usr/share/csc \
 	               usr/lib/csc usr/bin
-	dh_install -X.svn -X.pyc py/csc usr/lib/$(PYTHON)/site-packages/
-	dh_install -X.svn -X.pyc etc/csc etc/
+	dh_install -X.svn -X.pyc pylib/csc usr/lib/$(PYTHON)/site-packages/
+	dh_install -X.svn -X.pyc etc/* etc/csc/
 	dh_install -X.svn -X.pyc sql/* usr/share/csc/
 	
 	dh_install -X.svn -X.pyc bin/ceo usr/lib/csc/

@@ -12,9 +12,9 @@ must also be moved into this module.
 """
 
 import re
-from csc.admin import terms
-from csc.backend import db
-from csc.lib import read_config
+from csc.adm import terms
+from csc.backends import db
+from csc.common.conf import read_config
 
 
 
