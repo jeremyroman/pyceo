@@ -1,0 +1,35 @@
+# $Id: accounts.cf 45 2007-01-02 01:39:10Z mspang $
+# CSC Accounts Configuration
+
+### Account Options ###
+
+minimum_id = 20000
+maximum_id = 40000
+
+shell = "/bin/bash"
+home = "/users"
+gid = 100
+
+
+### LDAP Configuration ###
+
+server_url = "ldap:///"
+
+users_base  = "ou=People,dc=csclub,dc=uwaterloo,dc=ca"
+groups_base = "ou=Group,dc=csclub,dc=uwaterloo,dc=ca"
+
+bind_dn       = "cn=ceo,dc=csclub,dc=uwaterloo,dc=ca"
+bind_password = "secret"
+
+
+### Kerberos Configuration ###
+
+realm = "CSCLUB.UWATERLOO.CA"
+principal = "ceo/admin@CSCLUB.UWATERLOO.CA"
+keytab = "/etc/csc/ceo.keytab"
+
+
+### Validation Tuning ###
+
+username_regex = "^[a-z][-a-z0-9]*$"
+realname_regex = "^[^,:=]*$"

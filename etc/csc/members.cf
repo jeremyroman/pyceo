@@ -1,0 +1,15 @@
+# $Id: members.cf 45 2007-01-02 01:39:10Z mspang $
+# CSC Members Configuration
+
+### Database Configuration ###
+
+server = "localhost"
+database = "ceo"
+
+user = "ceo"
+password = "secret"
+
+### Validation Tuning ###
+
+studentid_regex = "^[0-9]{8}$"
+realname_regex = "^[^,:=]*$"

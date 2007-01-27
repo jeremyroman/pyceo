@@ -1,0 +1,8 @@
+
+Bugs and Caveats
+================
+
+CEO:
+    - curses does not draw borders/lines correctly in a screen session
+    - windows don't always clear properly
+    - the menu is not redrawn between windows and therefore a gap may grow there

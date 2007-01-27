@@ -1,0 +1,24 @@
+#!/usr/bin/python2.4 --
+
+import os, sys
+
+safe_environment = ['LOGNAME', 'USERNAME', 'USER', 'HOME',
+                    'TERM', 'LANG', 'LC_ALL', 'LC_COLLATE',
+                    'LC_CTYPE', 'LC_MESSAGE', 'LC_MONETARY',
+                    'LC_NUMERIC', 'LC_TIME', 'UID', 'GID',
+                    'SSH_CONNECTION', 'SSH_AUTH_SOCK',
+                    'SSH_CLIENT']
+		    
+for key in os.environ.keys():
+    if not key in safe_environment:
+        del os.environ[key]
+
+os.environ['PATH'] = '/bin:/usr/bin'
+
+for dir in sys.path[:]:
+    if not dir.find('/usr') == 0 or dir.find('/usr/local') == 0:
+        while dir in sys.path:
+            sys.path.remove(dir)
+
+import csc.apps.legacy.main
+csc.apps.legacy.main.run()
