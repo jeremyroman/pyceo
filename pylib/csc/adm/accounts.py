@@ -485,7 +485,6 @@ def create_group(groupname, minimum_id=None, maximum_id=None, description=''):
         description - description LDAP attribute
 
     Exceptions:
-        GroupExists    - when the group name conflicts with an existing group
         NoAvailableIDs - when the ID range is exhausted
         GroupException - when not connected
         LDAPException  - on LDAP failure
