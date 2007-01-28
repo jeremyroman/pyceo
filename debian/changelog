@@ -1,3 +1,10 @@
+csc (0.2.1) unstable; urgency=low
+
+  * Documentation updates only
+  * Added docs/GIT-HOWTO and docs/INSTALLING
+
+ -- Michael Spang <mspang@uwaterloo.ca>  Sun, 28 Jan 2007 01:24:37 -0500
+
 csc (0.2) unstable; urgency=low
 
   * Tests added to most Python modules.
@@ -6,7 +13,7 @@ csc (0.2) unstable; urgency=low
   * Added functions for use by tools planned for next release (chfn, etc).
   * Added support for account "repair", which will recreate LDAP entries
     and principals if necessary.
-  * The recreate account menu option in CEO is now active.
+  * The recreate account menu option in ceo is now active.
   * Replaced instances of "== None" and "!= None" with "is None" and
     "is not None", respectively (thanks to: Nick Guenther).
   * Renamed terms.valid() to terms.validate() (thanks to: Nick Guenther).
