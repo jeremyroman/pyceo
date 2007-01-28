@@ -1,0 +1,89 @@
+Getting the Source
+------------------
+
+The sources for this project are in a git repository. Git is a distributed
+SCM originally created by Linus Torvalds to track the Linux kernel tree.
+There is generally no central repository that everyone commits their changes
+to to with git. It is possible to make such a central repository, but this
+negates many of the advantages of using git. When you check out the sources,
+you will get the entire history along with the latest version. You don't
+need any special permissions (e.g. UNIX group membership) to check the
+sources out and start contributing.
+
+First, you must decide whether you wish to use git or cogito as your
+front-end of choice. For the most part you can use them interchangeably,
+but you will probably want to choose one and stick to it. Cogito will
+provide you with an interface that looks and acts slightly more like CVS and
+Subversion than native git.
+
+In order to get a copy of the sources, you need to clone an existing
+repository. To do this, type something resembling:
+
+    git clone /users/git/mspang/csc.git
+
+Or, with cogito:
+
+    cg clone /users/git/mspang/csc.git
+
+This will give you the latest copy of my source tree. Once other CSC
+members publish their repositories, you can clone your tree from theirs
+instead if you wish. You do not need to run this command more than
+once, and you are not limited to pulling changes from the repository
+you cloned from.
+
+
+Making Changes
+--------------
+
+You may now add, update, or delete files as necessary in your own copy of
+the repository. Go through a tutorial or read the manpages to learn more.
+
+For a tutorial on plain git, see [1] generally and [2] if you are used to
+CVS. For a tutorial on cogito, see [3] if you are used to CVS and [4] if
+you are used to Subversion.
+
+The manpages for git and cogito commands are also invaluable, use man
+git-foo or man cg-foo to retrieve them or look online at [5] and [6].
+
+Finally, if you're interested in how git works internally, see [7] for
+documentation of the "core" commands, and [8] for documentation of the
+repository format. 
+
+[1] http://www.kernel.org/pub/software/scm/git/docs/tutorial.html
+[2] http://www.kernel.org/pub/software/scm/git/docs/cvs-migration.html
+[3] http://git.or.cz/course/cvs.html
+[4] http://git.or.cz/course/svn.html
+[5] http://www.kernel.org/pub/software/scm/git/docs/
+[6] http://www.kernel.org/pub/software/scm/cogito/docs/
+[7] http://www.kernel.org/pub/software/scm/git/docs/core-tutorial.html
+[8] http://www.kernel.org/pub/software/scm/git/docs/repository-layout.html
+
+
+Setting up a Public Repository
+------------------------------
+
+If you make changes, you will probably want to share them with the other
+contributors. This is especially true if you are not on the CSC
+Systems Committee, since in that case you can't deploy your changes
+yourself. Even if you are a committee member, confusion is sure to follow
+if you install an updated package and don't publish your updates.
+
+The only thing others need to retrieve your changes into their own
+repository is the location of your repository and read access to it.
+With that they can fetch, review, and merge your changes.
+
+If you will be making lots of changes, it may be a good idea to
+put a link to your repository (or even an actual repository) in
+/users/git. To do this you will need to be added to the git group.
+Email systems-committee@csclub.uwaterloo.ca and someone will add you.
+It doesn't matter whether your repository itself is in /users/git or
+just a symlink, as it will count toward your quota regardless.
+
+If you will be building and installing the package (i.e. you are the
+Sysadmin or a Systems Committee member) then please do create a public
+repository in /users/git so the next person who installs can incorporate
+all of your changes.
+
+If you want to make changes but not publish them immediately after
+each commit, create a second repository and "push" your changes
+into your public repository. Refer to the Internet for more details.
