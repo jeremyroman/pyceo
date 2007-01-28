@@ -2,9 +2,9 @@
                     BUILDING AND INSTALLING
                     -----------------------
 
-This document describes how to get the package built and installed on
-CSC systems. If you don't have authority to do this, you can safely
-skip it (unless you are making changes to the build process).
+This document describes the steps needed to get the package built and
+installed on CSC systems. If you don't have authority to do this, you
+can safely skip it.
 
 If you don't have the required authority, but have a Debian box of your own,
 then note that you have all the tools required to replicate our setup
@@ -16,27 +16,25 @@ Building the Package
 --------------------
 
 To build a Debian package out of the sources, run one of the following
-commands in at the top of the source tree:
+commands at the top of the source tree:
 
     A. debuild
     B. fakeroot dpkg-buildpackage -us -uc
     C. git-buildpackage
 
-It doesn't matter which, so 'debuild' is probably easiest. If all
-goes well, a debian package and source tarball will appear in the
-parent directory.
+It doesn't matter which, so 'debuild' is probably easiest. If all goes well,
+a Debian package and source tarball will appear in the parent directory.
 
-Do NOT build the package as root (rather, don't build anything as root
-in general). This is never necessary. Use 'fakeroot' so that the permissions
-in the .deb can be set correctly. The only exception to this is if you are
-building with pbuilder, which builds the package in a chroot so it doesn't
-matter anyway.
+Do NOT build the package as root (rather, don't build anything as root in
+general). Use 'fakeroot' so that the permissions in the .deb can be set
+correctly. It is only necessary to build as root if you are using pbuilder,
+which builds in a chroot.
 
-You can examine the resulting package with tools like dpkg-deb(1) and
-debdiff(1). One useful command is `dpkg-deb -c <deb-file>`. This will
-give you a list of files that will be installed.
+You can examine the package with tools like dpkg-deb(1) and debdiff(1).
+One useful command is `dpkg-deb -c <deb-file>`. This will give you a list
+of files that will be installed.
 
-If your build is a development build, you can safely destroy it (it will
+If your build is a development build, you can safely delete it (it will
 be overwritten anyway if a subsequent build has the same version number).
 
 
@@ -46,84 +44,88 @@ Installing the Package
 If you will be installing the package it is essential you follow certain
 guidelines in order to avoid overwriting someone else's changes.
 
-I'm assuming you have made your changes and commited them to git. Your last
-test build succeeded and you're ready to install the package. Before you do,
-you need to:
+I'm assuming that you have made your changes and commited them to your
+repository, and that your last test build was successful and you're read to
+install the package. Before you install, you need to:
 
     1. Examine the currently installed package
 
-        Your package should incorporate all of the changes in the one that's
-        installed. Otherwise you may be installing a package that does not
-        include important bug fixes and improvements.
+        Your package should incorporate all of the changes that are in the
+        currently installed package. Otherwise you may be installing a
+        package that does not include important bug fixes and improvements.
 
         Since every release has a changelog entry, you can easily check
-        that your package incorporates all the changes by comparing your
+        that your source tree is up-to-date by comparing your
         debian/changelog with /usr/share/doc/csc/changelog.Debian.gz.
+        The zdiff(1) utility is helpful for doing this comparison.
 
         If your changelog is missing some entries, find the git repository
         of the person who wrote the changelog entry (this will be easy if
         they put a link in /users/git) and pull in their changes. Review
-        the changes while merging, for good measure.
+        the changes and merge them into your tree.
 
     2. Increase the package version number
 
-        Look at the version number of latest entry in debian/changelog. Think
-        of a number that is greater then this number and that reflects the
-        magnitude of your change. Probably, just change last number by one.
+        Look at the version number of latest entry in debian/changelog.
+        Think of a number that is greater than this number and that
+        reflects the magnitude of your change. Generally just increase
+        last number by one.
 
         To set the version number of the next build, run `dch -v <version>`
-        at the top of your source tree. This will create a new changelog entry
-        and open your favorite editor for the next step.
+        at the top of your source tree. This will create a new changelog
+        entry and open your favorite editor for the next step.
 
     3. Write a changelog entry for your update
 
         Step #2 will put you in your favorite text editor. Add some bullets
         that describe all of the changes in the new version. Note that this
-        file follows a set format and must be machine parseable. If in doubt,
+        file follows a set format and must be machine readable. If in doubt,
         run `dpkg-parsechangelog` when you're done to see if it complains.
 
     4. Commit the changelog update to your repository
 
         For your commit message, mention that that this is a new release
-        (include the version number) and copy your summary from the changelog.
+        (include the version number) and copy your summary from the
+        changelog.
 
     5. Build the package
 
         Use 'debuild' or 'fakeroot dpkg-buildpackage -us -uc' to build the
-        package. Do not simply run 'debian/rules binary' as this will create
-        the .deb but not the .tar.gz and .dsc and .changes.
+        package. Do not simply run 'debian/rules binary' as this will
+        create the .deb but not the .tar.gz, .dsc, and .changes.
 
     5. Install the package
 
         You're finally ready to run `dpkg -i csc_<version>_<arch>.deb`. Do
-        this and cross your fingers. Make sure to test ceo a bit to see if it
-        still works. If it doesn't, install the previous version and investigate
-        the problem. You will probably have to make more changes and repeat
-        this whole process.
+        this and cross your fingers. Make sure to test ceo a bit to see if
+        it still works. If it doesn't, install the previous version and
+        investigate the problem. You will probably have to make more
+        changes and repeat this whole process.
 
     6. Archive the package file and source
 
-        You will be left with four files: a *.deb, a *.tar.gz, a *.changes,
-        and a *.dsc. Save these to a safe place (preferably in /users/git
+        You will be left with four files: a .deb, a .tar.gz, a .changes,
+        and a .dsc. Save these to a safe place (preferably in /users/git
         so other can find them easily).
 
-If everyone follows these steps, every installed version will be a descendant
-of the previous. Further, since old versions are archived it will be easy
-to quickly get ceo working after a bad update.
+If everyone follows these steps, every installed version will be a
+descendant of the previous. Further, since old versions are archived it
+will be easy to quickly get ceo working again after a bad update.
 
 For the git skeptics: Yes, a central repository would serialize changes
 automatically, making sure each is a descendant of the previous. The reason
 I don't want to do this is that you have to trust everyone who can commit
 not to break anything. With git any random CSC member can fetch the tree
-and start making changes without any special permissions. Not that CSC members
-are untrustworthy, but in my opinion git lowers the barrier for potential
-contributors by giving them immediate write access to a repository.
+and start making changes without any special permissions. Not that CSC
+members are untrustworthy, but in my opinion git lowers the barrier for
+potential contributors by giving them immediate write access to a
+repository.
 
 
 Old Versions
 ------------
 
-It is desirable that old, known-working build be available to install in
+It is desirable that old, known-working builds be available to install in
 an emergency. So, as described above, please store your release builds in
 an easy to find place.
 
@@ -131,14 +133,12 @@ My (Michael Spang's) builds can be found in /users/git/mspang/csc.builds.
 They are cryptographically signed (with debsign).
 
 Old source tarballs are stored alongside the debs. To extract them, run
-`dpkg-source -x csc_<version>.dsc`. You could use tar, too, but it will
+`dpkg-source -x csc_<version>.dsc`. You can use tar, too, but it will
 not check for corruption and won't verify the signature.
 
 If the current version is broken and you need to install an old version,
 do so, but note that switching between some versions requires changes to
 the configuration files (dpkg will bug you about this). For example,
-the file format changed between versions 0.1 and 0.2. In this case
-just make note of any passwords in the current files, and then overwrite
-the current files with the templates of the version you are installing.
-Then fill in the blanks in the templates (e.g. passwords), and it should
-work.
+these files changed significantly between versions 0.1 and 0.2. In this case
+install the old configuration files and then merge important information
+(e.g. passwords) into them from the .dpkg-old file.
