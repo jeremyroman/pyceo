@@ -1,19 +1,5 @@
-# $Id: __init__.py 24 2006-12-18 20:23:12Z mspang $
 """
-PyCSC - CSC Administrative Utilities
+Computer Science Club Python Modules
 
-Member Management:
-
-    ceo - legacy ceo interface
-
-Account Management:
-
-    ceo - legacy ceo interface
-
-Modules:
-
-    admin - administrative code (member and account management)
-    backend - backend interface code
-    ui - user interface code
-
+The csc module is a container for all CSC-specific Python modules.
 """

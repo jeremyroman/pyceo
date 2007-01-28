@@ -1,0 +1,5 @@
+# /etc/csc/kerberos.cf: CSC Kerberos Administration Configuration
+
+realm = "CSCLUB.UWATERLOO.CA"
+admin_principal = "ceo/admin@CSCLUB.UWATERLOO.CA"
+admin_keytab = "/etc/csc/ceo.keytab"

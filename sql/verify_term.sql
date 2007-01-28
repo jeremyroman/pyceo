@@ -1,4 +1,3 @@
--- $Id$
 -- PL/Python trigger to verify terms for validity
 
 -- To (re)install:

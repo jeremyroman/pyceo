@@ -1,4 +1,3 @@
-# $Id: main.py 44 2006-12-31 07:09:27Z mspang $
 """
 CEO-like Frontend
 
@@ -21,7 +20,7 @@ BORDER_COLOR = curses.COLOR_RED
 def action_new_member(wnd):
     """Interactively add a new member."""
 
-    username, studentid, program = '', None, ''
+    studentid, program = None, ''
 
     # read the name
     prompt = "      Name: "
@@ -33,7 +32,7 @@ def action_new_member(wnd):
 
     # read the student id
     prompt = "Student id:"
-    while studentid == None or (re.search("[^0-9]", studentid) and not studentid.lower() == 'exit'):
+    while studentid is None or (re.search("[^0-9]", studentid) and not studentid.lower() == 'exit'):
         studentid = inputbox(wnd, prompt, 18)
 
     # abort if exit is entered
@@ -48,7 +47,7 @@ def action_new_member(wnd):
     program = inputbox(wnd, prompt, 18)
 
     # abort if exit is entered
-    if program == None or program.lower() == 'exit':
+    if program is None or program.lower() == 'exit':
         return False
 
     # connect the members module to its backend if necessary
@@ -59,13 +58,16 @@ def action_new_member(wnd):
         memberid = members.new(realname, studentid, program)
 
         msgbox(wnd, "Success! Your memberid is %s.  You are now registered\n"
-                    % memberid + "for the " + terms.current() + " term.");
+                    % memberid + "for the " + terms.current() + " term.")
 
     except members.InvalidStudentID:
-        msgbox(wnd, "Invalid student ID.")
+        msgbox(wnd, "Invalid student ID: %s" % studentid)
         return False
     except members.DuplicateStudentID:
         msgbox(wnd, "A member with this student ID exists.")
+        return False
+    except members.InvalidRealName:
+        msgbox(wnd, 'Invalid real name: "%s"' % realname)
         return False
 
 
@@ -85,7 +87,7 @@ def action_term_register(wnd):
     if not member: return False
 
     memberid = member['memberid']
-    term_list = members.terms_list(memberid)
+    term_list = members.member_terms(memberid)
     
     # display user
     display_member_details(wnd, member, term_list)
@@ -134,7 +136,7 @@ def action_term_register_multiple(wnd):
     if not member: return False
 
     memberid = member['memberid']
-    term_list = members.terms_list(memberid)
+    term_list = members.member_terms(memberid)
     
     # display user
     display_member_details(wnd, member, term_list)
@@ -177,9 +179,55 @@ def action_term_register_multiple(wnd):
         msgbox(wnd, "Your are now registered for terms: " + ", ".join(term_list))
 
     except members.InvalidTerm:
-        msgbox(wnd, "Term is not valid: %s" % term)
+        msgbox(wnd, "Invalid term entered.")
 
     return False
+
+
+def repair_account(wnd, memberid, userid):
+    """Attemps to repair an account."""
+
+    if not accounts.connected(): accounts.connect()
+
+    member = members.get(memberid)
+    exists, haspw = accounts.status(userid)
+
+    if not exists:
+        password = input_password(wnd)
+        accounts.create_member(userid, password, member['name'], memberid)
+        msgbox(wnd, "Account created (where the hell did it go, anyway?)\n"
+                "If you're homedir still exists, it will not be inaccessible to you,\n"
+                "please contact systems-committee@csclub.uwaterloo.ca to get this resolved.\n")
+
+    elif not haspw:
+        password = input_password(wnd)
+        accounts.add_password(userid, password)
+        msgbox(wnd, "Password added to account.")
+
+    else:
+        msgbox(wnd, "No problems to repair.")
+
+
+def input_password(wnd):
+
+    # password input loop
+    password = "password"
+    check = "check"
+    while password != check:
+    
+        # read password
+        prompt = "User password:"
+        password = None
+        while not password:
+            password = inputbox(wnd, prompt, 18, False) 
+
+        # read another password
+        prompt = "Enter the password again:"
+        check = None
+        while not check:
+            check = inputbox(wnd, prompt, 27, False) 
+
+    return password
 
 
 def action_create_account(wnd):
@@ -198,7 +246,7 @@ def action_create_account(wnd):
     if not member: return False
 
     memberid = member['memberid']
-    term_list = members.terms_list(memberid)
+    term_list = members.member_terms(memberid)
     
     # display the member
     display_member_details(wnd, member, term_list)
@@ -218,66 +266,58 @@ def action_create_account(wnd):
         msgbox(wnd, "I suggest searching for the member by userid or name from the main menu.")
         return False
 
+    # member already has an account?
+    if member['userid']:
+
+        userid = member['userid']
+        msgbox(wnd, "Member " + str(memberid) + " already has an account: " + member['userid'] + "\n"
+                    "Attempting to repair it. Contact the sysadmin if there are still problems." )
+
+        repair_account(wnd, memberid, userid)
+
+        return False
+
+
     # read user id
     prompt = "Userid:"
     while userid == '':
         userid = inputbox(wnd, prompt, 18) 
 
     # user abort
-    if userid == None or userid.lower() == 'exit':
+    if userid is None or userid.lower() == 'exit':
         return False
 
-    # member already has an account?
-    #if member['userid'] != None:
-    #    msgbox(wnd, "Member " + str(memberid) + " already has an account: " + member['userid'] + "\n"
-    #                "Contact the sysadmin if there are still problems." )
-    #    return False
-
-    # password input loop
-    password = "password"
-    check = "check"
-    while password != check:
-    
-        # read password
-        prompt = "User password:"
-        password = None
-        while not password:
-            password = inputbox(wnd, prompt, 18, False) 
-
-        # read another password
-        prompt = "Enter the password again:"
-        check = None
-        while not check:
-            check = inputbox(wnd, prompt, 27, False) 
-
+    # read password
+    password = input_password(wnd)
 
     # create the UNIX account
-    result = accounts.create_account(userid, password, member['name'], memberid)
-
-    if result == accounts.LDAP_EXISTS:
-        msgbox(wnd, "Error: Could not do stuff , Already exists.")
+    try:
+        if not accounts.connected(): accounts.connect()
+        accounts.create_member(userid, password, member['name'], memberid)
+    except accounts.AccountExists, e:
+        msgbox(wnd, str(e))
         return False
-    elif result == accounts.KRB_EXISTS:
-        msgbox(wnd, "This account already exists in Kerberos, but not in LDAP. Please contact the Systems Administrator.")
+    except accounts.NoAvailableIDs, e:
+        msgbox(wnd, str(e))
         return False
-    elif result == accounts.LDAP_NO_IDS:
-        msgbox(wnd, "There are no available UNIX user ids. This is a fatal error. Contact the Systems Administrator.")
+    except accounts.InvalidArgument, e:
+        msgbox(wnd, str(e))
         return False
-    elif result == accounts.BAD_REALNAME:
-        msgbox(wnd, "Invalid real name: %s. Contact the Systems Administrator." % member['name'])
+    except accounts.LDAPException, e:
+        msgbox(wnd, "Error creating LDAP entry - Contact the Systems Administrator: %s" % e)
         return False
-    elif result == accounts.BAD_USERNAME:
-        msgbox(wnd, "Invalid username: %s. Enter a valid username." % userid)
+    except accounts.KrbException, e:
+        msgbox(wnd, "Error creating Kerberos principal - Contact the Systems Administrator: %s" % e)
         return False
-    elif result != accounts.SUCCESS:
-        raise Exception("Unexpected return status of accounts.create_account(): %s" % result)
         
     # now update the CEO database with the username
-    members.update( {'memberid':memberid, 'userid': userid} )
+    members.update( {'memberid': memberid, 'userid': userid} )
 
     # success
     msgbox(wnd, "Please run 'addhomedir " + userid + "'.")
     msgbox(wnd, "Success! Your account has been added")
+
+    return False
 
 
 def display_member_details(wnd, member, term_list):
@@ -343,17 +383,21 @@ def action_display_member(wnd):
         return False
 
     member = get_member_memberid_userid(wnd, memberid)
-    if not member: return
-    term_list = members.terms_list( member['memberid'] )
+    if not member: return False
+    term_list = members.member_terms( member['memberid'] )
 
     # display the details in a window
     display_member_details(wnd, member, term_list)
 
+    return False
+
 
 def page(text):
+    """Send a text buffer to an external pager for display."""
     
     try:
-        pipe = os.popen('/usr/bin/less', 'w')
+        pager = '/usr/bin/less'
+        pipe = os.popen(pager, 'w')
         pipe.write(text)
         pipe.close() 
     except IOError:
@@ -385,7 +429,7 @@ def action_list_term(wnd):
 
     # read the term
     prompt = "Which term to list members for ([fws]20nn): "
-    while term == None or (not term == '' and not re.match('^[wsf][0-9]{4}$', term) and not term == 'exit'):
+    while term is None or (not term == '' and not re.match('^[wsf][0-9]{4}$', term) and not term == 'exit'):
         term = inputbox(wnd, prompt, 41) 
 
     # abort when exit is entered
@@ -404,8 +448,11 @@ def action_list_term(wnd):
     # display the mass of text with a pager
     page( buf )
 
+    return False
+
 
 def action_list_name(wnd):
+    """Interactively search for members by name."""
     
     name = None
 
@@ -420,7 +467,7 @@ def action_list_name(wnd):
     # connect the members module to its backends if necessary
     if not members.connected(): members.connect()
     
-    # retrieve a list of members for term
+    # retrieve a list of members with similar names
     member_list = members.list_name(name)
 
     # format the data into a mess of text
@@ -429,8 +476,11 @@ def action_list_name(wnd):
     # display the mass of text with a pager
     page( buf )
 
+    return False
+
 
 def action_list_studentid(wnd):
+    """Interactively search for members by student id."""
 
     studentid = None
 
@@ -458,6 +508,8 @@ def action_list_studentid(wnd):
     # display the mass of text with a pager
     page( buf )
 
+    return False
+
 
 def null_callback(wnd):
     """Callback for unimplemented menu options."""
@@ -479,7 +531,7 @@ top_menu = [
     ( "Search for a member by name", action_list_name ),
     ( "Search for a member by student id", action_list_studentid ),
     ( "Create an account", action_create_account ),
-    ( "Re Create an account", null_callback ),
+    ( "Re Create an account", action_create_account ),
     ( "Library functions", null_callback ),
     ( "Exit", exit_callback ),
 ]
@@ -490,11 +542,10 @@ def acquire_ceo_wnd(screen=None):
     
     # hack to get a reference to the entire screen
     # even when the caller doesn't (shouldn't) have one
-    global _screen
-    if screen == None:
-        screen = _screen
+    if screen is None:
+        screen = globals()['screen']
     else:
-        _screen = screen
+        globals()['screen'] = screen
 
     # if the screen changes size, a mess may be left
     screen.erase()
@@ -526,12 +577,20 @@ def ceo_main_curses(screen):
     # create ceo window
     ceo_wnd, menu_y, menu_x, menu_height, menu_width = acquire_ceo_wnd(screen)
 
-    # display the top level menu
-    menu(ceo_wnd, menu_y, menu_x, menu_width, top_menu, acquire_ceo_wnd)
+    try:
+        # display the top level menu
+        menu(ceo_wnd, menu_y, menu_x, menu_width, top_menu, acquire_ceo_wnd)
+    finally:
+        members.disconnect()
+        accounts.disconnect()
 
 
 def run():
     """Main function for legacy UI."""
+
+    # workaround for xterm-color (bad terminfo? - curs_set(0) fails)
+    if "TERM" in os.environ and os.environ['TERM'] == "xterm-color":
+        os.environ['TERM'] = "xterm"
 
     # wrap the entire program using curses.wrapper
     # so that the terminal is restored to a sane state
@@ -541,7 +600,7 @@ def run():
     except KeyboardInterrupt:
         pass
     except curses.error:
-        print "Your screen is too small!"
+        print "Is your screen too small?"
         raise
     except:
         reset()

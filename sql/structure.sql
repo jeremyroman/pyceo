@@ -1,4 +1,3 @@
--- $Id: structure.sql 36 2006-12-28 10:00:11Z mspang $
 -- Table structure for CEO's SQL database.
 
 -- Usage:

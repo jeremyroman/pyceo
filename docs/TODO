@@ -1,0 +1,8 @@
+TODO:
+
+* Python bindings for libkadm5
+* Python bindings for quota?
+* New UI: urwid-based?
+* Logging via syslog
+* Try to recover and roll-back on error during account creation
+* Write manpages

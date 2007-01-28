@@ -1,12 +1,9 @@
-# $Id$
 """
-Backends
+Backend Modules
 
 This module contains backend interfaces and related modules.
-CEO's primary backends are:
 
-    db.py    - CEO's database for member and term registrations
-    ldapi.py - LDAP, for UNIX account metadata administration
-    krb.py   - Kerberos, for UNIX account password administration
-    
+    db    - CEO database interface for member registrations
+    ldapi - LDAP interface for UNIX account attribute administration
+    krb   - Kerberos interface for UNIX account password management
 """

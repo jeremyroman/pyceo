@@ -1,9 +1,8 @@
-# $Id: __init__.py 23 2006-12-18 20:14:51Z mspang $
 """
-User Interfaces
+Application-style User Interfaces
 
-This module contains frontends and related modules.
-CEO's primary frontends are:
+This module contains large frontends with many functions
+and fancy graphical user interfaces.
 
     legacy - aims to reproduce the curses UI of the previous CEO
 """

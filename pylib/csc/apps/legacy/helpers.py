@@ -1,4 +1,3 @@
-# $Id: helpers.py 35 2006-12-28 05:14:05Z mspang $
 """
 Helpers for legacy User Interface
 
@@ -7,7 +6,7 @@ the look and behavior of the previous CEO. Included is code for various
 curses-based UI widgets that were provided by Perl 5's Curses and
 Curses::Widgets libraries.
 
-Though attempts have been made to keep the UI bug-compatible with
+Though attempts have been made to keep the UI [bug-]compatible with
 the previous system, some compromises have been made. For example,
 the input and textboxes draw 'OK' and 'Cancel' buttons where the old
 CEO had them, but they are fake. That is, the buttons in the old
@@ -52,14 +51,14 @@ def read_input(wnd, offy, offx, width, maxlen, echo=True):
     # turn on cursor
     try:
         curses.curs_set(1)
-    except:
+    except curses.error:
         pass
 
     # set keypad mode to allow UP, DOWN, etc
     wnd.keypad(1)
 
     # the input string
-    input = ""
+    inputbuf = ""
 
     # offset of cursor in input
     # i.e. the next operation is applied at input[inputoff]
@@ -78,7 +77,7 @@ def read_input(wnd, offy, offx, width, maxlen, echo=True):
         if echo:
             # discard characters before displayoff, 
             # as the window may be scrolled to the right
-            substring = input[displayoff:]
+            substring = inputbuf[displayoff:]
     
             # pad the string with zeroes to overwrite stale characters
             substring = substring + " " * (width - len(substring))
@@ -96,7 +95,7 @@ def read_input(wnd, offy, offx, width, maxlen, echo=True):
 
         # enter returns input
         if key == KEY_RETURN:
-            return input
+            return inputbuf
 
         # escape aborts input
         elif key == KEY_ESCAPE:
@@ -104,7 +103,7 @@ def read_input(wnd, offy, offx, width, maxlen, echo=True):
 
         # EOT (C-d) aborts if there is no input
         elif key == KEY_EOT:
-            if len(input) == 0:
+            if len(inputbuf) == 0:
                 return None
 
         # backspace removes the previous character
@@ -112,7 +111,7 @@ def read_input(wnd, offy, offx, width, maxlen, echo=True):
             if inputoff > 0:
 
                 # remove the character immediately before the input offset
-                input = input[0:inputoff-1] + input[inputoff:]
+                inputbuf = inputbuf[0:inputoff-1] + inputbuf[inputoff:]
                 inputoff -= 1
 
                 # move either the cursor or entire line of text left
@@ -124,7 +123,7 @@ def read_input(wnd, offy, offx, width, maxlen, echo=True):
             if inputoff < len(input):
                 
                 # remove the character at the input offset
-                input = input[0:inputoff] + input[inputoff+1:]
+                inputbuf = inputbuf[0:inputoff] + inputbuf[inputoff+1:]
 
         # left moves the cursor one character left
         elif key == curses.KEY_LEFT:
@@ -139,7 +138,7 @@ def read_input(wnd, offy, offx, width, maxlen, echo=True):
 
         # right moves the cursor one character right
         elif key == curses.KEY_RIGHT:
-            if inputoff < len(input):
+            if inputoff < len(inputbuf):
                 
                 # move the cursor to the right
                 inputoff += 1
@@ -155,8 +154,8 @@ def read_input(wnd, offy, offx, width, maxlen, echo=True):
 
         # end moves the cursor past the last character
         elif key == curses.KEY_END:
-            inputoff = len(input)
-            displayoff = len(input) - width + 1
+            inputoff = len(inputbuf)
+            displayoff = len(inputbuf) - width + 1
 
         # insert toggles insert/overwrite mode
         elif key == curses.KEY_IC:
@@ -164,15 +163,15 @@ def read_input(wnd, offy, offx, width, maxlen, echo=True):
 
         # other (printable) characters are added to the input string
         elif curses.ascii.isprint(key):
-            if len(input) < maxlen or maxlen == 0:
+            if len(inputbuf) < maxlen or maxlen == 0:
 
                 # insert mode: insert before current offset
                 if insert:
-                    input = input[0:inputoff] + chr(key) + input[inputoff:]
+                    inputbuf = inputbuf[0:inputoff] + chr(key) + inputbuf[inputoff:]
     
                 # overwrite mode: replace current offset
                 else:
-                    input = input[0:inputoff] + chr(key) + input[inputoff+1:]
+                    inputbuf = inputbuf[0:inputoff] + chr(key) + inputbuf[inputoff+1:]
     
                 # increment the input offset
                 inputoff += 1
@@ -218,13 +217,13 @@ def inputbox(wnd, prompt, field_width, echo=True):
 
     # read an input string within the field region of text_wnd
     inputy, inputx, inputwidth = 1, 1, textwidth - 2
-    input = read_input(text_wnd, inputy, inputx, inputwidth, 0, echo)
+    inputbuf = read_input(text_wnd, inputy, inputx, inputwidth, 0, echo)
     
     # erase the window
     child_wnd.erase()
     child_wnd.refresh()
 
-    return input
+    return inputbuf
 
 
 def line_wrap(line, width):
@@ -323,7 +322,7 @@ def msgbox(wnd, msg, title="Message"):
     curses.curs_set(0)
     outer_wnd.keypad(1)
     while True:
-        key = outer_wnd.getch(0,0)
+        key = outer_wnd.getch(0, 0)
         if key == KEY_RETURN or key == KEY_ESCAPE:
             break
 
@@ -379,18 +378,18 @@ def menu(wnd, offy, offx, width, options, _acquire_wnd=None):
         wnd.refresh()
         
         # read one keypress
-        input = wnd.getch()
+        keypress = wnd.getch()
 
         # UP moves to the previous option
-        if input == curses.KEY_UP and selected > 0:
+        if keypress == curses.KEY_UP and selected > 0:
             selected = (selected - 1)
 
         # DOWN moves to the next option
-        elif input == curses.KEY_DOWN and selected < len(options) - 1:
+        elif keypress == curses.KEY_DOWN and selected < len(options) - 1:
             selected = (selected + 1)
 
         # RETURN runs the callback for the selected option
-        elif input == KEY_RETURN:
+        elif keypress == KEY_RETURN:
             text, callback = options[selected]
 
             # highlight the selected option

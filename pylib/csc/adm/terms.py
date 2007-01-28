@@ -1,11 +1,9 @@
-# $Id: terms.py 44 2006-12-31 07:09:27Z mspang $
 """
 Terms Routines
 
-This module contains functions for manipulating
-terms, such as determining the current term,
-finding the next or previous term, converting
-dates to terms, and more.
+This module contains functions for manipulating terms, such as determining
+the current term, finding the next or previous term, converting dates to
+terms, and more.
 """
 import time, datetime, re
 
@@ -16,27 +14,27 @@ EPOCH = 1970
 SEASONS = [ 'w', 's', 'f' ]
 
 
-def valid(term):
+def validate(term):
     """
-    Determines whether a term is well-formed:
+    Determines whether a term is well-formed.
 
     Parameters:
         term - the term string
 
     Returns: whether the term is valid (boolean)
 
-    Example: valid("f2006") -> True
+    Example: validate("f2006") -> True
     """
 
     regex = '^[wsf][0-9]{4}$'
-    return re.match(regex, term) != None
+    return re.match(regex, term) is not None
 
 
 def parse(term):
     """Helper function to convert a term string to the number of terms
        since the epoch. Such numbers are intended for internal use only."""
 
-    if not valid(term):
+    if not validate(term):
         raise Exception("malformed term: %s" % term)
 
     year = int( term[1:] )
@@ -176,8 +174,8 @@ def from_timestamp(timestamp):
 
     This function notes that:
         WINTER = JANUARY to APRIL
-        SPRING = MAY TO AUGUST
-        FALL   = SEPTEMBER TO DECEMBER
+        SPRING = MAY to AUGUST
+        FALL   = SEPTEMBER to DECEMBER
     
     Parameters:
         timestamp - number of seconds since the epoch
@@ -235,18 +233,22 @@ def next_unregistered(registered):
 
 if __name__ == '__main__':
 
-    assert parse('f2006') == 110
-    assert generate(110) == 'f2006'
-    assert next('f2006') == 'w2007'
-    assert previous('f2006') == 's2006'
-    assert delta('f2006', 'w2007') == 1
-    assert add('f2006', delta('f2006', 'w2010')) == 'w2010'
-    assert interval('f2006', 3) == ['f2006', 'w2007', 's2007']
-    assert from_timestamp(1166135779) == 'f2006'
-    assert parse( current() ) >= 110
-    assert next_unregistered( [current()] ) == next( current() )
-    assert next_unregistered( [] ) == current()
-    assert next_unregistered( [previous(current())] ) == current()
-    assert next_unregistered( [add(current(), -2)] ) == current()
+    from csc.common.test import *
 
-    print "All tests passed." "\n"
+    test(parse); assert_equal(110, parse('f2006')); success()
+    test(generate); assert_equal('f2006', generate(110)); success()
+    test(next); assert_equal('w2007', next('f2006')); success()
+    test(previous); assert_equal('s2006', previous('f2006')); success()
+    test(delta); assert_equal(1, delta('f2006', 'w2007')); success()
+    test(compare); assert_equal(-1, compare('f2006', 'w2007')); success()
+    test(add); assert_equal('w2010', add('f2006', delta('f2006', 'w2010'))); success()
+    test(interval); assert_equal(['f2006', 'w2007', 's2007'], interval('f2006', 3)); success()
+    test(from_timestamp); assert_equal('f2006', from_timestamp(1166135779)); success()
+    test(current); assert_equal(True, parse( current() ) >= 110 ); success()
+
+    test(next_unregistered)
+    assert_equal( next(current()), next_unregistered([ current() ]))
+    assert_equal( current(), next_unregistered([]))
+    assert_equal( current(), next_unregistered([ previous(current()) ]))
+    assert_equal( current(), next_unregistered([ add(current(), -2) ]))
+    success()

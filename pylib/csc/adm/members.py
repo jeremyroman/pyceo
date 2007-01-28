@@ -1,4 +1,3 @@
-# $Id: members.py 44 2006-12-31 07:09:27Z mspang $
 """
 CSC Member Management
 
@@ -10,44 +9,29 @@ Transactions are used in each method that modifies the database.
 Future changes to the members database that need to be atomic
 must also be moved into this module.
 """
-
 import re
 from csc.adm import terms
 from csc.backends import db
-from csc.common.conf import read_config
+from csc.common import conf
 
 
-
-
-### Configuration
+### Configuration ###
 
 CONFIG_FILE = '/etc/csc/members.cf'
 
 cfg = {}
 
-
 def load_configuration():
     """Load Members Configuration"""
 
-    # configuration already loaded?
-    if len(cfg) > 0:
-        return
+    string_fields = [ 'studentid_regex', 'realname_regex', 'server',
+            'database', 'user', 'password' ]
 
-    # read in the file
-    cfg_tmp = read_config(CONFIG_FILE)
+    # read configuration file
+    cfg_tmp = conf.read(CONFIG_FILE)
 
-    if not cfg_tmp:
-        raise MemberException("unable to read configuration file: %s"
-                % CONFIG_FILE)
-
-    # check that essential fields are completed
-    mandatory_fields = [ 'server', 'database', 'user', 'password' ]
-
-    for field in mandatory_fields:
-        if not field in cfg_tmp:
-            raise MemberException("missing configuratino option: %s" % field)
-        if not cfg_tmp[field]:
-            raise MemberException("null configuration option: %s" %field)
+    # verify configuration
+    conf.check_string_fields(CONFIG_FILE, string_fields, cfg_tmp)
 
     # update the current configuration with the loaded values
     cfg.update(cfg_tmp)
@@ -56,24 +40,46 @@ def load_configuration():
 
 ### Exceptions ###
 
+DBException = db.DBException
+ConfigurationException = conf.ConfigurationException
+
 class MemberException(Exception):
-    """Exception class for member-related errors."""
+    """Base exception class for member-related errors."""
 
 class DuplicateStudentID(MemberException):
     """Exception class for student ID conflicts."""
-    pass
+    def __init__(self, studentid):
+        self.studentid = studentid
+    def __str__(self):
+        return "Student ID already exists in the database: %s" % self.studentid
 
 class InvalidStudentID(MemberException):
     """Exception class for malformed student IDs."""
-    pass
+    def __init__(self, studentid):
+        self.studentid = studentid
+    def __str__(self):
+        return "Student ID is invalid: %s" % self.studentid
 
 class InvalidTerm(MemberException):
     """Exception class for malformed terms."""
-    pass
+    def __init__(self, term):
+        self.term = term
+    def __str__(self):
+        return "Term is invalid: %s" % self.term
+
+class InvalidRealName(MemberException):
+    """Exception class for invalid real names."""
+    def __init__(self, name):
+        self.name = name
+    def __str__(self):
+        return "Name is invalid: %s" % self.name
 
 class NoSuchMember(MemberException):
     """Exception class for nonexistent members."""
-    pass
+    def __init__(self, memberid):
+        self.memberid = memberid
+    def __str__(self):
+        return "Member not found: %d" % self.memberid
 
 
 
@@ -82,12 +88,10 @@ class NoSuchMember(MemberException):
 # global database connection
 connection = db.DBConnection()
 
-
 def connect():
     """Connect to PostgreSQL."""
     
     load_configuration()
-    
     connection.connect(cfg['server'], cfg['database'])
        
 
@@ -103,24 +107,27 @@ def connected():
     return connection.connected()
 
 
+
 ### Member Table ###
 
-def new(realname, studentid=None, program=None):
+def new(realname, studentid=None, program=None, mtype='user', userid=None):
     """
-    Registers a new CSC member. The member is added
-    to the members table and registered for the current
-    term.
+    Registers a new CSC member. The member is added to the members table
+    and registered for the current term.
 
     Parameters:
         realname  - the full real name of the member
         studentid - the student id number of the member
         program   - the program of study of the member
+        mtype     - a string describing the type of member ('user', 'club')
+        userid    - the initial user id
 
     Returns: the memberid of the new member
 
     Exceptions:
         DuplicateStudentID - if the student id already exists in the database
         InvalidStudentID   - if the student id is malformed
+        InvalidRealName    - if the real name is malformed
 
     Example: new("Michael Spang", program="CS") -> 3349
     """
@@ -128,16 +135,21 @@ def new(realname, studentid=None, program=None):
     # blank attributes should be NULL
     if studentid == '': studentid = None
     if program == '': program = None
+    if userid == '': userid = None
+    if mtype == '': mtype = None
 
     # check the student id format
-    regex = '^[0-9]{8}$'
-    if studentid != None and not re.match(regex, str(studentid)):
-        raise InvalidStudentID("student id is invalid: %s" % studentid)
+    if studentid is not None and not re.match(cfg['studentid_regex'], str(studentid)):
+        raise InvalidStudentID(studentid)
+
+    # check real name format (UNIX account real names must not contain [,:=])
+    if not re.match(cfg['realname_regex'], realname):
+        raise InvalidRealName(realname)
 
     # check for duplicate student id
     member = connection.select_member_by_studentid(studentid)
     if member:
-        raise DuplicateStudentID("student id exists in database: %s" % studentid)
+        raise DuplicateStudentID(studentid)
 
     # add the member
     memberid = connection.insert_member(realname, studentid, program)
@@ -154,9 +166,6 @@ def new(realname, studentid=None, program=None):
 def get(memberid):
     """
     Look up attributes of a member by memberid.
-
-    Parameters:
-        memberid - the member id number
 
     Returns: a dictionary of attributes
 
@@ -188,7 +197,7 @@ def get_userid(userid):
              }
     """
 
-    return connection.select_member_by_account(userid)
+    return connection.select_member_by_userid(userid)
 
 
 def get_studentid(studentid):
@@ -265,20 +274,23 @@ def delete(memberid):
     """
     Erase all records of a member.
 
-    Note: real members are never removed
-          from the database
+    Note: real members are never removed from the database
 
-    Parameters:
-        memberid - the member id number
+    Returns: attributes and terms of the member in a tuple
 
-    Returns: attributes and terms of the
-             member in a tuple
+    Exceptions:
+        NoSuchMember - if the member id does not exist
 
     Example: delete(0) -> ({ 'memberid': 0, name: 'Calum T. Dalek' ...}, ['s1993'])
     """
 
     # save member data
     member = connection.select_member_by_id(memberid)
+
+    # bail if not found
+    if not member:
+        raise NoSuchMember(memberid)
+
     term_list = connection.select_terms(memberid)
 
     # remove data from the db
@@ -291,13 +303,12 @@ def delete(memberid):
 
 def update(member):
     """
-    Update CSC member attributes. None is NULL.
+    Update CSC member attributes.
 
     Parameters:
-        member - a dictionary with member attributes as
-                 returned by get, possibly omitting some
-                 attributes. member['memberid'] must exist
-                 and be valid.
+        member - a dictionary with member attributes as returned by get,
+                 possibly omitting some attributes. member['memberid']
+                 must exist and be valid. None is NULL.
 
     Exceptions:
         NoSuchMember       - if the member id does not exist
@@ -307,20 +318,18 @@ def update(member):
     Example: update( {'memberid': 3349, userid: 'mspang'} )
     """
 
-    if member.has_key('studentid') and member['studentid'] != None:
+    if member.has_key('studentid') and member['studentid'] is not None:
 
         studentid = member['studentid']
         
         # check the student id format
-        regex = '^[0-9]{8}$'
-        if studentid != None and not re.match(regex, str(studentid)):
-            raise InvalidStudentID("student id is invalid: %s" % studentid)
+        if studentid is not None and not re.match(cfg['studentid_regex'], str(studentid)):
+            raise InvalidStudentID(studentid)
 
         # check for duplicate student id
-        member = connection.select_member_by_studentid(studentid)
-        if member:
-            raise DuplicateStudentID("student id exists in database: %s" %
-                    studentid)
+        dupmember = connection.select_member_by_studentid(studentid)
+        if dupmember:
+            raise DuplicateStudentID(studentid)
 
     # not specifying memberid is a bug
     if not member.has_key('memberid'):
@@ -328,10 +337,8 @@ def update(member):
     memberid = member['memberid']
 
     # see if member exists
-    old_member = connection.select_member_by_id(memberid)
-    if not old_member:
-        raise NoSuchMember("memberid does not exist in database: %d" %
-                memberid)
+    if not get(memberid):
+        raise NoSuchMember(memberid)
     
     # do the update
     connection.update_member(member)
@@ -359,14 +366,14 @@ def register(memberid, term_list):
     Example: register(3349, ["w2007", "s2007"])
     """
 
-    if not type(term_list) in (list, tuple):
+    if type(term_list) in (str, unicode):
         term_list = [ term_list ]
 
     for term in term_list:
         
         # check term syntax
         if not re.match('^[wsf][0-9]{4}$', term):
-            raise InvalidTerm("term is invalid: %s" % term)
+            raise InvalidTerm(term)
     
         # add term to database
         connection.insert_term(memberid, term)
@@ -388,10 +395,10 @@ def registered(memberid, term):
     Example: registered(3349, "f2006") -> True
     """
 
-    return connection.select_term(memberid, term) != None
+    return connection.select_term(memberid, term) is not None
 
 
-def terms_list(memberid):
+def member_terms(memberid):
     """
     Retrieves a list of terms a member is
     registered for.
@@ -404,7 +411,9 @@ def terms_list(memberid):
     Example: registered(0) -> 's1993'
     """
 
-    return connection.select_terms(memberid)
+    terms_list = connection.select_terms(memberid)
+    terms_list.sort(terms.compare)
+    return terms_list
 
 
 
@@ -412,15 +421,104 @@ def terms_list(memberid):
 
 if __name__ == '__main__':
 
-    connect()
-    
-    
-    sid = new("Test User", "99999999", "CS")
+    from csc.common.test import *
 
-    assert registered(id, terms.current())
-    print get(sid)
-    register(sid, terms.next(terms.current()))
-    assert registered(sid, terms.next(terms.current()))
-    print terms_list(sid)
-    print get(sid)
-    print delete(sid)
+    # t=test m=member s=student u=updated
+    tmname = 'Test Member'
+    tmprogram = 'Metaphysics'
+    tmsid = '00000000'
+    tm2name = 'Test Member 2'
+    tm2sid = '00000001'
+    tm2uname = 'Test Member II'
+    tm2usid = '00000002'
+    tm2uprogram = 'Pseudoscience'
+    tm2uuserid = 'testmember'
+
+    tmdict = {'name': tmname, 'userid': None, 'program': tmprogram, 'type': 'user', 'studentid': tmsid }
+    tm2dict = {'name': tm2name, 'userid': None, 'program': None, 'type': 'user', 'studentid': tm2sid }
+    tm2udict = {'name': tm2uname, 'userid': tm2uuserid, 'program': tm2uprogram, 'type': 'user', 'studentid': tm2usid }
+
+    thisterm = terms.current()
+    nextterm = terms.next(thisterm)
+
+    test(connect)
+    connect()
+    success()
+
+    test(connected)
+    assert_equal(True, connected())
+    success()
+
+    dmid = get_studentid(tmsid)
+    if dmid: delete(dmid['memberid'])
+    dmid = get_studentid(tm2sid)
+    if dmid: delete(dmid['memberid'])
+    dmid = get_studentid(tm2usid)
+    if dmid: delete(dmid['memberid'])
+
+    test(new)
+    tmid = new(tmname, tmsid, tmprogram)
+    tm2id = new(tm2name, tm2sid)
+    success()
+
+    tmdict['memberid'] = tmid
+    tm2dict['memberid'] = tm2id
+    tm2udict['memberid'] = tm2id
+
+    test(registered)
+    assert_equal(True, registered(tmid, thisterm))
+    assert_equal(True, registered(tm2id, thisterm))
+    assert_equal(False, registered(tmid, nextterm))
+    success()
+
+    test(get)
+    assert_equal(tmdict, get(tmid))
+    assert_equal(tm2dict, get(tm2id))
+    success()
+
+    test(list_name)
+    assert_equal(True, tmid in [ x['memberid'] for x in list_name(tmname) ])
+    assert_equal(True, tm2id in [ x['memberid'] for x in list_name(tm2name) ])
+    success()
+
+    test(register)
+    register(tmid, terms.next(terms.current()))
+    assert_equal(True, registered(tmid, nextterm))
+    success()
+
+    test(member_terms)
+    assert_equal([thisterm, nextterm], member_terms(tmid))
+    assert_equal([thisterm], member_terms(tm2id))
+    success()
+
+    test(list_term)
+    assert_equal(True, tmid in [ x['memberid'] for x in list_term(thisterm) ])
+    assert_equal(True, tmid in [ x['memberid'] for x in list_term(nextterm) ])
+    assert_equal(True, tm2id in [ x['memberid'] for x in list_term(thisterm) ])
+    assert_equal(False, tm2id in [ x['memberid'] for x in list_term(nextterm) ])
+    success()
+
+    test(update)
+    update(tm2udict)
+    assert_equal(tm2udict, get(tm2id))
+    success()
+
+    test(get_userid)
+    assert_equal(tm2udict, get_userid(tm2uuserid))
+    success()
+
+    test(get_studentid)
+    assert_equal(tm2udict, get_studentid(tm2usid))
+    assert_equal(tmdict, get_studentid(tmsid))
+    success()
+
+    test(delete)
+    delete(tmid)
+    delete(tm2id)
+    success()
+
+    test(disconnect)
+    disconnect()
+    assert_equal(False, connected())
+    disconnect()
+    success()

@@ -1,4 +1,3 @@
-# $Id: ldapi.py 41 2006-12-29 04:22:31Z mspang $
 """
 LDAP Backend Interface
 
@@ -60,7 +59,7 @@ class LDAPConnection(object):
         
         """
 
-        if bind_pw == None: bind_pw = ''
+        if bind_pw is None: bind_pw = ''
 
         try:
 
@@ -93,7 +92,7 @@ class LDAPConnection(object):
     def connected(self):
         """Determine whether the connection has been established."""
 
-        return self.ldap != None
+        return self.ldap is not None
 
 
 
@@ -137,31 +136,33 @@ class LDAPConnection(object):
         Retrieve the attributes of a user.
 
         Parameters:
-            uid - the UNIX user accound name of the user
+            uid - the UNIX username to look up
 
         Returns: attributes of user with uid
 
         Example: connection.user_lookup('mspang') ->
                      { 'uid': 'mspang', 'uidNumber': 21292 ...}
         """
+
+        if not self.connected(): raise LDAPException("Not connected!")
         
         dn = 'uid=' + uid + ',' + self.user_base
         return self.lookup(dn)
         
 
-    def user_search(self, filter):
+    def user_search(self, search_filter):
         """
         Helper for user searches.
 
         Parameters:
-            filter - LDAP filter string to match users against
+            search_filter - LDAP filter string to match users against
 
-        Returns: the list of uids matched
+        Returns: the list of uids matched (usernames)
         """
 
         # search for entries that match the filter
         try:
-            matches = self.ldap.search_s(self.user_base, ldap.SCOPE_SUBTREE, filter)
+            matches = self.ldap.search_s(self.user_base, ldap.SCOPE_SUBTREE, search_filter)
         except ldap.LDAPError, e:
             raise LDAPException("user search failed: %s" % e)
         
@@ -196,47 +197,45 @@ class LDAPConnection(object):
         Parameters:
             uidNumber - the user id of the accounts desired
 
-        Returns: the list of uids matched
+        Returns: the list of uids matched (usernames)
 
         Example: connection.user_search_id(21292) -> ['mspang']
         """
 
         # search for posixAccount entries with the specified uidNumber
-        filter = '(&(objectClass=posixAccount)(uidNumber=%d))' % uidNumber
-        return self.user_search(filter)
+        search_filter = '(&(objectClass=posixAccount)(uidNumber=%d))' % uidNumber
+        return self.user_search(search_filter)
 
 
     def user_search_gid(self, gidNumber):
         """
-        Retrieves a list of users with a certain UNIX gid number.
+        Retrieves a list of users with a certain UNIX gid
+        number (search by default group).
 
-        Parameters:
-            gidNumber - the group id of the accounts desired
-
-        Returns: the list of uids matched
+        Returns: the list of uids matched (usernames)
         """
 
         # search for posixAccount entries with the specified gidNumber
-        filter = '(&(objectClass=posixAccount)(gidNumber=%d))' % gidNumber
-        return self.user_search(filter)
+        search_filter = '(&(objectClass=posixAccount)(gidNumber=%d))' % gidNumber
+        return self.user_search(search_filter)
 
 
-    def user_add(self, uid, cn, loginShell, uidNumber, gidNumber, homeDirectory, gecos):
+    def user_add(self, uid, cn, uidNumber, gidNumber, homeDirectory, loginShell=None, gecos=None, description=None):
         """
         Adds a user to the directory.
 
         Parameters:
             uid           - the UNIX username for the account
-            cn            - the full name of the member
-            userPassword  - password of the account (our setup does not use this)
-            loginShell    - login shell for the user
+            cn            - the real name of the member
             uidNumber     - the UNIX user id number
-            gidNumber     - the UNIX group id number
+            gidNumber     - the UNIX group id number (default group)
             homeDirectory - home directory for the user
-            gecos         - comment field (usually stores miscellania)
+            loginShell    - login shell for the user
+            gecos         - comment field (usually stores name etc)
+            description   - description field (optional and unimportant)
 
         Example: connection.user_add('mspang', 'Michael Spang',
-                     '/bin/bash', 21292, 100, '/users/mspang',
+                     21292, 100, '/users/mspang', '/bin/bash', 
                      'Michael Spang,,,')
         """
         
@@ -251,6 +250,11 @@ class LDAPConnection(object):
             'homeDirectory': [ homeDirectory ],
             'gecos': [ gecos ],
         }
+        
+        if loginShell:
+            attrs['loginShell'] = loginShell
+        if description:
+            attrs['description'] = [ description ]
 
         try:
             modlist = ldap.modlist.addModlist(attrs)
@@ -265,7 +269,7 @@ class LDAPConnection(object):
 
         Parameters:
             uid   - username of the user to modify
-            entry - dictionary as returned by user_lookup() with changes to make.
+            attrs - dictionary as returned by user_lookup() with changes to make.
                     omitted attributes are DELETED.
 
         Example: user = user_lookup('mspang')
@@ -295,9 +299,6 @@ class LDAPConnection(object):
         """
         Removes a user from the directory.
 
-        Parameters:
-            uid - the UNIX username of the account
-        
         Example: connection.user_delete('mspang')
         """
         
@@ -318,7 +319,7 @@ class LDAPConnection(object):
         Parameters:
             cn - the UNIX group name to lookup
 
-        Returns: attributes of group with cn
+        Returns: attributes of the group's LDAP entry
 
         Example: connection.group_lookup('office') -> {
                      'cn': 'office',
@@ -335,9 +336,6 @@ class LDAPConnection(object):
         """
         Retrieves a list of groups with the specified UNIX group number.
         
-        Parameters:
-            gidNumber - the group id of the groups desired
-
         Returns: a list of groups with gid gidNumber
 
         Example: connection.group_search_id(1001) -> ['office']
@@ -345,8 +343,8 @@ class LDAPConnection(object):
 
         # search for posixAccount entries with the specified uidNumber
         try:
-            filter = '(&(objectClass=posixGroup)(gidNumber=%d))' % gidNumber
-            matches = self.ldap.search_s(self.group_base, ldap.SCOPE_SUBTREE, filter)
+            search_filter = '(&(objectClass=posixGroup)(gidNumber=%d))' % gidNumber
+            matches = self.ldap.search_s(self.group_base, ldap.SCOPE_SUBTREE, search_filter)
         except ldap.LDAPError,e :
             raise LDAPException("group search failed: %s" % e)
 
@@ -370,15 +368,11 @@ class LDAPConnection(object):
         return group_cns
 
 
-    def group_add(self, cn, gidNumber):
+    def group_add(self, cn, gidNumber, description=None):
         """
         Adds a group to the directory.
 
-        Parameters:
-            cn        - the name of the group
-            gidNumber - the number of the group
-
-        Example: connection.group_add('office', 1001)
+        Example: connection.group_add('office', 1001, 'Office Staff')
         """
         
         dn = 'cn=' + cn + ',' + self.group_base
@@ -387,6 +381,8 @@ class LDAPConnection(object):
             'cn': [ cn ],
             'gidNumber': [ str(gidNumber) ],
         }
+        if description:
+            attrs['description'] = description
 
         try:
             modlist = ldap.modlist.addModlist(attrs)
@@ -399,9 +395,8 @@ class LDAPConnection(object):
         """
         Update group attributes in the directory.
         
-        The only available updates are fairly destructive
-        (rename or renumber) but this method is provided
-        for completeness.
+        The only available updates are fairly destructive (rename or renumber)
+        but this method is provided for completeness.
 
         Parameters:
             cn    - name of the group to modify
@@ -436,9 +431,6 @@ class LDAPConnection(object):
         """
         Removes a group from the directory."
 
-        Parameters:
-            cn - the name of the group
-
         Example: connection.group_delete('office')
         """
         
@@ -449,129 +441,203 @@ class LDAPConnection(object):
             raise LDAPException("unable to delete group: %s" % e)
 
 
-    def group_members(self, cn):
-        """
-        Retrieves a group's members.
-
-        Parameters:
-            cn - the name of the group
-
-        Example: connection.group_members('office') ->
-                 ['sfflaw', 'jeperry', 'cschopf' ...]
-        """
-
-        group = self.group_lookup(cn)
-        return group.get('memberUid', None)
-
-
     ### Miscellaneous Methods ###
-    
-    def first_id(self, minimum, maximum):
-        """
-        Determines the first available id within a range.
 
-        To be "available", there must be neither a user
-        with the id nor a group with the id.
+    def used_uids(self, minimum=None, maximum=None):
+        """
+        Compiles a list of used UIDs in a range.
 
         Parameters:
-            minimum - smallest uid that may be returned
-            maximum - largest uid that may be returned
+            minimum - smallest uid to return in the list
+            maximum - largest uid to return in the list
 
-        Returns: the id, or None if there are none available
+        Returns: list of integer uids
 
-        Example: connection.first_id(20000, 40000) -> 20018
+        Example: connection.used_uids(20000, 40000) -> [20000, 20001, ...]
         """
 
-        # compile a list of used uids
         try:
             users = self.ldap.search_s(self.user_base, ldap.SCOPE_SUBTREE, '(objectClass=posixAccount)', ['uidNumber'])
         except ldap.LDAPError, e:
             raise LDAPException("search for uids failed: %s" % e)
+        
         uids = []
         for user in users:
             dn, attrs = user
             uid = int(attrs['uidNumber'][0])
-            if minimum <= uid <= maximum:
+            if (not minimum or uid >= minimum) and (not maximum or uid <= maximum):
                 uids.append(uid)
 
-        # compile a list of used gids
+        return uids
+            
+    
+    def used_gids(self, minimum=None, maximum=None):
+        """
+        Compiles a list of used GIDs in a range.
+
+        Parameters:
+            minimum - smallest gid to return in the list
+            maximum - largest gid to return in the list
+
+        Returns: list of integer gids
+
+        Example: connection.used_gids(20000, 40000) -> [20000, 20001, ...]
+        """
+
         try:
-            groups = self.ldap.search_s(self.group_base, ldap.SCOPE_SUBTREE, '(objectClass=posixGroup)', ['gidNumber'])
+            users = self.ldap.search_s(self.user_base, ldap.SCOPE_SUBTREE, '(objectClass=posixAccount)', ['gidNumber'])
         except ldap.LDAPError, e:
             raise LDAPException("search for gids failed: %s" % e)
+        
         gids = []
-        for group in groups:
-            dn, attrs = group
+        for user in users:
+            dn, attrs = user
             gid = int(attrs['gidNumber'][0])
-            if minimum <= gid <= maximum:
+            if (not minimum or gid >= minimum) and (not maximum or gid <= maximum):
                 gids.append(gid)
 
-        # iterate through ids and return the first available
-        for id in xrange(minimum, maximum+1):
-            if not id in uids and not id in gids:
-                return id
+        return gids
 
-        # no suitable id was found
-        return None
 
 
 ### Tests ###
 
 if __name__ == '__main__':
     
-    password_file = 'ldap.ceo'
-    server   = 'ldaps:///'
-    base_dn  = 'dc=csclub,dc=uwaterloo,dc=ca'
-    bind_dn  = 'cn=ceo,' + base_dn
-    user_dn  = 'ou=People,' + base_dn
-    group_dn = 'ou=Group,' + base_dn
-    bind_pw = open(password_file).readline().strip()
+    from csc.common.test import *
 
+    conffile = '/etc/csc/ldap.cf'
+    cfg = dict([map(str.strip, a.split("=", 1)) for a in map(str.strip, open(conffile).read().split("\n")) if "=" in a ]) 
+    srvurl = cfg['server_url'][1:-1]
+    binddn = cfg['admin_bind_dn'][1:-1]
+    bindpw = cfg['admin_bind_pw'][1:-1]
+    ubase = cfg['users_base'][1:-1]
+    gbase = cfg['groups_base'][1:-1]
+    minid = 99999000
+    maxid = 100000000
+
+    # t=test u=user g=group c=changed r=real e=expected
+    tuname = 'testuser'
+    turname = 'Test User'
+    tuhome = '/home/testuser'
+    tushell = '/bin/false'
+    tugecos = 'Test User,,,'
+    tgname = 'testgroup'
+    cushell = '/bin/true'
+    cuhome = '/home/changed'
+    curname = 'Test Modified User'
+
+    test("LDAPConnection()")
     connection = LDAPConnection()
-    print "running disconnect()"
+    success()
+
+    test("disconnect()")
     connection.disconnect()
-    print "running connect('%s', '%s', '%s', '%s', '%s')" % (server, bind_dn, '***', user_dn, group_dn)
-    connection.connect(server, bind_dn, bind_pw, user_dn, group_dn)
-    print "running user_lookup('mspang')", "->", "(%s)" % connection.user_lookup('mspang')['uidNumber'][0]
-    print "running user_search_id(21292)", "->", connection.user_search_id(21292)
-    print "running first_id(20000, 40000)", "->",
-    first_id = connection.first_id(20000, 40000)
-    print first_id
-    print "running group_add('testgroup', %d)" % first_id
+    success()
+
+    test("connect()")
+    connection.connect(srvurl, binddn, bindpw, ubase, gbase)
+    if not connection.connected():
+        fail("not connected")
+    success()
+
     try:
-        connection.group_add('testgroup', first_id)
-    except Exception, e:
-        print "FAILED: %s (continuing)" % e
-    print "running user_add('testuser', 'Test User', '/bin/false', %d, %d, '/home/null', 'Test User,,,')" % (first_id, first_id)
-    try:
-        connection.user_add('testuser', 'Test User', '/bin/false', first_id, first_id, '/home/null', 'Test User,,,')
-    except Exception, e:
-        print "FAILED: %s (continuing)" % e
-    print "running user_lookup('testuser')", "->",
-    user = connection.user_lookup('testuser')
-    print repr(connection.user_lookup('testuser')['cn'][0])
-    user['homeDirectory'] = ['/home/changed']
-    user['loginShell'] = ['/bin/true']
-    print "running user_modify(...)"
-    connection.user_modify('testuser', user)
-    print "running user_lookup('testuser')", "->",
-    user = connection.user_lookup('testuser')
-    print '(%s, %s)' % (user['homeDirectory'], user['loginShell'])
-    print "running group_lookup('testgroup')", "->",
-    group = connection.group_lookup('testgroup')
-    print group
-    print "running group_modify(...)"
-    group['gidNumber'] = [str(connection.first_id(20000, 40000))]
-    group['memberUid'] = [ str(first_id) ]
-    connection.group_modify('testgroup', group)
-    print "running group_lookup('testgroup')", "->",
-    group = connection.group_lookup('testgroup')
-    print group
-    print "running user_delete('testuser')"
-    connection.user_delete('testuser')
-    print "running group_delete('testgroup')"
-    connection.group_delete('testgroup')
-    print "running user_search_gid(100)", "->", "[" + ", ".join(map(repr,connection.user_search_gid(100)[:10])) + " ...]"
-    print "running group_members('office')", "->", "[" + ", ".join(map(repr,connection.group_members('office')[:10])) + " ...]"
-    print "running disconnect()"
+        connection.user_delete(tuname)
+        connection.group_delete(tgname)
+    except LDAPException:
+        pass
+
+    test("used_uids()")
+    uids = connection.used_uids(minid, maxid)
+    if type(uids) is not list:
+        fail("list not returned")
+    success()
+
+    test("used_gids()")
+    gids = connection.used_gids(minid, maxid)
+    if type(gids) is not list:
+        fail("list not returned")
+    success()
+
+    unusedids = []
+    for idnum in xrange(minid, maxid):
+        if not idnum in uids and not idnum in gids:
+            unusedids.append(idnum)
+
+    tuuid = unusedids.pop()
+    tugid = unusedids.pop()
+    eudata = {
+            'uid': [ tuname ],
+            'loginShell': [ tushell ],
+            'uidNumber': [ str(tuuid) ],
+            'gidNumber': [ str(tugid) ],
+            'gecos': [ tugecos ],
+            'homeDirectory': [ tuhome ],
+            'cn': [ turname ]
+            }
+
+    test("user_add()")
+    connection.user_add(tuname, turname, tuuid, tugid, tuhome, tushell, tugecos)
+    success()
+
+    tggid = unusedids.pop()
+    egdata = {
+            'cn': [ tgname ],
+            'gidNumber': [ str(tggid) ]
+            }
+
+    test("group_add()")
+    connection.group_add(tgname, tggid)
+    success()
+
+    test("user_lookup()")
+    udata = connection.user_lookup(tuname)
+    del udata['objectClass']
+    assert_equal(eudata, udata)
+    success()
+
+    test("group_lookup()")
+    gdata = connection.group_lookup(tgname)
+    del gdata['objectClass']
+    assert_equal(egdata, gdata)
+    success()
+
+    test("user_search_id()")
+    eulist = [ tuname ]
+    ulist = connection.user_search_id(tuuid)
+    assert_equal(eulist, ulist)
+    success()
+
+    test("user_search_gid()")
+    ulist = connection.user_search_gid(tugid)
+    if tuname not in ulist:
+        fail("(%s) not in (%s)" % (tuname, ulist))
+    success()
+
+    ecudata = connection.user_lookup(tuname)
+    ecudata['loginShell'] = [ cushell ]
+    ecudata['homeDirectory'] = [ cuhome ]
+    ecudata['cn'] = [ curname ]
+
+    test("user_modify")
+    connection.user_modify(tuname, ecudata)
+    cudata = connection.user_lookup(tuname)
+    assert_equal(ecudata, cudata)
+    success()
+
+    ecgdata = connection.group_lookup(tgname)
+    ecgdata['memberUid'] = [ tuname ]
+
+    test("group_modify()")
+    connection.group_modify(tgname, ecgdata)
+    cgdata = connection.group_lookup(tgname)
+    assert_equal(ecgdata, cgdata)
+    success()
+
+    test("user_delete()")
+    connection.group_delete(tgname)
+    success()
+
+    test("disconnect()")
     connection.disconnect()
+    success()

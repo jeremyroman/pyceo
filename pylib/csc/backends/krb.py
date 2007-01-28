@@ -1,4 +1,3 @@
-# $Id: krb.py 40 2006-12-29 00:40:31Z mspang $
 """
 Kerberos Backend Interface
 
@@ -12,8 +11,8 @@ systems. Accounts that do not authenticate (e.g. club accounts) do not need
 a Kerberos principal.
 
 Unfortunately, there are no Python bindings to libkadm at this time. As a
-temporary workaround, This module communicates with the kadmin CLI interface
-via a pseudoterminal and pipe.
+temporary workaround, this module communicates with the kadmin CLI interface
+via a pseudo-terminal and a pipe.
 """
 import os
 import ipc
@@ -109,7 +108,7 @@ class KrbConnection(object):
     def connected(self):
         """Determine whether the connection has been established."""
 
-        return self.pid != None
+        return self.pid is not None
 
 
 
@@ -125,6 +124,7 @@ class KrbConnection(object):
 
         # list of lines output by kadmin
         result = []
+        lines = []
 
         # the kadmin prompt that signals the end output
         # note: KADMIN_ARGS[0] must be "kadmin" or the actual prompt will differ
@@ -137,12 +137,12 @@ class KrbConnection(object):
         timeout_maximum = 1.00
         
         # input loop: read from kadmin until the kadmin prompt
-        buffer = ''
+        buf = ''
         while True:
             
             # attempt to read any available data
             data = self.kadm_out.read(block=False, timeout=timeout)
-            buffer += data
+            buf += data
 
             # nothing was read
             if data == '':
@@ -165,20 +165,20 @@ class KrbConnection(object):
                     else:
 
                         # kadmin died!
-                        raise KrbException("kadmin died while reading response")
+                        raise KrbException("kadmin died while reading response:\n%s\n%s" % ("\n".join(lines), buf))
 
             # break into lines and save all but the final
             # line (which is incomplete) into result
-            lines = buffer.split("\n")
-            buffer = lines[-1]
+            lines = buf.split("\n")
+            buf = lines[-1]
             lines = lines[:-1]
             for line in lines:
                 line = line.strip()
                 result.append(line)
            
-            # if the incomplete lines in the buffer is the kadmin prompt,
+            # if the incomplete line in the buffer is the kadmin prompt,
             # then the result is complete and may be returned
-            if buffer.strip() == prompt:
+            if buf.strip() == prompt:
                 break
 
         return result
@@ -189,7 +189,7 @@ class KrbConnection(object):
         Helper function to execute a kadmin command.
 
         Parameters:
-            command - the command to execute
+            command - command string to pass on to kadmin
         
         Returns: a list of lines output by the command
         """
@@ -222,8 +222,8 @@ class KrbConnection(object):
                      "ceo/admin@CSCLUB.UWATERLOO.CA",
                      "sysadmin/admin@CSCLUB.UWATERLOO.CA",
                      "mspang@CSCLUB.UWATERLOO.CA",
+                     ...
                  ]
-        
         """
         
         principals = self.execute("list_principals")
@@ -374,15 +374,12 @@ class KrbConnection(object):
            
         # ensure success message was received
         if not created:
-            raise KrbException("did not receive principal created in response")
+            raise KrbException("kadmin did not acknowledge principal creation")
     
     
     def delete_principal(self, principal):
         """
         Delete a principal.
-
-        Parameters:
-            principal - the principal name
 
         Example: connection.delete_principal("mspang@CSCLUB.UWATERLOO.CA")
         """
@@ -424,25 +421,116 @@ class KrbConnection(object):
             raise KrbException("did not receive principal deleted")
         
 
+    def change_password(self, principal, password):
+        """
+        Changes a principal's password.
+
+        Example: connection.change_password("mspang@CSCLUB.UWATERLOO.CA", "opensesame")
+        """
+
+        # exec the add_principal command
+        if password.find('"') == -1:
+            self.kadm_in.write('change_password -pw "' + password + '" "' + principal + '"\n')
+        else:
+            self.kadm_in.write('change_password "' + principal + '"\n')
+            self.kadm_in.write(password + "\n" + password + "\n")
+
+        # send request and read response
+        self.kadm_in.flush()
+        output = self.read_result()
+
+        # verify output
+        changed = False
+        for line in output:
+
+            # ignore NOTICE lines
+            if line.find("NOTICE:") == 0:
+                continue
+
+            # ignore prompts
+            elif line.find("Enter password") == 0 or line.find("Re-enter password") == 0:
+                continue
+
+            # record whether success message was encountered
+            elif line.find("Password") == 0 and line.find("changed.") != 0:
+                changed = True
+
+            # error messages
+            elif line.find("change_password:") == 0 or line.find("kadmin:") == 0:
+                raise KrbException(line)
+
+            # unknown output
+            else:
+                raise KrbException("unexpected change_password output: " + line)
+           
+        # ensure success message was received
+        if not changed:
+            raise KrbException("kadmin did not acknowledge password change")
+
+
 
 ### Tests ###
 
 if __name__ == '__main__':
-    PRINCIPAL = 'ceo/admin@CSCLUB.UWATERLOO.CA'
-    KEYTAB = 'ceo.keytab'
-    
+
+    from csc.common.test import *
+    import random
+
+    conffile = '/etc/csc/kerberos.cf'
+
+    cfg = dict([map(str.strip, a.split("=", 1)) for a in map(str.strip, open(conffile).read().split("\n")) if "=" in a ])
+    principal = cfg['admin_principal'][1:-1]
+    keytab = cfg['admin_keytab'][1:-1]
+    realm = cfg['realm'][1:-1]
+
+    # t=test p=principal e=expected
+    tpname = 'testpirate' + '@' + realm
+    tpw = str(random.randint(10**30, 10**31-1)) + 'YAR!'
+    eprivs = ['GET', 'ADD', 'MODIFY', 'DELETE']
+
+    test(KrbConnection)
     connection = KrbConnection()
-    print "running disconnect()"
+    success()
+
+    test(connection.connect)
+    connection.connect(principal, keytab)
+    success()
+
+    try:
+        connection.delete_principal(tpname)
+    except KrbException:
+        pass
+
+    test(connection.connected)
+    assert_equal(True, connection.connected())
+    success()
+
+    test(connection.add_principal)
+    connection.add_principal(tpname, tpw)
+    success()
+
+    test(connection.list_principals)
+    pals = connection.list_principals()
+    assert_equal(True, tpname in pals)
+    success()
+
+    test(connection.get_privs)
+    privs = connection.get_privs()
+    assert_equal(eprivs, privs)
+    success()
+
+    test(connection.get_principal)
+    princ = connection.get_principal(tpname)
+    assert_equal(tpname, princ['Principal'])
+    success()
+
+    test(connection.delete_principal)
+    connection.delete_principal(tpname)
+    assert_equal(None, connection.get_principal(tpname))
+    success()
+
+    test(connection.disconnect)
     connection.disconnect()
-    print "running connect('%s', '%s')" % (PRINCIPAL, KEYTAB)
-    connection.connect(PRINCIPAL, KEYTAB)
-    print "running list_principals()", "->", "[" + ", ".join(map(repr,connection.list_principals()[0:3])) + " ...]"
-    print "running get_privs()", "->", str(connection.get_privs())
-    print "running add_principal('testtest', 'BLAH')"
-    connection.add_principal("testtest", "FJDSLDLFKJSF")
-    print "running get_principal('testtest')", "->", '(' + connection.get_principal("testtest")['Principal'] + ')'
-    print "running delete_principal('testtest')"
-    connection.delete_principal("testtest")
-    print "running disconnect()"
-    connection.disconnect()
+    assert_equal(False, connection.connected())
+    success()
 

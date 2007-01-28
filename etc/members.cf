@@ -1,13 +1,6 @@
-# $Id: members.cf 45 2007-01-02 01:39:10Z mspang $
-# CSC Members Configuration
+# /etc/csc/members.cf: CSC Members Configuration
 
-### Database Configuration ###
-
-server = "localhost"
-database = "ceo"
-
-user = "ceo"
-password = "secret"
+include /etc/csc/pgsql.cf
 
 ### Validation Tuning ###
 

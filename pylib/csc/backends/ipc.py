@@ -1,4 +1,3 @@
-# $Id: ipc.py 26 2006-12-20 21:25:08Z mspang $
 """
 IPC Library Functions
 
@@ -14,22 +13,21 @@ class _pty_file(object):
     """
     A 'file'-like wrapper class for pseudoterminal file descriptors.
     
-    This wrapper is necessary because Python has a nasty
-    habit of throwing OSError at pty EOF.
+    This wrapper is necessary because Python has a nasty habit of throwing
+    OSError at pty EOF.
       
-    This class also implements timeouts for read operations
-    which are handy for avoiding deadlock when both
-    processes are blocked in a read().
+    This class also implements timeouts for read operations which are handy
+    for avoiding deadlock when both processes are blocked in a read().
       
-    See the Python documentation of the file class
-    for explanation of the methods.
+    See the Python documentation of the file class for explanation
+    of the methods.
     """
     def __init__(self, fd):
         self.fd = fd
         self.buffer = ''
         self.closed = False
     def __repr__(self):
-        status='open'
+        status = 'open'
         if self.closed:
             status = 'closed'
         return "<" + status + " pty '" + os.ttyname(self.fd) + "'>"
@@ -43,8 +41,8 @@ class _pty_file(object):
                 while data != '':
                 
                     # wait timeout for the pty to become ready, otherwise stop reading
-                    if not block and len(select.select([self.fd],[],[], timeout)[0]) == 0:
-                       break
+                    if not block and len(select.select([self.fd], [], [], timeout)[0]) == 0:
+                        break
                        
                     data = os.read(self.fd, 65536)
                     self.buffer += data
@@ -61,7 +59,7 @@ class _pty_file(object):
                 try:
                     
                     # wait timeout for the pty to become ready, then read
-                    if block or len(select.select([self.fd],[],[], timeout)[0]) != 0:
+                    if block or len(select.select([self.fd], [], [], timeout)[0]) != 0:
                         self.buffer += os.read(self.fd, size - len(self.buffer) )
                     
                 except OSError:
@@ -78,8 +76,8 @@ class _pty_file(object):
             while data != '' and self.buffer.find("\n") == -1 and (size < 0 or len(self.buffer) < size):
 
                 # wait timeout for the pty to become ready, otherwise stop reading
-                if not block and len(select.select([self.fd],[],[], timeout)[0]) == 0:
-                   break
+                if not block and len(select.select([self.fd], [], [], timeout)[0]) == 0:
+                    break
                  
                 data = os.read(self.fd, 128)
                 self.buffer += data
@@ -94,7 +92,7 @@ class _pty_file(object):
         line = self.buffer[:split_index]
         self.buffer = self.buffer[split_index:]
         return line
-    def readlines(self, sizehint=None, block=True, timeout=0.1):
+    def readlines(self, sizehint=None, timeout=0.1):
         lines = []
         line = None
         while True:
@@ -138,7 +136,7 @@ def popeni(command, args, env=None):
         args    - a list of arguments to pass to command
         env     - optional environment for command
 
-    Returns: (pid, stdout, stdIn)
+    Returns: (pid, stdout, stdin)
     """
     
     # use a pipe to send data to the child
@@ -181,7 +179,7 @@ def popeni(command, args, env=None):
             # set the controlling terminal to the pty
             # by opening it (and closing it again since
             # it's already open as child_stdout)
-            fd = os.open(tty, os.O_RDWR);
+            fd = os.open(tty, os.O_RDWR)
             os.close(fd)
 
         # init stdin/out/err
@@ -209,14 +207,21 @@ def popeni(command, args, env=None):
         return pid, _pty_file(parent_stdout), os.fdopen(parent_stdin, 'w')
 
 
+
 ### Tests ###
 
 if __name__ == '__main__':
 
-    import sys
-    pid, recv, send = popeni('/usr/sbin/kadmin.local', ['kadmin'])
+    from csc.common.test import *
 
-    send.write("listprincs\n")
+    prog = '/bin/cat'
+    argv = [ prog ]
+    message = "test\n"
+
+    test(popeni)
+    proc, recv, send = popeni(prog, argv)
+    send.write(message)
     send.flush()
-
-    print recv.readlines()
+    line = recv.readline()
+    assert_equal(message.strip(), line.strip())
+    success()

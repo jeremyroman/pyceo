@@ -1,4 +1,3 @@
-# $Id: db.py 37 2006-12-28 10:00:50Z mspang $
 """
 Database Backend Interface
 
@@ -7,7 +6,7 @@ Methods on the connection class correspond in a straightforward way to SQL
 queries. These methods may restructure and clean up query output but may make
 no other assumptions about its content or purpose.
 
-This module makes use of the PygreSQL Python bindings to libpq,
+This module makes use of the PyGreSQL Python bindings to libpq,
 PostgreSQL's native C client library.
 """
 import pgdb
@@ -20,7 +19,7 @@ class DBException(Exception):
     
 class DBConnection(object):
     """
-    Connection to CEO's backend database. All database queries
+    A connection to CEO's backend database. All database queries
     and updates are made via this class.
     
     Exceptions: (all methods)
@@ -84,7 +83,7 @@ class DBConnection(object):
     def connected(self):
         """Determine whether the connection has been established."""
 
-        return self.cnx != None
+        return self.cnx is not None
 
 
     def commit(self):
@@ -130,8 +129,7 @@ class DBConnection(object):
         # build a dictionary of dictionaries from the result (a list of lists)
         members_dict = {}
         for member in members_list:
-            memberid, name, studentid, program, type, userid = member
-            members_dict[memberid] = {
+            members_dict[member[0]] = {
                 'memberid': member[0],
                 'name': member[1],
                 'studentid': member[2],
@@ -236,13 +234,13 @@ class DBConnection(object):
         return self.select_single_member(sql, params)
 
     
-    def select_member_by_account(self, username):
+    def select_member_by_userid(self, username):
         """
         Retrieves a single member by UNIX account username.
 
         See: self.select_single_member()
 
-        Example: connection.select_member_by_account('ctdalek') ->
+        Example: connection.select_member_by_userid('ctdalek') ->
                  { 'memberid': 0, 'name': 'Calum T. Dalek' ...}
         """
         sql = "SELECT memberid, name, studentid, program, type, userid FROM members WHERE userid=%s"
@@ -266,7 +264,7 @@ class DBConnection(object):
         return self.select_single_member(sql, params)
 
     
-    def insert_member(self, name, studentid=None, program=None):
+    def insert_member(self, name, studentid=None, program=None, mtype='user', userid=None):
         """
         Creates a member with the specified attributes.
 
@@ -274,6 +272,8 @@ class DBConnection(object):
             name      - full name of member
             studentid - student id number
             program   - program of study
+            mtype     - member type
+            userid    - account id
 
         Example: connection.insert_member('Michael Spang', '99999999', 'Math/CS') -> 3349
 
@@ -287,8 +287,8 @@ class DBConnection(object):
             memberid = result[0]
         
             # insert the member
-            sql = "INSERT INTO members (memberid, name, studentid, program, type) VALUES (%d, %s, %s, %s, %s)"
-            params = [ memberid, name, studentid, program, 'user' ]
+            sql = "INSERT INTO members (memberid, name, studentid, program, type, userid) VALUES (%d, %s, %s, %s, %s, %s)"
+            params = [ memberid, name, studentid, program, mtype, userid ]
             self.cursor.execute(sql, params)
             
             return memberid
@@ -497,8 +497,8 @@ class DBConnection(object):
     def trim_memberid_sequence(self):
         """
         Sets the value of the member id sequence to the id of the newest
-        member. For use after extensive testing to prevent large
-        intervals of unused memberids.
+        member. For use after testing to prevent large intervals of unused
+        memberids from developing.
 
         Note: this does nothing unless the most recently added member(s) have been deleted
         """
@@ -509,40 +509,163 @@ class DBConnection(object):
 ### Tests ###
 
 if __name__ == '__main__':
-    HOST = "localhost"
-    DATABASE = "ceo"
 
+    from csc.common.test import *
+ 
+    conffile = "/etc/csc/pgsql.cf"
+
+    cfg = dict([map(str.strip, a.split("=", 1)) for a in map(str.strip, open(conffile).read().split("\n")) if "=" in a ])
+    hostnm = cfg['server'][1:-1]
+    dbase = cfg['database'][1:-1]
+
+    # t=test m=member s=student d=default e=expected u=updated
+    tmname = 'Test Member'
+    tmuname = 'Member Test'
+    tmsid = '00000004'
+    tmusid = '00000008'
+    tmprogram = 'Undecidable'
+    tmuprogram = 'Nondetermined'
+    tmtype = 'Untyped'
+    tmutype = 'Poly'
+    tmuserid = 'tmem'
+    tmuuserid = 'identifier'
+    tm2name = 'Test Member 2'
+    tm2sid = '00000005'
+    tm2program = 'Undeclared'
+    tm3name = 'T. M. 3'
+    dtype = 'user'
+    tmterm = 'w0000'
+    tm3term = 'f1112'
+    tm3term2 = 's1010'
+
+    emdict = { 'name': tmname, 'program': tmprogram, 'studentid': tmsid, 'type': tmtype, 'userid': tmuserid }
+    emudict = { 'name': tmuname, 'program': tmuprogram, 'studentid': tmusid, 'type': tmutype, 'userid': tmuuserid }
+    em2dict = { 'name': tm2name, 'program': tm2program, 'studentid': tm2sid, 'type': dtype, 'userid': None }
+    em3dict = { 'name': tm3name, 'program': None, 'studentid': None, 'type': dtype, 'userid': None }
+    
+    test(DBConnection)
     connection = DBConnection()
+    success()
 
-    print "Running disconnect()"
-    connection.disconnect()
+    test(connection.connect)
+    connection.connect(hostnm, dbase)
+    success()
 
-    print "Running connect('%s', '%s')" % (HOST, DATABASE)
-    connection.connect(HOST, DATABASE)
+    test(connection.connected)
+    assert_equal(True, connection.connected())
+    success()
 
-    print "Running select_all_members()", "->", len(connection.select_all_members()), "members"
-    print "Running select_member_by_id(0)", "->", connection.select_member_by_id(0)['userid']
-    print "Running select_members_by_name('Spang')", "->", connection.select_members_by_name('Spang').keys()
-    print "Running select_members_by_term('f2006')", "->", "[" + ", ".join(map(str, connection.select_members_by_term('f2006').keys()[0:10])) + " ...]"
-    
-    print "Running insert_member('test_member', '99999999', 'program')",
-    memberid = connection.insert_member('test_member', '99999999', 'program')
-    print "->", memberid
+    test(connection.insert_member)
+    tmid = connection.insert_member(tmname, tmsid, tmprogram, tmtype, tmuserid)
+    tm2id = connection.insert_member(tm2name, tm2sid, tm2program)
+    tm3id = connection.insert_member(tm3name)
+    assert_equal(True, int(tmid) >= 0)
+    assert_equal(True, int(tmid) >= 0)
+    success()
 
-    print "Running select_member_by_id(%d)" % memberid, "->", connection.select_member_by_id(memberid)
-    print "Running insert_term(%d, 'f2006')" % memberid
-    connection.insert_term(memberid, 'f2006')
+    emdict['memberid'] = tmid
+    emudict['memberid'] = tmid
+    em2dict['memberid'] = tm2id
+    em3dict['memberid'] = tm3id
 
-    print "Running select_terms(%d)" % memberid, "->", connection.select_terms(memberid)
-    print "Running update_member({'memberid':%d,'name':'test_updated','studentid':-1})" % memberid
-    connection.update_member({'memberid':memberid,'name':'test_updated','studentid':99999999})
-    print "Running select_member_by_id(%d)" % memberid, "->", connection.select_member_by_id(memberid)
-   
-    print "Running rollback()"
+    test(connection.select_member_by_id)
+    m1 = connection.select_member_by_id(tmid)
+    m2 = connection.select_member_by_id(tm2id)
+    m3 = connection.select_member_by_id(tm3id)
+    assert_equal(emdict, m1)
+    assert_equal(em2dict, m2) 
+    assert_equal(em3dict, m3)
+    success()
+
+    test(connection.select_all_members)
+    members = connection.select_all_members()
+    assert_equal(True, tmid in members)
+    assert_equal(True, tm2id in members)
+    assert_equal(True, tm3id in members)
+    assert_equal(emdict, members[tmid])
+    success()
+
+    test(connection.select_members_by_name)
+    members = connection.select_members_by_name(tmname)
+    assert_equal(True, tmid in members)
+    assert_equal(False, tm3id in members)
+    assert_equal(emdict, members[tmid])
+    success()
+
+    test(connection.select_member_by_userid)
+    assert_equal(emdict, connection.select_member_by_userid(tmuserid))
+    success()
+
+    test(connection.insert_term)
+    connection.insert_term(tmid, tmterm)
+    connection.insert_term(tm3id, tm3term)
+    connection.insert_term(tm3id, tm3term2)
+    success()
+
+    test(connection.select_members_by_term)
+    members = connection.select_members_by_term(tmterm)
+    assert_equal(True, tmid in members)
+    assert_equal(False, tm2id in members)
+    assert_equal(False, tm3id in members)
+    success()
+
+    test(connection.select_term)
+    assert_equal(tmterm, connection.select_term(tmid, tmterm))
+    assert_equal(None, connection.select_term(tm2id, tmterm))
+    assert_equal(tm3term, connection.select_term(tm3id, tm3term))
+    assert_equal(tm3term2, connection.select_term(tm3id, tm3term2))
+    success()
+
+    test(connection.select_terms)
+    trms = connection.select_terms(tmid)
+    trms2 = connection.select_terms(tm2id)
+    assert_equal([tmterm], trms)
+    assert_equal([], trms2)
+    success()
+
+    test(connection.delete_term)
+    assert_equal(tm3term, connection.select_term(tm3id, tm3term))
+    connection.delete_term(tm3id, tm3term)
+    assert_equal(None, connection.select_term(tm3id, tm3term))
+    success()
+
+    test(connection.update_member)
+    connection.update_member({'memberid': tmid, 'name': tmuname})
+    connection.update_member({'memberid': tmid, 'program': tmuprogram, 'studentid': tmusid })
+    connection.update_member({'memberid': tmid, 'userid': tmuuserid, 'type': tmutype })
+    assert_equal(emudict, connection.select_member_by_id(tmid))
+    connection.update_member(emdict)
+    assert_equal(emdict, connection.select_member_by_id(tmid))
+    success()
+
+    test(connection.delete_term_all)
+    connection.delete_term_all(tm2id)
+    connection.delete_term_all(tm3id)
+    assert_equal([], connection.select_terms(tm2id))
+    assert_equal([], connection.select_terms(tm3id))
+    success()
+
+    test(connection.delete_member)
+    connection.delete_member(tm3id)
+    assert_equal(None, connection.select_member_by_id(tm3id))
+    negative(connection.delete_member, (tmid,), DBException, "delete of term-registered member")
+    success()
+
+    test(connection.rollback)
     connection.rollback()
+    assert_equal(None, connection.select_member_by_id(tm2id))
+    success()
 
-    print "Resetting memberid sequence"
+    test(connection.commit)
+    connection.commit()
+    success()
+
+    test(connection.trim_memberid_sequence)
     connection.trim_memberid_sequence()
-    
-    print "Running disconnect()"
-    connection.disconnect() 
+    success()
+
+    test(connection.disconnect)
+    connection.disconnect()
+    assert_equal(False, connection.connected())
+    connection.disconnect()
+    success()

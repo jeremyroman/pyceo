@@ -1,4 +1,3 @@
--- $Id: verify_studentid.sql 7 2006-12-11 06:27:22Z mspang $
 -- PL/Python trigger to verify student ids for validity
 -- Dedicated to office staff who can't type student ids.
 

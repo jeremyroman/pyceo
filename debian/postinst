@@ -1,0 +1,58 @@
+#!/bin/bash -e
+
+case "$1" in
+    configure|upgrade)
+
+        if getent passwd ceo > /dev/null; then
+            CEO=ceo
+            SUID=4750
+        else
+            CEO=root
+            SUID=755
+        fi
+
+        if getent group office > /dev/null; then
+            OFFICE=office
+        else
+            OFFICE=root
+        fi
+
+        if ! dpkg-statoverride --list /usr/bin/ceo > /dev/null; then
+            dpkg-statoverride --add --update $CEO $OFFICE $SUID /usr/bin/ceo
+        fi
+
+        if [ -f /etc/csc/ldap.cf ] && ! dpkg-statoverride --list /etc/csc/ldap.cf > /dev/null; then
+            dpkg-statoverride --add --update $CEO staff 640 /etc/csc/ldap.cf
+        fi
+
+        if [ ! -e /etc/csc/ceo.keytab ] && [ -x /usr/sbin/kadmin.local ]; then
+            if dpkg-statoverride --list /etc/csc/ceo.keytab > /dev/null; then
+                dpkg-statoverride --remove /etc/csc/ceo.keytab || true
+            fi    
+            echo 'warning: re-creating ceo.keytab'
+            echo 'ktadd -k /etc/csc/ceo.keytab ceo/admin' | /usr/sbin/kadmin.local || true
+            if [ -e /etc/csc/ceo.keytab ]; then
+                echo -e "\nSuccess!"
+            else
+                echo -e "\nFailed!"
+            fi
+        fi
+
+        if [ -f /etc/csc/ceo.keytab ] && ! dpkg-statoverride --list /etc/csc/ceo.keytab > /dev/null; then
+            dpkg-statoverride --add --update $CEO staff 640 /etc/csc/ceo.keytab
+        fi
+        
+    ;;
+    
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+    
+    *)
+        echo "postinst called with unknown argument \"$1\"" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

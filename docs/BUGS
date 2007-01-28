@@ -3,6 +3,6 @@ Bugs and Caveats
 ================
 
 CEO:
-    - curses does not draw borders/lines correctly in a screen session
-    - windows don't always clear properly
-    - the menu is not redrawn between windows and therefore a gap may grow there
+    - curses does not draw borders/lines correctly in a screen session. screen apparently ignores
+      some font-changing characters. workaround should be possible (other progs work).
+    - the menu is not redrawn between windows and therefore a gap tends to grow there

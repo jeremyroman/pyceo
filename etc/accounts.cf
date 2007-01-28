@@ -1,35 +1,44 @@
-# $Id: accounts.cf 45 2007-01-02 01:39:10Z mspang $
-# CSC Accounts Configuration
+# /etc/csc/accounts.cf: CSC Accounts Configuration
 
-### Account Options ###
+include /etc/csc/ldap.cf
+include /etc/csc/kerberos.cf
 
-minimum_id = 20000
-maximum_id = 40000
+### Member Account Options ###
 
-shell = "/bin/bash"
-home = "/users"
-gid = 100
+member_min_id = 20000
+member_max_id = 39999
+member_shell = "/bin/bash"
+member_home = "/users"
+member_desc = "CSC Member Account"
+member_group = "users"
 
+### Club Account Options ###
 
-### LDAP Configuration ###
+club_min_id = 15000
+club_max_id = 19999
+club_shell = "/bin/bash"
+club_home = "/users"
+club_desc = "CSC Club Account"
+club_group = "users"
 
-server_url = "ldap:///"
+### Administrative Account Options
 
-users_base  = "ou=People,dc=csclub,dc=uwaterloo,dc=ca"
-groups_base = "ou=Group,dc=csclub,dc=uwaterloo,dc=ca"
+admin_min_id = 10000
+admin_max_id = 14999
+admin_shell = "/bin/bash"
+admin_home = "/users"
+admin_desc = "CSC Administrative Account"
+admin_group = "users"
 
-bind_dn       = "cn=ceo,dc=csclub,dc=uwaterloo,dc=ca"
-bind_password = "secret"
+### Account Group Options ###
 
-
-### Kerberos Configuration ###
-
-realm = "CSCLUB.UWATERLOO.CA"
-principal = "ceo/admin@CSCLUB.UWATERLOO.CA"
-keytab = "/etc/csc/ceo.keytab"
-
+group_min_id = 10000
+group_max_id = 14999
+group_desc = "CSC Group"
 
 ### Validation Tuning ###
 
 username_regex = "^[a-z][-a-z0-9]*$"
-realname_regex = "^[^,:=]*$"
+groupname_regex = "^[a-z][-a-z0-9]*$"
+min_password_length = 4
+shells_file = "/etc/shells"

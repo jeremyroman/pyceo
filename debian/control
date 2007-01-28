@@ -3,11 +3,11 @@ Section: admin
 Priority: optional
 Maintainer: Michael Spang <mspang@uwaterloo.ca>
 Build-Depends: debhelper (>= 4.0.0)
-Standards-Version: 3.6.1
+Standards-Version: 3.7.2
 
 Package: csc
 Architecture: any
-Depends: python, python2.4, python2.4-ldap, python2.4-pygresql, krb5-user, less
+Depends: python, python2.4, python2.4-ldap, python2.4-pygresql, krb5-user, less, ${shlibs:Depends}
 Description: Computer Science Club Administrative Utilities
  This package contains the CSC Electronic Office
  and other Computer Science Club administrative

@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: initialize.sh 13 2006-12-15 03:57:00Z mspang $
 # Initializes a database for CEO.
 
 # initialize the database
