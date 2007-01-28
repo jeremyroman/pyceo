@@ -294,7 +294,7 @@ def action_create_account(wnd):
     try:
         if not accounts.connected(): accounts.connect()
         accounts.create_member(userid, password, member['name'], memberid)
-    except accounts.AccountExists, e:
+    except accounts.NameConflict, e:
         msgbox(wnd, str(e))
         return False
     except accounts.NoAvailableIDs, e:
