@@ -30,7 +30,7 @@ Example Configuration File:
     white space = sure, why not
 
     # these two lines are treated as one
-    long line = first line \
+    long line = first line \\
                 second line
 
 Resultant Dictionary:
@@ -44,7 +44,7 @@ Resultant Dictionary:
       'arbitrary_string': '2',
       'csclub': None,
       'white space': 'sure, why not'
-      'long line': 'first line \n               second line' 
+      'long line': 'first line \\n               second line' 
       
       ... (data from other.cf) ...
     }
@@ -58,7 +58,16 @@ class ConfigurationException(Exception):
     
 
 def read(filename, included=None):
-    """Function to read a configuration file into a dictionary."""
+    """
+    Function to read a configuration file into a dictionary.
+    
+    Parmaeters:
+        filename - the file to read
+        included - files previously read (internal)
+    
+    Exceptions:
+        ConfigurationException - when the configuration file cannot be read
+    """
 
     if not included:
         included = []
