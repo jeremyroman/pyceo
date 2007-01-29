@@ -1,3 +1,11 @@
+csc (0.2.2) unstable; urgency=low
+
+  * Added "addhomedir", a utility to create home directories for new users.
+  * Bug fix: CEO still referenced an exception that changed name in 0.2.
+  * Documentation updates.
+
+ -- Michael Spang <mspang@uwaterloo.ca>  Mon, 29 Jan 2007 01:47:31 -0500
+
 csc (0.2.1) unstable; urgency=low
 
   * Documentation updates only
