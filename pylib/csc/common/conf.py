@@ -108,14 +108,16 @@ def read(filename, included=None):
             key, val = pair
 
             # found quoted string?
-            if val[0] == val[-1] == '"':
+            if val and val[0] == val[-1] == '"':
                 val = val[1:-1]
 
-            # unquoted, found float?
-            else:
+            # unquoted, found num?
+            elif val:
                 try:
                     if "." in val:
                         val = float(val)
+                    elif val[0] == '0':
+                        val = int(val, 8)
                     else:
                         val = int(val)
                 except ValueError:
