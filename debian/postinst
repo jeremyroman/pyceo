@@ -21,6 +21,10 @@ case "$1" in
             dpkg-statoverride --add --update $CEO $OFFICE $SUID /usr/bin/ceo
         fi
 
+        if ! dpkg-statoverride --list /usr/bin/addhomedir > /dev/null; then
+            dpkg-statoverride --add --update root $OFFICE $SUID /usr/bin/addhomedir
+        fi
+
         if [ -f /etc/csc/ldap.cf ] && ! dpkg-statoverride --list /etc/csc/ldap.cf > /dev/null; then
             dpkg-statoverride --add --update $CEO staff 640 /etc/csc/ldap.cf
         fi
