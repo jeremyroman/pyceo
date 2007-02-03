@@ -891,14 +891,18 @@ def build_gecos(fullname=None, roomnumber=None, workphone=None, homephone=None, 
     if other and ':' in str(other):
         raise InvalidArgument('other', other, "invalid characters")
     
-    # append each field
+    # join the fields
     if fullname is not None:
         gecos_data = str(fullname)
-    for field in (roomnumber, workphone, homephone, other):
-        if field is not None:
-            gecos_data += ',' + str(field)
-
-    return gecos_data
+    fields = [ fullname, roomnumber, workphone, homephone, other ]
+    for idx in xrange(len(fields), 0, -1):
+        if not fields[idx-1]:
+            fields.pop()
+        else:
+            break
+    while None in fields:
+        fields[fields.index(None)] = ''
+    return ','.join(map(str, fields))
 
 
 def check_id_nss(ugid):
