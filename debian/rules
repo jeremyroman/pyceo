@@ -8,6 +8,7 @@ build-stamp:
 	mkdir build
 	$(CC) -DFULL_PATH='"/usr/lib/csc/ceo"' -o build/ceo misc/setuid-prog.c
 	$(CC) -DFULL_PATH='"/usr/lib/csc/addhomedir"' -o build/addhomedir misc/setuid-prog.c
+	$(CC) -DFULL_PATH='"/usr/lib/csc/ceoquery"' -o build/ceoquery misc/setuid-prog.c
 	touch build-stamp
 
 clean:
@@ -28,8 +29,8 @@ install: build
 	dh_install etc/* etc/csc/
 	dh_install sql/* usr/share/csc/
 	
-	dh_install bin/ceo bin/addhomedir usr/lib/csc/
-	dh_install build/ceo build/addhomedir usr/bin/
+	dh_install bin/ceo bin/addhomedir bin/ceoquery usr/lib/csc/
+	dh_install build/ceo build/addhomedir build/ceoquery usr/bin/
 	
 binary-arch: build install
 	dh_testdir

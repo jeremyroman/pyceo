@@ -1,0 +1,76 @@
+#!/usr/bin/python2.4 --
+"""
+ceoquery - a script to lookup member and account information
+"""
+import os, sys
+
+safe_environment = ['LOGNAME', 'USERNAME', 'USER', 'HOME', 'TERM', 'LANG'
+    'LC_ALL', 'LC_COLLATE', 'LC_CTYPE', 'LC_MESSAGE', 'LC_MONETARY',
+    'LC_NUMERIC', 'LC_TIME', 'UID', 'GID', 'SSH_CONNECTION', 'SSH_AUTH_SOCK',
+    'SSH_CLIENT']
+
+for key in os.environ.keys():
+    if key not in safe_environment:
+        del os.environ[key]
+
+os.environ['PATH'] = '/bin:/usr/bin'
+
+for dir in sys.path[:]:
+    if not dir.find('/usr') == 0:
+        while dir in sys.path:
+            sys.path.remove(dir)
+
+from csc.adm import members, terms
+
+try:
+    members.connect()
+except Exception, e:
+    print "ceoquery: %s" % e
+    sys.exit(1)
+
+def usage():
+    print "Usage: ceoquery memberlist|booklist|allmembers|allusers|termusers"
+
+if len(sys.argv) < 2:
+    usage()
+
+elif sys.argv[1] == 'memberlist':
+    
+    current_term = terms.current()
+    members = members.list_term(current_term)
+    for member in members:
+        print "%(memberid)s|%(name)s|%(program)s|%(userid)s" % member
+
+elif sys.argv[1] == 'allmembers':
+
+    members = members.list_all()
+    for member in members:
+        print "%(memberid)s|%(name)s|%(program)s|%(userid)s" % member
+
+elif sys.argv[1] == 'booklist':
+
+    pass
+
+elif sys.argv[1] == 'allusers':
+
+    members = members.list_all()
+    for member in members:
+        if member['userid']:
+            print member['userid']
+
+elif sys.argv[1] == 'termusers':
+
+    if len(sys.argv) > 2:
+        term = sys.argv[2]
+    else:
+        term = terms.current()
+
+    members = members.list_term(term)
+    for member in members:
+        if member['userid']:
+            print member['userid']
+
+else:
+
+    usage()
+
