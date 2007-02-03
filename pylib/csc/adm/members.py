@@ -239,10 +239,7 @@ def list_term(term):
     # retrieve a list of memberids in term
     memberlist = connection.select_members_by_term(term)
 
-    # convert the list of memberids to a list of dictionaries
-    memberlist = map(connection.select_member_by_id, memberlist)
-
-    return memberlist
+    return memberlist.values()
         
 
 def list_name(name):
@@ -264,10 +261,20 @@ def list_name(name):
     # retrieve a list of memberids matching name
     memberlist = connection.select_members_by_name(name)
 
-    # convert the list of memberids to a list of dictionaries
-    memberlist = map(connection.select_member_by_id, memberlist)
+    return memberlist.values()
 
-    return memberlist
+
+def list_all():
+    """
+    Builds a list of all members.
+    
+    Returns: a list of member dictionaries
+    """
+
+    # retrieve a list of members
+    memberlist = connection.select_all_members()
+
+    return memberlist.values()
 
 
 def delete(memberid):
@@ -479,6 +486,12 @@ if __name__ == '__main__':
     test(list_name)
     assert_equal(True, tmid in [ x['memberid'] for x in list_name(tmname) ])
     assert_equal(True, tm2id in [ x['memberid'] for x in list_name(tm2name) ])
+    success()
+
+    test(list_all)
+    allmembers = list_all()
+    assert_equal(True, tmid in [ x['memberid'] for x in allmembers ])
+    assert_equal(True, tm2id in [ x['memberid'] for x in allmembers ])
     success()
 
     test(register)
