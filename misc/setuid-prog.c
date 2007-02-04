@@ -159,10 +159,10 @@ main(int argc, char **argv)
 		exit(1);
 	}
 
-	if (setregid(egid, egid) < 0)
-		perror("setregid");
-	if (setreuid(euid, euid) < 0)
-		perror("setreuid");
+	//if (setregid(egid, egid) < 0)
+	//	perror("setregid");
+	//if (setreuid(euid, euid) < 0)
+	//	perror("setreuid");
 
 	clean_environ();
 

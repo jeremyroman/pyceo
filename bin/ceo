@@ -3,20 +3,28 @@
 import os, sys
 
 safe_environment = ['LOGNAME', 'USERNAME', 'USER', 'HOME', 'TERM', 'LANG'
-    'LC_ALL', 'LC_COLLATE', 'LC_CTYPE', 'LC_MESSAGE', 'LC_MONETARY',
+    'LC_ALL', 'LC_COLLATE', 'LC_CTYPE', 'LC_MESSAGES', 'LC_MONETARY',
     'LC_NUMERIC', 'LC_TIME', 'UID', 'GID', 'SSH_CONNECTION', 'SSH_AUTH_SOCK',
     'SSH_CLIENT']
-		    
+
 for key in os.environ.keys():
     if key not in safe_environment:
         del os.environ[key]
 
-os.environ['PATH'] = '/bin:/usr/bin'
+os.environ['PATH'] = '/usr/sbin:/usr/bin:/sbin:/bin'
 
-for dir in sys.path[:]:
-    if not dir.find('/usr') == 0:
-        while dir in sys.path:
-            sys.path.remove(dir)
+for pathent in sys.path[:]:
+    if not pathent.find('/usr') == 0:
+        sys.path.remove(pathent)
+
+euid = os.geteuid()
+egid = os.getegid()
+try:
+    os.setreuid(euid, euid)
+    os.setregid(egid, egid)
+except OSError, e:
+    print str(e)
+    sys.exit(1)
 
 import csc.apps.legacy.main
 csc.apps.legacy.main.run()

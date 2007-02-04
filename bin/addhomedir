@@ -11,16 +11,23 @@ import os, sys, re, pwd, getopt, stat
 CONFIG_FILE = '/etc/csc/accounts.cf'
 
 safe_environment = ['LOGNAME', 'USERNAME', 'USER', 'HOME', 'TERM', 'LANG'
-    'LC_ALL', 'LC_COLLATE', 'LC_CTYPE', 'LC_MESSAGE', 'LC_MONETARY',
+    'LC_ALL', 'LC_COLLATE', 'LC_CTYPE', 'LC_MESSAGES', 'LC_MONETARY',
     'LC_NUMERIC', 'LC_TIME', 'UID', 'GID', 'SSH_CONNECTION', 'SSH_AUTH_SOCK',
     'SSH_CLIENT']
 
 for key in os.environ.keys():
-    if not key in safe_environment:
+    if key not in safe_environment:
         del os.environ[key]
 
 os.environ['PATH'] = '/usr/sbin:/sbin:/usr/bin:/bin'
 os.umask(0)
+
+try:
+    os.setreuid(0, 0)
+    os.setregid(0, 0)
+except OSError:
+    print "You must be root to use this command."
+    sys.exit(1)
 
 for pathent in sys.path[:]:
     if not pathent.find('/usr') == 0:
