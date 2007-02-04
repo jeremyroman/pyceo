@@ -66,7 +66,7 @@ def read(filename, included=None):
         included - files previously read (internal)
     
     Exceptions:
-        ConfigurationException - when the configuration file cannot be read
+        IOError - when the configuration file cannot be read
     """
 
     if not included:
@@ -75,10 +75,7 @@ def read(filename, included=None):
         return {}
     included.append(filename)
 
-    try:
-        conffile = open(filename)
-    except IOError:
-        raise ConfigurationException('unable to read configuration file: "%s"' % filename)
+    conffile = open(filename)
     
     options = {}
 

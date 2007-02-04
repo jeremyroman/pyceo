@@ -1,0 +1,153 @@
+#!/usr/bin/python2.4 --
+"""
+chfn - change real user name and information
+
+This utility imitates chfn(1) from the shadow password suite, but makes its
+changes in the LDAP directory rather than in the passwd file.
+
+When run from an unprivileged account, authentication will be performed
+before the account information is changed.
+"""
+import os, sys, pwd, getopt, PAM
+
+safe_environment = ['LOGNAME', 'USERNAME', 'USER', 'HOME', 'TERM', 'LANG'
+    'LC_ALL', 'LC_COLLATE', 'LC_CTYPE', 'LC_MESSAGES', 'LC_MONETARY',
+    'LC_NUMERIC', 'LC_TIME', 'UID', 'GID', 'SSH_CONNECTION', 'SSH_AUTH_SOCK',
+    'SSH_CLIENT']
+
+for key in os.environ.keys():
+    if key not in safe_environment:
+        del os.environ[key]
+
+os.environ['PATH'] = '/usr/sbin:/usr/bin:/sbin:/bin'
+
+for pathent in sys.path[:]:
+    if not pathent.find('/usr') == 0:
+        sys.path.remove(pathent)
+
+from csc.common.excep import InvalidArgument
+from csc.adm import accounts
+
+progname = os.path.basename(sys.argv[0])
+
+OPTION_MAP = {
+            '-f': 'fullname',
+            '-r': 'roomnumber',
+            '-w': 'workphone',
+            '-h': 'homephone',
+            '-o': 'other'
+}
+LONG_NAMES = [
+        ('fullname', 'Full Name'),
+        ('roomnumber', 'Room Number'),
+        ('workphone', 'Work Phone'),
+        ('homephone', 'Home Phone'),
+        ('other', 'Other')
+]
+READONLY_FIELDS = [ 'fullname', 'other' ]
+
+def usage():
+    umesg = "Usage: %s [-f full name] [-r room no] [-w work ph] " + \
+            "[-h home ph] [-o other] [user]"
+    print umesg % progname
+    sys.exit(2)
+
+
+def whoami():
+    uid = os.getuid()
+    username = os.getlogin()
+    if pwd.getpwnam(username).pw_uid != uid:
+        username = pwd.getpwuid(uid).pw_name
+    return (uid, username)
+
+def authenticate(username):
+    auth = PAM.pam()
+    auth.start('chsh', username)
+    try:
+        auth.authenticate()
+        auth.acct_mgmt()
+    except PAM.error, resp:
+        print "%s: %s" % (progname, resp.args[0])
+        sys.exit(1)
+
+def main():
+
+    pwuid, pwnam = whoami()
+
+    gecos_params = {}
+
+    try:
+        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'f:r:w:h:o:')
+        for opt, val in options:
+            gecos_params[OPTION_MAP[opt]] = val
+        if len(arguments) > 1:
+            usage()
+        elif len(arguments) == 1:
+            username = arguments[0]
+        else:
+            username = pwnam
+    except getopt.GetoptError, e:
+        usage()
+
+    for field in READONLY_FIELDS:
+        if field in gecos_params and pwuid:
+            print "%s: Permission denied." % progname
+            sys.exit(1)
+
+    try:
+        if pwuid and pwd.getpwnam(username).pw_uid != pwuid:
+            print "%s: Permission denied." % progname
+            sys.exit(1)
+    except KeyError:
+        print "%s: unknown user %s" % (progname, username)
+        sys.exit(1)
+
+    try:
+        accounts.connect()
+        gecos_raw = accounts.get_gecos(username)
+        gecos = accounts.parse_gecos(gecos_raw)
+
+        if pwuid:
+            authenticate(username)
+
+        if not gecos_params:
+            print "Changing the user information for %s" % username
+            print "Enter the new value, or press ENTER for the default"
+            for field, longname in LONG_NAMES:
+                if pwuid and field == 'other' and 'other' in READONLY_FIELDS:
+                    continue
+                if gecos[field] is None:
+                    gecos[field] = ""
+                if field in READONLY_FIELDS and pwuid:
+                    print "        %s: %s" % (longname, gecos[field])
+                else:
+                    print "        %s: [%s]:" % (longname, gecos[field]),
+                    new_value = raw_input()
+                    if new_value:
+                        gecos[field] = new_value.strip()
+        else:
+            gecos.update(gecos_params)
+
+        gecos_raw_new = accounts.build_gecos(**gecos)
+        if gecos_raw != gecos_raw_new:
+            accounts.update_gecos(username, gecos_raw_new)
+
+    except InvalidArgument, e:
+        longnames = dict(LONG_NAMES)
+        longname = longnames.get(e.argname, e.argname).lower()
+        print "%s: invalid %s: %s" % (progname, longname, e.argval)
+        sys.exit(1)
+
+if __name__ == '__main__':
+    exceps = ( accounts.ConfigurationException, accounts.LDAPException,
+            accounts.KrbException, accounts.AccountException )
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(130) 
+    except IOError, e:
+        print "%s: %s: %s" % (progname, e.filename, e.strerror)
+        sys.exit(1)
+    except exceps, e:
+        print "%s: %s" % (progname, e)
+        sys.exit(1)

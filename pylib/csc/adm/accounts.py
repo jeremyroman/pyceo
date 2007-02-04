@@ -412,7 +412,7 @@ def update_shell(username, shell, check=True):
 
     # reject nonexistent or nonexecutable shells
     if not os.access(shell, os.X_OK) or not os.path.isfile(shell):
-        raise InvalidArgument("shell", shell, "is not a regular executable file")
+        raise InvalidArgument("shell", shell, "not an executable file")
 
     if check:
         
