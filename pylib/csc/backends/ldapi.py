@@ -527,15 +527,15 @@ if __name__ == '__main__':
     cuhome = '/home/changed'
     curname = 'Test Modified User'
 
-    test("LDAPConnection()")
+    test(LDAPConnection)
     connection = LDAPConnection()
     success()
 
-    test("disconnect()")
+    test(LDAPConnection.disconnect)
     connection.disconnect()
     success()
 
-    test("connect()")
+    test(LDAPConnection.connect)
     connection.connect(srvurl, binddn, bindpw, ubase, gbase)
     if not connection.connected():
         fail("not connected")
@@ -547,13 +547,13 @@ if __name__ == '__main__':
     except LDAPException:
         pass
 
-    test("used_uids()")
+    test(LDAPConnection.used_uids)
     uids = connection.used_uids(minid, maxid)
     if type(uids) is not list:
         fail("list not returned")
     success()
 
-    test("used_gids()")
+    test(LDAPConnection.used_gids)
     gids = connection.used_gids(minid, maxid)
     if type(gids) is not list:
         fail("list not returned")
@@ -576,7 +576,7 @@ if __name__ == '__main__':
             'cn': [ turname ]
             }
 
-    test("user_add()")
+    test(LDAPConnection.user_add)
     connection.user_add(tuname, turname, tuuid, tugid, tuhome, tushell, tugecos)
     success()
 
@@ -586,29 +586,29 @@ if __name__ == '__main__':
             'gidNumber': [ str(tggid) ]
             }
 
-    test("group_add()")
+    test(LDAPConnection.group_add)
     connection.group_add(tgname, tggid)
     success()
 
-    test("user_lookup()")
+    test(LDAPConnection.user_lookup)
     udata = connection.user_lookup(tuname)
     del udata['objectClass']
     assert_equal(eudata, udata)
     success()
 
-    test("group_lookup()")
+    test(LDAPConnection.group_lookup)
     gdata = connection.group_lookup(tgname)
     del gdata['objectClass']
     assert_equal(egdata, gdata)
     success()
 
-    test("user_search_id()")
+    test(LDAPConnection.user_search_id)
     eulist = [ tuname ]
     ulist = connection.user_search_id(tuuid)
     assert_equal(eulist, ulist)
     success()
 
-    test("user_search_gid()")
+    test(LDAPConnection.user_search_gid)
     ulist = connection.user_search_gid(tugid)
     if tuname not in ulist:
         fail("(%s) not in (%s)" % (tuname, ulist))
@@ -619,7 +619,7 @@ if __name__ == '__main__':
     ecudata['homeDirectory'] = [ cuhome ]
     ecudata['cn'] = [ curname ]
 
-    test("user_modify")
+    test(LDAPConnection.user_modify)
     connection.user_modify(tuname, ecudata)
     cudata = connection.user_lookup(tuname)
     assert_equal(ecudata, cudata)
@@ -628,16 +628,16 @@ if __name__ == '__main__':
     ecgdata = connection.group_lookup(tgname)
     ecgdata['memberUid'] = [ tuname ]
 
-    test("group_modify()")
+    test(LDAPConnection.group_modify)
     connection.group_modify(tgname, ecgdata)
     cgdata = connection.group_lookup(tgname)
     assert_equal(ecgdata, cgdata)
     success()
 
-    test("user_delete()")
+    test(LDAPConnection.group_delete)
     connection.group_delete(tgname)
     success()
 
-    test("disconnect()")
+    test(LDAPConnection.disconnect)
     connection.disconnect()
     success()
