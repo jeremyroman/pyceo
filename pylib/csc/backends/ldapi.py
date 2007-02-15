@@ -66,7 +66,7 @@ class LDAPConnection(object):
             # open the connection
             self.ldap = ldap.initialize(server)
 
-            # authenticate as ceo
+            # authenticate
             self.ldap.simple_bind_s(bind_dn, bind_pw)
 
         except ldap.LDAPError, e:
@@ -109,6 +109,8 @@ class LDAPConnection(object):
                  None of the dn does not exist in the directory
         """
 
+        if not self.connected(): raise LDAPException("Not connected!")
+
         # search for the specified dn
         try:
             matches = self.ldap.search_s(dn, ldap.SCOPE_BASE)
@@ -144,11 +146,9 @@ class LDAPConnection(object):
                      { 'uid': 'mspang', 'uidNumber': 21292 ...}
         """
 
-        if not self.connected(): raise LDAPException("Not connected!")
-        
         dn = 'uid=' + uid + ',' + self.user_base
         return self.lookup(dn)
-        
+
 
     def user_search(self, search_filter):
         """
@@ -159,6 +159,8 @@ class LDAPConnection(object):
 
         Returns: the list of uids matched (usernames)
         """
+
+        if not self.connected(): raise LDAPException("Not connected!")
 
         # search for entries that match the filter
         try:
@@ -235,10 +237,12 @@ class LDAPConnection(object):
             description   - description field (optional and unimportant)
 
         Example: connection.user_add('mspang', 'Michael Spang',
-                     21292, 100, '/users/mspang', '/bin/bash', 
+                     21292, 100, '/users/mspang', '/bin/bash',
                      'Michael Spang,,,')
         """
-        
+
+        if not self.connected(): raise LDAPException("Not connected!")
+
         dn = 'uid=' + uid + ',' + self.user_base
         attrs = {
             'objectClass': [ 'top', 'account', 'posixAccount', 'shadowAccount' ],
@@ -277,6 +281,8 @@ class LDAPConnection(object):
                  connection.user_modify('mspang', user)
         """
 
+        if not self.connected(): raise LDAPException("Not connected!")
+
         # distinguished name of the entry to modify
         dn = 'uid=' + uid + ',' + self.user_base
 
@@ -301,7 +307,9 @@ class LDAPConnection(object):
 
         Example: connection.user_delete('mspang')
         """
-        
+
+        if not self.connected(): raise LDAPException("Not connected!")
+
         try:
             dn = 'uid=' + uid + ',' + self.user_base
             self.ldap.delete_s(dn)
@@ -327,10 +335,10 @@ class LDAPConnection(object):
                      ...
                  }
         """
-        
+
         dn = 'cn=' + cn + ',' + self.group_base
-        return self.lookup(dn)
-                                                                                    
+        return self.lookup(dn, 'posixGroup')
+
 
     def group_search_id(self, gidNumber):
         """
@@ -340,6 +348,8 @@ class LDAPConnection(object):
 
         Example: connection.group_search_id(1001) -> ['office']
         """
+
+        if not self.connected(): raise LDAPException("Not connected!")
 
         # search for posixAccount entries with the specified uidNumber
         try:
@@ -374,7 +384,9 @@ class LDAPConnection(object):
 
         Example: connection.group_add('office', 1001, 'Office Staff')
         """
-        
+
+        if not self.connected(): raise LDAPException("Not connected!")
+
         dn = 'cn=' + cn + ',' + self.group_base
         attrs = {
             'objectClass': [ 'top', 'posixGroup' ],
@@ -409,6 +421,8 @@ class LDAPConnection(object):
                  connection.group_modify('office', group)
         """
 
+        if not self.connected(): raise LDAPException("Not connected!")
+
         # distinguished name of the entry to modify
         dn = 'cn=' + cn + ',' + self.group_base
 
@@ -433,7 +447,9 @@ class LDAPConnection(object):
 
         Example: connection.group_delete('office')
         """
-        
+
+        if not self.connected(): raise LDAPException("Not connected!")
+
         try:
             dn = 'cn=' + cn + ',' + self.group_base
             self.ldap.delete_s(dn)
@@ -455,6 +471,8 @@ class LDAPConnection(object):
 
         Example: connection.used_uids(20000, 40000) -> [20000, 20001, ...]
         """
+
+        if not self.connected(): raise LDAPException("Not connected!")
 
         try:
             users = self.ldap.search_s(self.user_base, ldap.SCOPE_SUBTREE, '(objectClass=posixAccount)', ['uidNumber'])
@@ -483,6 +501,8 @@ class LDAPConnection(object):
 
         Example: connection.used_gids(20000, 40000) -> [20000, 20001, ...]
         """
+
+        if not self.connected(): raise LDAPException("Not connected!")
 
         try:
             users = self.ldap.search_s(self.user_base, ldap.SCOPE_SUBTREE, '(objectClass=posixAccount)', ['gidNumber'])
