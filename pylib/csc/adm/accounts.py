@@ -190,8 +190,15 @@ def create(username, name, minimum_id, maximum_id, home, password=None, descript
 
     ### User creation ###
 
-    # create the LDAP entry
-    ldap_connection.user_add(username, name, userid, gid, home, shell, gecos, description)
+    if not ldap_connection.user_lookup(username):
+
+        # create the LDAP entry
+        ldap_connection.account_add(username, name, userid, gid, home, shell, gecos, description)
+
+    else:
+
+        # add the required attribute to the LDAP entry
+        ldap_connection.member_add_account(username, userid, gid, home, shell, gecos)
 
     # create a user group if no other group was specified
     if not group:
@@ -257,7 +264,7 @@ def status(username):
     Returns: a boolean 2-tuple (exists, has_password)
     """
 
-    ldap_state = ldap_connection.user_lookup(username)
+    ldap_state = ldap_connection.account_lookup(username)
     krb_state = krb_connection.get_principal(username)
     return (ldap_state is not None, krb_state is not None)
 
@@ -786,9 +793,9 @@ def check_name_usage(name):
     """
 
     # see if user exists in LDAP
-    if ldap_connection.user_lookup(name):
+    if ldap_connection.account_lookup(name):
         raise NameConflict(name, "account", "LDAP")
-    
+
     # see if group exists in LDAP
     if ldap_connection.group_lookup(name):
         raise NameConflict(name, "group", "LDAP")
@@ -815,10 +822,10 @@ def check_name_usage(name):
 
 def check_account_status(username, require_ldap=True, require_krb=False):
     """Helper function to verify that an account exists."""
-    
-    if not connected(): 
+
+    if not connected():
         raise AccountException("Not connected to LDAP and Kerberos")
-    if require_ldap and not ldap_connection.user_lookup(username):
+    if require_ldap and not ldap_connection.account_lookup(username):
         raise NoSuchAccount(username, "LDAP")
     if require_krb and not krb_connection.get_principal(username):
         raise NoSuchAccount(username, "KRB")

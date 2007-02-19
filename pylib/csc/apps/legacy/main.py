@@ -12,6 +12,7 @@ This frontend is poorly documented, deprecated, and undoubtedly full of bugs.
 import curses.ascii, re, os
 from helpers import menu, inputbox, msgbox, reset
 from csc.adm import accounts, members, terms
+from csc.common.excep import InvalidArgument
 
 # color of the ceo border
 BORDER_COLOR = curses.COLOR_RED
@@ -20,7 +21,7 @@ BORDER_COLOR = curses.COLOR_RED
 def action_new_member(wnd):
     """Interactively add a new member."""
 
-    studentid, program = None, ''
+    userid, studentid, program = '', None, ''
 
     # read the name
     prompt = "      Name: "
@@ -50,12 +51,21 @@ def action_new_member(wnd):
     if program is None or program.lower() == 'exit':
         return False
 
+    # read user id
+    prompt = "Userid:"
+    while userid == '':
+        userid = inputbox(wnd, prompt, 18)
+
+    # user abort
+    if userid is None or userid.lower() == 'exit':
+        return False
+
     # connect the members module to its backend if necessary
     if not members.connected(): members.connect()
 
     # attempt to create the member
     try:
-        memberid = members.new(realname, studentid, program)
+        memberid = members.new(userid, realname, studentid, program)
 
         msgbox(wnd, "Success! Your memberid is %s.  You are now registered\n"
                     % memberid + "for the " + terms.current() + " term.")
@@ -69,6 +79,12 @@ def action_new_member(wnd):
     except members.InvalidRealName:
         msgbox(wnd, 'Invalid real name: "%s"' % realname)
         return False
+    except InvalidArgument, e:
+        if e.argname == 'uid' and e.explanation == 'duplicate uid':
+            msgbox(wnd, 'A member with this user ID exists.')
+            return False
+        else:
+            raise
 
 
 def action_term_register(wnd):
@@ -196,7 +212,7 @@ def repair_account(wnd, memberid, userid):
         password = input_password(wnd)
         accounts.create_member(userid, password, member['name'], memberid)
         msgbox(wnd, "Account created (where the hell did it go, anyway?)\n"
-                "If you're homedir still exists, it will not be inaccessible to you,\n"
+                "If your homedir still exists, it will not be inaccessible to you,\n"
                 "please contact systems-committee@csclub.uwaterloo.ca to get this resolved.\n")
 
     elif not haspw:
@@ -267,7 +283,8 @@ def action_create_account(wnd):
         return False
 
     # member already has an account?
-    if member['userid']:
+    if not accounts.connected(): accounts.connect()
+    if member['userid'] and accounts.status(member['userid'])[0]:
 
         userid = member['userid']
         msgbox(wnd, "Member " + str(memberid) + " already has an account: " + member['userid'] + "\n"
@@ -277,6 +294,9 @@ def action_create_account(wnd):
 
         return False
 
+
+    if member['userid']:
+        userid = member['userid']
 
     # read user id
     prompt = "Userid:"

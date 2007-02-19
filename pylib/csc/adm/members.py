@@ -11,8 +11,9 @@ must also be moved into this module.
 """
 import re
 from csc.adm import terms
-from csc.backends import db
+from csc.backends import db, ldapi
 from csc.common import conf
+from csc.common.excep import InvalidArgument
 
 
 ### Configuration ###
@@ -25,7 +26,8 @@ def load_configuration():
     """Load Members Configuration"""
 
     string_fields = [ 'studentid_regex', 'realname_regex', 'server',
-            'database', 'user', 'password' ]
+            'database', 'user', 'password', 'server_url', 'users_base',
+            'groups_base', 'admin_bind_dn', 'admin_bind_pw' ]
 
     # read configuration file
     cfg_tmp = conf.read(CONFIG_FILE)
@@ -86,41 +88,46 @@ class NoSuchMember(MemberException):
 ### Connection Management ###
 
 # global database connection
-connection = db.DBConnection()
+db_connection = db.DBConnection()
+
+# global directory connection
+ldap_connection = ldapi.LDAPConnection()
 
 def connect():
     """Connect to PostgreSQL."""
-    
+
     load_configuration()
-    connection.connect(cfg['server'], cfg['database'])
-       
+    db_connection.connect(cfg['server'], cfg['database'])
+    ldap_connection.connect(cfg['server_url'], cfg['admin_bind_dn'], cfg['admin_bind_pw'], cfg['users_base'], cfg['groups_base'])
+
 
 def disconnect():
     """Disconnect from PostgreSQL."""
-    
-    connection.disconnect()
+
+    db_connection.disconnect()
+    ldap_connection.disconnect()
 
 
 def connected():
-    """Determine whether the connection has been established."""
+    """Determine whether the db_connection has been established."""
 
-    return connection.connected()
+    return db_connection.connected() and ldap_connection.connected()
 
 
 
 ### Member Table ###
 
-def new(realname, studentid=None, program=None, mtype='user', userid=None):
+def new(uid, realname, studentid=None, program=None, mtype='user'):
     """
     Registers a new CSC member. The member is added to the members table
     and registered for the current term.
 
     Parameters:
+        uid       - the initial user id
         realname  - the full real name of the member
         studentid - the student id number of the member
         program   - the program of study of the member
         mtype     - a string describing the type of member ('user', 'club')
-        userid    - the initial user id
 
     Returns: the memberid of the new member
 
@@ -135,7 +142,7 @@ def new(realname, studentid=None, program=None, mtype='user', userid=None):
     # blank attributes should be NULL
     if studentid == '': studentid = None
     if program == '': program = None
-    if userid == '': userid = None
+    if uid == '': uid = None
     if mtype == '': mtype = None
 
     # check the student id format
@@ -147,18 +154,33 @@ def new(realname, studentid=None, program=None, mtype='user', userid=None):
         raise InvalidRealName(realname)
 
     # check for duplicate student id
-    member = connection.select_member_by_studentid(studentid)
+    member = db_connection.select_member_by_studentid(studentid) or \
+            ldap_connection.member_search_studentid(studentid)
     if member:
         raise DuplicateStudentID(studentid)
 
-    # add the member
-    memberid = connection.insert_member(realname, studentid, program)
+    # check for duplicate userid
+    member = db_connection.select_member_by_userid(uid) or \
+            ldap_connection.user_lookup(uid)
+    if member:
+        raise InvalidArgument("uid", uid, "duplicate uid")
 
-    # register them for this term
-    connection.insert_term(memberid, terms.current())
+    # add the member to the database
+    memberid = db_connection.insert_member(realname, studentid, program, userid=uid)
 
-    # commit the transaction
-    connection.commit()
+    # add the member to the directory
+    ldap_connection.member_add(uid, realname, studentid, program)
+
+    # register them for this term in the database
+    db_connection.insert_term(memberid, terms.current())
+
+    # register them for this term in the directory
+    member = ldap_connection.member_lookup(uid)
+    member['term'] = [ terms.current() ]
+    ldap_connection.user_modify(uid, member)
+
+    # commit the database transaction
+    db_connection.commit()
 
     return memberid
 
@@ -177,7 +199,7 @@ def get(memberid):
              }
     """
 
-    return connection.select_member_by_id(memberid)
+    return db_connection.select_member_by_id(memberid)
 
 
 def get_userid(userid):
@@ -197,7 +219,7 @@ def get_userid(userid):
              }
     """
 
-    return connection.select_member_by_userid(userid)
+    return db_connection.select_member_by_userid(userid)
 
 
 def get_studentid(studentid):
@@ -217,7 +239,7 @@ def get_studentid(studentid):
              }
     """
 
-    return connection.select_member_by_studentid(studentid)
+    return db_connection.select_member_by_studentid(studentid)
 
 
 def list_term(term):
@@ -237,10 +259,10 @@ def list_term(term):
     """
 
     # retrieve a list of memberids in term
-    memberlist = connection.select_members_by_term(term)
+    memberlist = db_connection.select_members_by_term(term)
 
     return memberlist.values()
-        
+
 
 def list_name(name):
     """
@@ -259,7 +281,7 @@ def list_name(name):
     """
 
     # retrieve a list of memberids matching name
-    memberlist = connection.select_members_by_name(name)
+    memberlist = db_connection.select_members_by_name(name)
 
     return memberlist.values()
 
@@ -272,7 +294,7 @@ def list_all():
     """
 
     # retrieve a list of members
-    memberlist = connection.select_all_members()
+    memberlist = db_connection.select_all_members()
 
     return memberlist.values()
 
@@ -292,18 +314,23 @@ def delete(memberid):
     """
 
     # save member data
-    member = connection.select_member_by_id(memberid)
+    member = db_connection.select_member_by_id(memberid)
 
     # bail if not found
     if not member:
         raise NoSuchMember(memberid)
 
-    term_list = connection.select_terms(memberid)
+    term_list = db_connection.select_terms(memberid)
 
     # remove data from the db
-    connection.delete_term_all(memberid)
-    connection.delete_member(memberid)
-    connection.commit()
+    db_connection.delete_term_all(memberid)
+    db_connection.delete_member(memberid)
+    db_connection.commit()
+
+    # remove data from the directory
+    if member and member['userid']:
+        uid = member['userid']
+        ldap_connection.user_delete(uid)
 
     return (member, term_list)
 
@@ -334,7 +361,7 @@ def update(member):
             raise InvalidStudentID(studentid)
 
         # check for duplicate student id
-        dupmember = connection.select_member_by_studentid(studentid)
+        dupmember = db_connection.select_member_by_studentid(studentid)
         if dupmember:
             raise DuplicateStudentID(studentid)
 
@@ -346,12 +373,12 @@ def update(member):
     # see if member exists
     if not get(memberid):
         raise NoSuchMember(memberid)
-    
+
     # do the update
-    connection.update_member(member)
+    db_connection.update_member(member)
 
     # commit the transaction
-    connection.commit()
+    db_connection.commit()
 
 
 
@@ -376,16 +403,31 @@ def register(memberid, term_list):
     if type(term_list) in (str, unicode):
         term_list = [ term_list ]
 
+    ldap_member = None
+    db_member = get(memberid)
+    if db_member['userid']:
+        uid = db_member['userid']
+        ldap_member = ldap_connection.member_lookup(uid)
+        if ldap_member and 'term' not in ldap_member:
+            ldap_member['term'] = []
+
     for term in term_list:
-        
+
         # check term syntax
         if not re.match('^[wsf][0-9]{4}$', term):
             raise InvalidTerm(term)
-    
-        # add term to database
-        connection.insert_term(memberid, term)
 
-    connection.commit()
+        # add term to database
+        db_connection.insert_term(memberid, term)
+
+        # add the term to the directory
+        if ldap_member:
+            ldap_member['term'].append(term)
+
+    if ldap_member:
+        ldap_connection.user_modify(uid, ldap_member)
+
+    db_connection.commit()
 
 
 def registered(memberid, term):
@@ -402,7 +444,7 @@ def registered(memberid, term):
     Example: registered(3349, "f2006") -> True
     """
 
-    return connection.select_term(memberid, term) is not None
+    return db_connection.select_term(memberid, term) is not None
 
 
 def member_terms(memberid):
@@ -418,7 +460,7 @@ def member_terms(memberid):
     Example: registered(0) -> 's1993'
     """
 
-    terms_list = connection.select_terms(memberid)
+    terms_list = db_connection.select_terms(memberid)
     terms_list.sort(terms.compare)
     return terms_list
 
@@ -432,18 +474,19 @@ if __name__ == '__main__':
 
     # t=test m=member s=student u=updated
     tmname = 'Test Member'
+    tmuid = 'testmember'
     tmprogram = 'Metaphysics'
     tmsid = '00000000'
     tm2name = 'Test Member 2'
+    tm2uid = 'testmember2'
     tm2sid = '00000001'
     tm2uname = 'Test Member II'
     tm2usid = '00000002'
     tm2uprogram = 'Pseudoscience'
-    tm2uuserid = 'testmember'
 
-    tmdict = {'name': tmname, 'userid': None, 'program': tmprogram, 'type': 'user', 'studentid': tmsid }
-    tm2dict = {'name': tm2name, 'userid': None, 'program': None, 'type': 'user', 'studentid': tm2sid }
-    tm2udict = {'name': tm2uname, 'userid': tm2uuserid, 'program': tm2uprogram, 'type': 'user', 'studentid': tm2usid }
+    tmdict = {'name': tmname, 'userid': tmuid, 'program': tmprogram, 'type': 'user', 'studentid': tmsid }
+    tm2dict = {'name': tm2name, 'userid': tm2uid, 'program': None, 'type': 'user', 'studentid': tm2sid }
+    tm2udict = {'name': tm2uname, 'userid': tm2uid, 'program': tm2uprogram, 'type': 'user', 'studentid': tm2usid }
 
     thisterm = terms.current()
     nextterm = terms.next(thisterm)
@@ -464,8 +507,8 @@ if __name__ == '__main__':
     if dmid: delete(dmid['memberid'])
 
     test(new)
-    tmid = new(tmname, tmsid, tmprogram)
-    tm2id = new(tm2name, tm2sid)
+    tmid = new(tmuid, tmname, tmsid, tmprogram)
+    tm2id = new(tm2uid, tm2name, tm2sid)
     success()
 
     tmdict['memberid'] = tmid
@@ -495,7 +538,7 @@ if __name__ == '__main__':
     success()
 
     test(register)
-    register(tmid, terms.next(terms.current()))
+    register(tmid, nextterm)
     assert_equal(True, registered(tmid, nextterm))
     success()
 
@@ -517,7 +560,7 @@ if __name__ == '__main__':
     success()
 
     test(get_userid)
-    assert_equal(tm2udict, get_userid(tm2uuserid))
+    assert_equal(tm2udict, get_userid(tm2uid))
     success()
 
     test(get_studentid)
