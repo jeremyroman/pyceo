@@ -28,7 +28,15 @@ case "$1" in
         fi
 
         if ! dpkg-statoverride --list /usr/bin/ceoquery > /dev/null; then
-            dpkg-statoverride --add --update $CEO $OFFICE $SUIDALL /usr/bin/ceoquery
+            dpkg-statoverride --add --update $CEO root $SUIDALL /usr/bin/ceoquery
+        fi
+
+        if ! dpkg-statoverride --list /usr/bin/csc-chsh > /dev/null; then
+            dpkg-statoverride --add --update $CEO root $SUIDALL /usr/bin/csc-chsh
+        fi
+
+        if ! dpkg-statoverride --list /usr/bin/csc-chfn > /dev/null; then
+            dpkg-statoverride --add --update $CEO root $SUIDALL /usr/bin/csc-chfn
         fi
 
         if [ -f /etc/csc/ldap.cf ] && ! dpkg-statoverride --list /etc/csc/ldap.cf > /dev/null; then
