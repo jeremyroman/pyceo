@@ -381,11 +381,11 @@ def menu(wnd, offy, offx, width, options, _acquire_wnd=None):
         keypress = wnd.getch()
 
         # UP moves to the previous option
-        if keypress == curses.KEY_UP and selected > 0:
+        if (keypress == curses.KEY_UP or keypress == ord('k')) and selected > 0:
             selected = (selected - 1)
 
         # DOWN moves to the next option
-        elif keypress == curses.KEY_DOWN and selected < len(options) - 1:
+        elif (keypress == curses.KEY_DOWN or keypress == ord('j')) and selected < len(options) - 1:
             selected = (selected + 1)
 
         # RETURN runs the callback for the selected option
