@@ -7,7 +7,7 @@ Standards-Version: 3.7.2
 
 Package: csc
 Architecture: any
-Depends: python, python2.4, python2.4-ldap, python2.4-pygresql, krb5-user, less, ${shlibs:Depends}
+Depends: python, python2.4, python2.4-ldap, python2.4-pygresql, krb5-user, less, python-pam, ${shlibs:Depends}
 Recommends: quota
 Description: Computer Science Club Administrative Utilities
  This package contains the CSC Electronic Office
