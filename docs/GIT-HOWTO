@@ -8,29 +8,17 @@ commits their changes to. Instead, collaboration is done by "pulling" changes
 from the repositories of other contributors.
 
 When you check out the sources, you will get the entire history along with
-the latest version. You also don't need any special permissions (e.g. UNIX
-group membership) to clone a repository and start making changes.
+the latest version. You do not need any special permissions to clone a
+repository and start making changes.
 
-To get started, you must first decide whether you wish to use git or cogito
-as your front-end of choice. For the most part you can use them
-interchangeably, but you will probably want to choose one and stick to it.
-Cogito will provide you with an interface that looks and acts slightly more
-like CVS and Subversion than native git does.
-
-In order to get a copy of the sources, you need to clone an existing
-repository. To do this, type a command such as:
+To retrieve the ceo sources, type:
 
     git clone /users/git/mspang/csc.git
 
-Or, with cogito:
-
-    cg clone /users/git/mspang/csc.git
-
-This will give you the latest copy of my source tree. Once other CSC
-members publish their repositories, you can clone your tree from theirs
-instead if you so desire. You do not need to run this command more than
-once, and you are not limited to pulling changes from the repository
-you cloned from.
+This will give you the latest copy of mspang's source tree. Once cloned,
+the repository is independent from the original and collaboration is done
+by "pulling" changes. There may be other repositories to clone from in the
+future.
 
 
 Making Changes
@@ -41,51 +29,33 @@ may can add, update, or delete files as necessary and then commit these
 changes to your local repository. Then you can make these changes available
 to others. Read the documentation to learn more about basic git usage.
 
-For a tutorial on plain git, see [1] generally and [2] if you are used to
-CVS. For a tutorial on cogito, see [3] if you are used to CVS and [4] if
-you are used to Subversion.
+Git Resources
+-------------
 
-The manpages for git and cogito commands are also invaluable, use `man
-git-foo` or `man cg-foo` to retrieve them, or look online at [5] and [6].
+For a tutorial, see [1] generally and [2] if you are familiar with CVS.
+The manpages for git are also invaluable, use `man git-foo` to view them,
+or look online at [3].
 
-Finally, if you're interested in how git works internally, see [7] for
-documentation of the "core" commands, and [8] for documentation of the
-repository format. 
+Finally, if you're interested in how git works internally, see [4] for
+documentation of the "core" commands, and [5] for documentation of the
+repository format.
 
 [1] http://www.kernel.org/pub/software/scm/git/docs/tutorial.html
 [2] http://www.kernel.org/pub/software/scm/git/docs/cvs-migration.html
-[3] http://git.or.cz/course/cvs.html
-[4] http://git.or.cz/course/svn.html
-[5] http://www.kernel.org/pub/software/scm/git/docs/
-[6] http://www.kernel.org/pub/software/scm/cogito/docs/
-[7] http://www.kernel.org/pub/software/scm/git/docs/core-tutorial.html
-[8] http://www.kernel.org/pub/software/scm/git/docs/repository-layout.html
+[3] http://www.kernel.org/pub/software/scm/git/docs/
+[4] http://www.kernel.org/pub/software/scm/git/docs/core-tutorial.html
+[5] http://www.kernel.org/pub/software/scm/git/docs/repository-layout.html
 
 
 Setting up a Public Repository
 ------------------------------
 
 If you make changes, you will probably want to share them with the other
-contributors. This is especially true if you are not on the CSC
-Systems Committee, since in that case you can't deploy your changes
-yourself. Even if you are a committee member, confusion is sure to follow
-if you install an updated package and don't publish your updates.
+contributors. The only thing other people need to fetch your changes into
+their own repository is the location of your repository and read access to
+it. With that they can use `git pull` to fetch and merge your changes.
 
-The only thing other people need to fetch your changes into their own
-repository is the location of your repository and read access to it. With
-that they can use `git fetch` or `cg fetch` to retrieve your changes.
-
-If you will be making lots of changes, it may be a good idea to put a link
-to your repository (or even an actual repository) in /users/git. To do this
-you will need to be added to the git group. Email systems-committee and
-someone will add you. It doesn't matter whether your repository itself is
-in /users/git or just a symlink, as it will count toward your quota regardless.
-
-If you will be building and installing the package (i.e. you are the
-Sysadmin or a Systems Committee member) then please do create a public
-repository in /users/git so the next person who installs can incorporate
-all of your changes.
-
-If you want to make changes but not publish them immediately after
-each commit, create a second repository and "push" your changes
-into your public repository. Refer to the Internet for more details.
+If you want to make changes but not publish them immediately after each
+commit, create a second "public" repository and use "git push" when you
+are ready to make your changes public. Refer to the Internet for more
+details.
