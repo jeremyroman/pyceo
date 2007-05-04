@@ -14,8 +14,8 @@ attributetype ( 1.3.6.1.4.1.27934.1.1.3 NAME 'studentid'
 
 objectclass ( 1.3.6.1.4.1.27934.1.2.1 NAME 'member'
     SUP top AUXILIARY
-    MUST ( cn $ uid $ studentid )
-    MAY ( program $ term $ description ) )
+    MUST ( cn $ uid )
+    MAY ( studentid $ program $ term $ description ) )
 
 objectclass ( 1.3.6.1.4.1.27934.1.2.2 NAME 'club'
     SUP top AUXILIARY
