@@ -74,6 +74,9 @@ def main():
 
     pwuid, pwnam = whoami()
 
+    euid = os.geteuid()
+    os.setreuid(euid, euid)
+
     gecos_params = {}
 
     try:

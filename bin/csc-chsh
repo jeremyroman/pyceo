@@ -55,6 +55,9 @@ def main():
 
     pwuid, pwnam = whoami()
 
+    euid = os.geteuid()
+    os.setreuid(euid, euid)
+
     try:
         options, arguments = getopt.gnu_getopt(sys.argv[1:], 's:')
         new_shell = None
