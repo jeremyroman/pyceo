@@ -11,6 +11,7 @@ for key in os.environ.keys():
     if key not in safe_environment:
         del os.environ[key]
 
+os.environ['LESSSECURE'] = '1'
 os.environ['PATH'] = '/usr/sbin:/usr/bin:/sbin:/bin'
 
 for pathent in sys.path[:]:
