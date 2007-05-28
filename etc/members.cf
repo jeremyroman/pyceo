@@ -1,6 +1,7 @@
 # /etc/csc/members.cf: CSC Members Configuration
 
 include /etc/csc/pgsql.cf
+include /etc/csc/ldap.cf
 
 ### Validation Tuning ###
 
