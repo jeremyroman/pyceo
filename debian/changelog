@@ -1,3 +1,13 @@
+ceo (0.2.4) unstable; urgency=low
+
+  * Added csc.schema.
+  * Vim-style keybindings for CEO menus.
+  * Bug fix: call setreuid(euid, euid) in csc-chfn and csc-chsh.
+  * Bug fix: run less in "secure" mode.
+  * Renamed package to ceo.
+
+ -- Michael Spang <mspang@uwaterloo.ca>  Mon, 28 May 2007 02:05:28 -0400
+
 csc (0.2.3) unstable; urgency=low
 
   * Added "ceoquery", a utility to retrieve lists of members and users.
@@ -7,6 +17,7 @@ csc (0.2.3) unstable; urgency=low
 
  -- Michael Spang <mspang@uwaterloo.ca>  Sun, 18 Feb 2007 21:35:28 -0500
 
+
 csc (0.2.2) unstable; urgency=low
 
   * Added "addhomedir", a utility to create home directories for new users.
@@ -14,6 +25,7 @@ csc (0.2.2) unstable; urgency=low
   * Documentation updates.
 
  -- Michael Spang <mspang@uwaterloo.ca>  Mon, 29 Jan 2007 01:47:31 -0500
+
 
 csc (0.2.1) unstable; urgency=low
 
@@ -36,6 +48,8 @@ csc (0.2) unstable; urgency=low
   * Renamed terms.valid() to terms.validate() (thanks to: Nick Guenther).
 
  -- Michael Spang <mspang@uwaterloo.ca>  Fri, 26 Jan 2007 20:10:14 -0500
+
+
 
 csc (0.1) unstable; urgency=low
 
