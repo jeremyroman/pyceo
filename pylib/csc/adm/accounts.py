@@ -339,7 +339,7 @@ def update_gecos(username, gecos_data):
     is also updated with the user's full name.
 
     See build_gecos() and parse_gecos() for help dealing with
-    the chfn(1) GEOCS format.
+    the chfn(1) GECOS format.
 
     Use update_name() to update the name porition, as it will update
     the LDAP 'cn' atribute as well.
