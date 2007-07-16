@@ -60,7 +60,7 @@ def action_new_member(wnd):
 
     # read the name
     prompt = "New member's full name: "
-    realname = inputbox(wnd, prompt, 18)
+    realname = inputbox(wnd, prompt, 30)
 
     # abort if no name is entered
     if not realname or realname.lower() == 'exit':
@@ -69,7 +69,7 @@ def action_new_member(wnd):
     # read the student id
     prompt = "New member's student ID:"
     while studentid is None or (re.search("[^0-9]", studentid) and not studentid.lower() == 'exit'):
-        studentid = inputbox(wnd, prompt, 18)
+        studentid = inputbox(wnd, prompt, 30)
 
     # abort if exit is entered
     if studentid.lower() == 'exit':
@@ -80,7 +80,7 @@ def action_new_member(wnd):
 
     # read the program of study
     prompt = "New member's program of study:"
-    program = inputbox(wnd, prompt, 18)
+    program = inputbox(wnd, prompt, 30)
 
     # abort if exit is entered
     if program is None or program.lower() == 'exit':
@@ -89,7 +89,7 @@ def action_new_member(wnd):
     # read user id
     prompt = "New member's UWdir username:"
     while userid == '':
-        userid = inputbox(wnd, prompt, 18)
+        userid = inputbox(wnd, prompt, 30)
 
     # user abort
     if userid is None or userid.lower() == 'exit':
