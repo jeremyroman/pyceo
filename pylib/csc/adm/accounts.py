@@ -655,18 +655,14 @@ def remove_member(username, groupname):
 
 ### Account Types ###
 
-def create_member(username, password, name, memberid):
+def create_member(username, password, name):
     """
     Creates a UNIX user account with options tailored to CSC members.
-
-    Note: The 'other' section of the GECOS field is filled with the CSC
-          memberid. This section cannot be changed by the user via chfn(1).
 
     Parameters:
         username - the desired UNIX username
         password - the desired UNIX password
         name     - the member's real name
-        memberid - the CSC member id number
 
     Exceptions:
         InvalidArgument - on bad account attributes provided
@@ -692,24 +688,20 @@ def create_member(username, password, name, memberid):
     maximum_id = cfg['member_max_id']
     home = cfg['member_home'] + '/' + username
     description = cfg['member_desc']
-    gecos_field = build_gecos(name, other=memberid)
+    gecos_field = build_gecos(name)
     shell = cfg['member_shell']
     group = cfg['member_group']
 
     return create(username, name, minimum_id, maximum_id, home, password, description, gecos_field, shell, group)
 
 
-def create_club(username, name, memberid):
+def create_club(username, name):
     """
     Creates a UNIX user account with options tailored to CSC-hosted clubs.
     
-    Note: The 'other' section of the GECOS field is filled with the CSC
-          memberid. This section cannot be changed by the user via chfn(1).
-
     Parameters:
         username - the desired UNIX username
         name     - the club name
-        memberid - the CSC member id number
 
     Exceptions:
         InvalidArgument - on bad account attributes provided
@@ -732,7 +724,7 @@ def create_club(username, name, memberid):
     maximum_id = cfg['club_max_id']
     home = cfg['club_home'] + '/' + username
     description = cfg['club_desc']
-    gecos_field = build_gecos(name, other=memberid)
+    gecos_field = build_gecos(name)
     shell = cfg['club_shell']
     group = cfg['club_group']
 
