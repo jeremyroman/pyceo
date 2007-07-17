@@ -15,9 +15,9 @@ for key in os.environ.keys():
 
 os.environ['PATH'] = '/usr/sbin:/usr/bin:/sbin:/bin'
 
-#for pathent in sys.path[:]:
-#    if not pathent.find('/usr') == 0:
-#        sys.path.remove(pathent)
+for pathent in sys.path[:]:
+    if not pathent.find('/usr') == 0:
+        sys.path.remove(pathent)
 
 euid = os.geteuid()
 egid = os.getegid()
@@ -37,7 +37,7 @@ except Exception, e:
     sys.exit(1)
 
 def usage():
-    print "Usage: ceoquery memberlist|booklist|allusers|termusers"
+    print "Usage: ceoquery memberlist|termusers"
 
 if len(sys.argv) < 2:
     usage()
@@ -63,10 +63,7 @@ elif sys.argv[1] == 'booklist':
 
 elif sys.argv[1] == 'allusers':
 
-    members = members.list_all()
-    for member in members:
-        if member['userid']:
-            print member['userid']
+    pass
 
 elif sys.argv[1] == 'termusers':
 
@@ -77,8 +74,7 @@ elif sys.argv[1] == 'termusers':
 
     members = members.list_term(term)
     for member in members:
-        if member['userid']:
-            print member['userid']
+        print member
 
 else:
 
