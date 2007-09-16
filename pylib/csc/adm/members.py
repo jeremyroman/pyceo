@@ -25,7 +25,7 @@ cfg = {}
 def load_configuration():
     """Load Members Configuration"""
 
-    string_fields = [ 'studentid_regex', 'realname_regex', 'server',
+    string_fields = [ 'realname_regex', 'server',
             'database', 'user', 'password', 'server_url', 'users_base',
             'groups_base', 'admin_bind_dn', 'admin_bind_pw' ]
 
@@ -46,20 +46,6 @@ ConfigurationException = conf.ConfigurationException
 
 class MemberException(Exception):
     """Base exception class for member-related errors."""
-
-class DuplicateStudentID(MemberException):
-    """Exception class for student ID conflicts."""
-    def __init__(self, studentid):
-        self.studentid = studentid
-    def __str__(self):
-        return "Student ID already exists in the database: %s" % self.studentid
-
-class InvalidStudentID(MemberException):
-    """Exception class for malformed student IDs."""
-    def __init__(self, studentid):
-        self.studentid = studentid
-    def __str__(self):
-        return "Student ID is invalid: %s" % self.studentid
 
 class InvalidTerm(MemberException):
     """Exception class for malformed terms."""
@@ -111,7 +97,7 @@ def connected():
 
 ### Member Table ###
 
-def new(uid, realname, studentid=None, program=None):
+def new(uid, realname, program=None):
     """
     Registers a new CSC member. The member is added to the members table
     and registered for the current term.
@@ -119,36 +105,24 @@ def new(uid, realname, studentid=None, program=None):
     Parameters:
         uid       - the initial user id
         realname  - the full real name of the member
-        studentid - the student id number of the member
         program   - the program of study of the member
 
     Returns: the username of the new member
 
     Exceptions:
-        DuplicateStudentID - if the student id already exists in the database
-        InvalidStudentID   - if the student id is malformed
         InvalidRealName    - if the real name is malformed
 
     Example: new("Michael Spang", program="CS") -> "mspang"
     """
 
     # blank attributes should be NULL
-    if studentid == '': studentid = None
     if program == '': program = None
     if uid == '': uid = None
 
-    # check the student id format
-    if studentid is not None and not re.match(cfg['studentid_regex'], str(studentid)):
-        raise InvalidStudentID(studentid)
 
     # check real name format (UNIX account real names must not contain [,:=])
     if not re.match(cfg['realname_regex'], realname):
         raise InvalidRealName(realname)
-
-    # check for duplicate student id
-    member = ldap_connection.member_search_studentid(studentid)
-    if member:
-        raise DuplicateStudentID(studentid)
 
     # check for duplicate userid
     member = ldap_connection.user_lookup(uid)
@@ -156,7 +130,7 @@ def new(uid, realname, studentid=None, program=None):
         raise InvalidArgument("uid", uid, "duplicate uid")
 
     # add the member to the directory
-    ldap_connection.member_add(uid, realname, studentid, program)
+    ldap_connection.member_add(uid, realname, program)
 
     # register them for this term in the directory
     member = ldap_connection.member_lookup(uid)
@@ -180,27 +154,6 @@ def get(userid):
     """
 
     return ldap_connection.user_lookup(userid)
-
-
-def get_studentid(studentid):
-    """
-    Look up attributes of a member by studentid.
-
-    Parameters:
-        studentid - the student ID number
-
-    Returns: a dict of members
-    
-    Example: get(...) -> {
-                'mspang': {
-                    'name': [ 'Michael Spang' ],
-                    'program': [ 'Computer Science' ],
-                 }
-                 ...
-             }
-    """
-
-    return ldap_connection.member_search_studentid(studentid)
 
 
 def list_term(term):
@@ -354,21 +307,18 @@ if __name__ == '__main__':
 
     from csc.common.test import *
 
-    # t=test m=member s=student u=updated
+    # t=test m=member u=updated
     tmname = 'Test Member'
     tmuid = 'testmember'
     tmprogram = 'Metaphysics'
-    tmsid = '00000000'
     tm2name = 'Test Member 2'
     tm2uid = 'testmember2'
-    tm2sid = '00000001'
     tm2uname = 'Test Member II'
-    tm2usid = '00000002'
     tm2uprogram = 'Pseudoscience'
 
-    tmdict = {'cn': [tmname], 'uid': [tmuid], 'program': [tmprogram], 'studentid': [tmsid] }
-    tm2dict = {'cn': [tm2name], 'uid': [tm2uid], 'studentid': [tm2sid] }
-    tm2udict = {'cn': [tm2uname], 'uid': [tm2uid], 'program': [tm2uprogram], 'studentid': [tm2usid] }
+    tmdict = {'cn': [tmname], 'uid': [tmuid], 'program': [tmprogram] }
+    tm2dict = {'cn': [tm2name], 'uid': [tm2uid] }
+    tm2udict = {'cn': [tm2uname], 'uid': [tm2uid], 'program': [tm2uprogram] }
 
     thisterm = terms.current()
     nextterm = terms.next(thisterm)
@@ -381,16 +331,9 @@ if __name__ == '__main__':
     assert_equal(True, connected())
     success()
 
-    dmid = get_studentid(tmsid)
-    if tmuid in dmid: delete(dmid[tmuid]['uid'][0])
-    dmid = get_studentid(tm2sid)
-    if tm2uid in dmid: delete(dmid[tm2uid]['uid'][0])
-    dmid = get_studentid(tm2usid)
-    if tm2uid in dmid: delete(dmid[tm2uid]['uid'][0])
-
     test(new)
-    tmid = new(tmuid, tmname, tmsid, tmprogram)
-    tm2id = new(tm2uid, tm2name, tm2sid)
+    tmid = new(tmuid, tmname, tmprogram)
+    tm2id = new(tm2uid, tm2name)
     success()
 
     test(registered)
@@ -437,17 +380,6 @@ if __name__ == '__main__':
     del tmp['objectClass']
     del tmp['term']
     assert_equal(tm2dict, tmp)
-    success()
-
-    test(get_studentid)
-    tmp = get_studentid(tm2sid)[tm2uid]
-    del tmp['objectClass']
-    del tmp['term']
-    assert_equal(tm2dict, tmp)
-    tmp = get_studentid(tmsid)[tmuid]
-    del tmp['objectClass']
-    del tmp['term']
-    assert_equal(tmdict, tmp)
     success()
 
     test(delete)

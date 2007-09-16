@@ -52,7 +52,7 @@ def action_library(wnd):
 def action_new_member(wnd):
     """Interactively add a new member."""
 
-    userid, studentid, program = '', None, ''
+    userid, program = '', ''
 
     msgbox(wnd, "Membership is $2.00 CDN. Please ensure\n"
                 "the money is desposited in the safe\n"
@@ -65,18 +65,6 @@ def action_new_member(wnd):
     # abort if no name is entered
     if not realname or realname.lower() == 'exit':
         return False
-
-    # read the student id
-    prompt = "New member's student ID:"
-    while studentid is None or (re.search("[^0-9]", studentid) and not studentid.lower() == 'exit'):
-        studentid = inputbox(wnd, prompt, 30)
-
-    # abort if exit is entered
-    if studentid.lower() == 'exit':
-        return False
-
-    if studentid == '':
-        studentid = None
 
     # read the program of study
     prompt = "New member's program of study:"
@@ -100,17 +88,11 @@ def action_new_member(wnd):
 
     # attempt to create the member
     try:
-        members.new(userid, realname, studentid, program)
+        members.new(userid, realname, program)
 
         msgbox(wnd, "Success! Your username is %s.  You are now registered\n"
                     % userid + "for the " + terms.current() + " term.")
 
-    except members.InvalidStudentID:
-        msgbox(wnd, "Invalid student ID: %s" % studentid)
-        return False
-    except members.DuplicateStudentID:
-        msgbox(wnd, "A member with this student ID exists.")
-        return False
     except members.InvalidRealName:
         msgbox(wnd, 'Invalid real name: "%s"' % realname)
         return False
@@ -328,7 +310,7 @@ def display_member_details(wnd, member):
     term_list.sort( terms.compare )
 
     # labels for data
-    id_label, studentid_label, name_label = "ID:", "StudentID:", "Name:"
+    id_label, name_label = "ID:", "Name:"
     program_label, terms_label = "Program:", "Terms:"
 
     if 'program' in member:
@@ -336,14 +318,9 @@ def display_member_details(wnd, member):
     else:
         program = None
 
-    if 'studentid' in member:
-        studentid = member['studentid'][0]
-    else:
-        studentid = None
-
     # format it all into a massive string
     message =  "%8s %-20s %10s %-10s\n" % (name_label, member['cn'][0], id_label, member['uid'][0]) + \
-               "%8s %-20s %10s %-10s\n" % (program_label, program, studentid_label, studentid)
+               "%8s %-20s\n" % (program_label, program )
 
     message += "%s %s" % (terms_label, " ".join(term_list))
 
@@ -390,13 +367,8 @@ def format_members(member_list):
             program = member['program'][0]
         else:
             program = None
-        if 'studentid' in member:
-            studentid = member['studentid'][0]
-        else:
-            studentid = None
-        attrs = ( uid, member['cn'][0],
-                studentid, program )
-        buf += "%10s %30s %10s\n%41s\n\n" % attrs
+        attrs = ( uid, member['cn'][0], program )
+        buf += "%10s %30s\n%41s\n\n" % attrs
 
     return buf
 
@@ -458,34 +430,6 @@ def action_list_name(wnd):
     return False
 
 
-def action_list_studentid(wnd):
-    """Interactively search for members by student id."""
-
-    studentid = None
-
-    # read the studentid
-    prompt = "Enter the member's student id: "
-    studentid = inputbox(wnd, prompt, 41) 
-
-    # abort when exit is entered
-    if not studentid or studentid.lower() == 'exit':
-        return False
-
-    # connect the members module to its backends if necessary
-    if not members.connected(): members.connect()
-    
-    # retrieve a list of members for term
-    member_list = members.get_studentid(studentid)
-
-    # format the data into a mess of text
-    buf = format_members(member_list.values())
-
-    # display the mass of text with a pager
-    page( buf )
-
-    return False
-
-
 def null_callback(wnd):
     """Callback for unimplemented menu options."""
     return False
@@ -504,7 +448,6 @@ top_menu = [
     ( "Display a member", action_display_member ),
     ( "List members registered in a term", action_list_term ),
     ( "Search for a member by name", action_list_name ),
-    ( "Search for a member by student id", action_list_studentid ),
     ( "Create an account", action_create_account ),
     ( "Library functions", action_library ),
     ( "Exit", exit_callback ),

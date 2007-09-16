@@ -494,17 +494,6 @@ class LDAPConnection(object):
         return self.lookup(dn, 'member')
 
 
-    def member_search_studentid(self, studentid):
-        """
-        Retrieves a list of members with a certain studentid.
-
-        Returns: a dictionary mapping uids to attributes
-        """
-
-        search_filter = '(&(objectClass=member)(studentid=%s))'
-        return self.user_search(search_filter, [ studentid ] )
-
-
     def member_search_name(self, name):
         """
         Retrieves a list of members with the specified name (fuzzy).
@@ -538,14 +527,13 @@ class LDAPConnection(object):
         return self.user_search(search_filter, [ program ])
 
 
-    def member_add(self, uid, cn, studentid, program=None, description=None):
+    def member_add(self, uid, cn, program=None, description=None):
         """
         Adds a member to the directory.
 
         Parameters:
             uid           - the UNIX username for the member
             cn            - the real name of the member
-            studentid     - the member's student ID number
             program       - the member's program of study
             description   - a description for the entry
         """
@@ -555,7 +543,6 @@ class LDAPConnection(object):
             'objectClass': [ 'top', 'account', 'member' ],
             'uid': [ uid ],
             'cn': [ cn ],
-            'studentid': [ studentid ],
         }
 
         if program:
@@ -680,7 +667,6 @@ if __name__ == '__main__':
     tgname = 'testgroup'
     tmname = 'testmember'
     tmrname = 'Test Member'
-    tmstudentid = '99999999'
     tmprogram = 'UBW'
     tmdesc = 'Test Description'
     cushell = '/bin/true'
@@ -747,13 +733,12 @@ if __name__ == '__main__':
     emdata = {
             'uid': [ tmname ],
             'cn': [ tmrname ],
-            'studentid': [ tmstudentid ],
             'program': [ tmprogram ],
             'description': [ tmdesc ],
     }
 
     test(LDAPConnection.member_add)
-    connection.member_add(tmname, tmrname, tmstudentid, tmprogram, tmdesc)
+    connection.member_add(tmname, tmrname, tmprogram, tmdesc)
     success()
 
     tggid = unusedids.pop()
@@ -803,12 +788,6 @@ if __name__ == '__main__':
     ulist = connection.account_search_gid(tugid)
     if tuname not in ulist:
         fail("%s not in %s" % (tuname, ulist))
-    success()
-
-    test(LDAPConnection.member_search_studentid)
-    mlist = connection.member_search_studentid(tmstudentid).keys()
-    emlist = [ tmname ]
-    assert_equal(emlist, mlist)
     success()
 
     test(LDAPConnection.member_search_name)
