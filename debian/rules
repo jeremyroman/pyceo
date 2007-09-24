@@ -7,6 +7,7 @@ build: build-stamp
 build-stamp:
 	mkdir build
 	$(CC) -DFULL_PATH='"/usr/lib/csc/ceo"' -o build/ceo misc/setuid-prog.c
+	$(CC) -DFULL_PATH='"/usr/lib/csc/ceo-old"' -o build/ceo-old misc/setuid-prog.c
 	$(CC) -DFULL_PATH='"/usr/lib/csc/addhomedir"' -o build/addhomedir misc/setuid-prog.c
 	$(CC) -DFULL_PATH='"/usr/lib/csc/ceoquery"' -o build/ceoquery misc/setuid-prog.c
 	$(CC) -DFULL_PATH='"/usr/lib/csc/csc-chfn"' -o build/csc-chfn misc/setuid-prog.c
@@ -31,8 +32,8 @@ install: build
 	dh_install etc/* etc/csc/
 	dh_install sql/* usr/share/csc/
 
-	dh_install bin/ceo bin/addhomedir bin/ceoquery bin/csc-chsh bin/csc-chfn usr/lib/csc/
-	dh_install build/ceo build/addhomedir build/ceoquery build/csc-chsh build/csc-chfn usr/bin/
+	dh_install bin/ceo bin/ceo-old bin/addhomedir bin/ceoquery bin/csc-chsh bin/csc-chfn usr/lib/csc/
+	dh_install build/ceo build/ceo-old build/addhomedir build/ceoquery build/csc-chsh build/csc-chfn usr/bin/
 	dh_install misc/csc.schema etc/ldap/schema/
 	
 binary-arch: build install
