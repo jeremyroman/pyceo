@@ -18,6 +18,7 @@ def pop_window():
     window_stack.pop()
     window_names.pop()
     update_top()
+    clear_status()
     return True
 
 def update_top():
