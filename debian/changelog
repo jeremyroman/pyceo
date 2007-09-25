@@ -1,3 +1,13 @@
+ceo (0.3.0) unstable; urgency=low
+
+  * Add experimental urwid-based GUI
+  * Rip out studentid support
+  * Unbreak termusers in ceoquery
+  * Increase widths of UI windows
+  * PgSQL to LDAP transition
+
+ -- Michael Spang <mspang@uwaterloo.ca>  Tue, 25 Sep 2007 04:00:10 -0400
+
 ceo (0.2.4) unstable; urgency=low
 
   * Added csc.schema.
