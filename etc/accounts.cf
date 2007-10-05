@@ -5,8 +5,8 @@ include /etc/csc/kerberos.cf
 
 ### Member Account Options ###
 
-member_min_id = 20000
-member_max_id = 39999
+member_min_id = 20001
+member_max_id = 29999
 member_shell = "/bin/bash"
 member_home = "/users"
 member_desc = "CSC Member Account"
@@ -14,8 +14,8 @@ member_group = "users"
 
 ### Club Account Options ###
 
-club_min_id = 15000
-club_max_id = 19999
+club_min_id = 30001
+club_max_id = 39999
 club_shell = "/bin/bash"
 club_home = "/users"
 club_desc = "CSC Club Account"
@@ -23,8 +23,8 @@ club_group = "users"
 
 ### Administrative Account Options
 
-admin_min_id = 10000
-admin_max_id = 14999
+admin_min_id = 10001
+admin_max_id = 19999
 admin_shell = "/bin/bash"
 admin_home = "/users"
 admin_desc = "CSC Administrative Account"
@@ -32,8 +32,8 @@ admin_group = "users"
 
 ### Account Group Options ###
 
-group_min_id = 10000
-group_max_id = 14999
+group_min_id = 10001
+group_max_id = 19999
 group_desc = "CSC Group"
 
 ### Home Directory Options ###
