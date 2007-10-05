@@ -1,3 +1,11 @@
+ceo (0.3.1) unstable; urgency=low
+
+  * addhomedir: invalidate nscd tables
+  * ceo-urwid: add create club account menuitem
+  * Add urwid to dependencies
+
+ -- Michael Spang <mspang@uwaterloo.ca>  Fri,  5 Oct 2007 10:16:41 -0400
+
 ceo (0.3.0) unstable; urgency=low
 
   * Add experimental urwid-based GUI
