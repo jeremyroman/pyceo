@@ -10,7 +10,7 @@ member_max_id = 29999
 member_shell = "/bin/bash"
 member_home = "/users"
 member_desc = "CSC Member Account"
-member_group = "users"
+member_group = ""
 
 ### Club Account Options ###
 
@@ -19,7 +19,7 @@ club_max_id = 39999
 club_shell = "/bin/bash"
 club_home = "/users"
 club_desc = "CSC Club Account"
-club_group = "users"
+club_group = ""
 
 ### Administrative Account Options
 
@@ -28,7 +28,7 @@ admin_max_id = 19999
 admin_shell = "/bin/bash"
 admin_home = "/users"
 admin_desc = "CSC Administrative Account"
-admin_group = "users"
+admin_group = ""
 
 ### Account Group Options ###
 
