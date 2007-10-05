@@ -54,6 +54,7 @@ def main_menu():
     menu = [
         ("New Member", new_member),
         ("Renew Membership", renew_member),
+        ("Create Club Account", new_club),
         ("Display Member", display_member),
         ("Search", search_members),
         ("Exit", raise_abort),
@@ -66,7 +67,9 @@ def push_wizard(name, pages, dimensions=(50, 10)):
     state = {}
     wiz = Wizard()
     for page in pages:
-        wiz.add_panel( page(state) )
+        if type(page) != tuple:
+            page = (page, )
+        wiz.add_panel( page[0](state, *page[1:]) )
     push_window( urwid.Filler( urwid.Padding(
         urwid.LineBox(wiz), 'center', dimensions[0]),
         'middle', dimensions[1] ), name )
@@ -79,6 +82,13 @@ def new_member(*args, **kwargs):
         newmember.PassPage,
         newmember.EndPage,
     ])
+
+def new_club(*args, **kwargs):
+    push_wizard("New Club Account", [
+        newmember.ClubIntroPage,
+        newmember.ClubInfoPage,
+        (newmember.EndPage, "club"),
+    ], (60,15))
 
 def renew_member(*args, **kwargs):
     push_wizard("Renew Membership", [

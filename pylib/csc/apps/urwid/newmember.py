@@ -16,6 +16,26 @@ class IntroPage(WizardPanel):
     def focusable(self):
         return False
 
+class ClubIntroPage(WizardPanel):
+    def init_widgets(self):
+        self.widgets = [
+            urwid.Text( "Club Services" ),
+            urwid.Divider(),
+            urwid.Text( "We provide other UW clubs accounts for email and "
+                        "web hosting, free of charge. Like members, clubs "
+                        "get web hosting at %s. We can also arrange for "
+                        "uwaterloo.ca subdomains; please instruct the club "
+                        "representative to contact the systems committee "
+                        "for more information."
+                        "\n\nNote: This is not complete. Authorizing members "
+                        "to access the club account still requires manual "
+                        "intervention."
+                        % "http://csclub.uwaterloo.ca/~clubid/"
+            )
+        ]
+    def focusable(self):
+        return False
+
 class InfoPage(WizardPanel):
     def init_widgets(self):
         self.userid = WordEdit("UWdir ID: ")
@@ -34,6 +54,30 @@ class InfoPage(WizardPanel):
         self.state['program'] = self.program.get_edit_text()
 
         if len( self.state['userid'] ) < 4:
+            self.focus_widget( self.userid )
+            set_status("Username is too short")
+            return True
+        elif len( self.state['name'] ) < 4:
+            self.focus_widget( self.name )
+            set_status("Name is too short")
+            return True
+        clear_status()
+
+class ClubInfoPage(WizardPanel):
+    def init_widgets(self):
+        self.userid = WordEdit("Username: ")
+        self.name = SingleEdit("Club Name: ")
+        self.widgets = [
+            urwid.Text( "Club Information" ),
+            urwid.Divider(),
+            self.userid,
+            self.name,
+        ]
+    def check(self):
+        self.state['userid'] = self.userid.get_edit_text()
+        self.state['name'] = self.name.get_edit_text()
+
+        if len( self.state['userid'] ) < 3:
             self.focus_widget( self.userid )
             set_status("Username is too short")
             return True
@@ -86,6 +130,9 @@ class PassPage(WizardPanel):
         clear_status()
 
 class EndPage(WizardPanel):
+    def __init__(self, state, utype='member'):
+        self.type = utype
+        WizardPanel.__init__(self, state)
     def init_widgets(self):
         self.headtext = urwid.Text("")
         self.midtext = urwid.Text("")
@@ -99,21 +146,27 @@ class EndPage(WizardPanel):
     def check(self):
         pop_window()
     def activate(self):
-        try:
-            if not members.connected(): members.connect()
-            members.new( self.state['userid'], self.state['name'], self.state['program'] )
-            problem = None
-        except members.InvalidRealName:
-            problem = "Invalid real name"
-        except InvalidArgument, e:
-            if e.argname == 'uid' and e.explanation == 'duplicate uid':
-                problem = 'Duplicate userid'
-            else:
-                raise
+        problem = None
+        if self.type == 'member':
+            try:
+                if not members.connected(): members.connect()
+                members.new( self.state['userid'], self.state['name'], self.state['program'] )
+            except members.InvalidRealName:
+                problem = "Invalid real name"
+            except InvalidArgument, e:
+                if e.argname == 'uid' and e.explanation == 'duplicate uid':
+                    problem = 'Duplicate userid'
+                else:
+                    raise
         if not problem:
             try:
                 if not accounts.connected(): accounts.connect()
-                accounts.create_member( self.state['userid'], self.state['password'], self.state['name'] )
+                if self.type == 'member':
+                    accounts.create_member( self.state['userid'], self.state['password'], self.state['name'] )
+                elif self.type == 'club':
+                    accounts.create_club( self.state['userid'], self.state['name'] )
+                else:
+                    raise Exception("Internal Error")
             except accounts.NameConflict, e:
                 problem = str(e)
             except accounts.NoAvailableIDs, e:
@@ -125,10 +178,10 @@ class EndPage(WizardPanel):
             except accounts.KrbException, e:
                 problem = str(e)
         if problem:
-            self.headtext.set_text("Failed to add member")
+            self.headtext.set_text("Failed to add user")
             self.midtext.set_text("The error was: '%s'" % problem)
         else:
-            self.headtext.set_text("Member Added")
+            self.headtext.set_text("User Added")
             self.midtext.set_text("Congratulations, %s has been added "
                 "successfully. Please run 'addhomedir %s'."
                 % (self.state['userid'], self.state['userid']))
