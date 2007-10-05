@@ -7,7 +7,7 @@ Standards-Version: 3.7.2
 
 Package: ceo
 Architecture: any
-Depends: python2.4, python-ldap, python-pygresql, krb5-user, less, python-pam, ${shlibs:Depends}
+Depends: python2.4, python-ldap, python-pygresql, python-urwid, krb5-user, less, python-pam, ${shlibs:Depends}
 Recommends: quota
 Description: Computer Science Club Administrative Utilities
  This package contains the CSC Electronic Office
