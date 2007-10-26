@@ -76,14 +76,14 @@ class NoSuchMember(MemberException):
 ldap_connection = ldapi.LDAPConnection()
 
 def connect():
-    """Connect to PostgreSQL."""
+    """Connect to LDAP."""
 
     load_configuration()
     ldap_connection.connect(cfg['server_url'], cfg['admin_bind_dn'], cfg['admin_bind_pw'], cfg['users_base'], cfg['groups_base'])
 
 
 def disconnect():
-    """Disconnect from PostgreSQL."""
+    """Disconnect from LDAP."""
 
     ldap_connection.disconnect()
 
