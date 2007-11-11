@@ -25,8 +25,7 @@ cfg = {}
 def load_configuration():
     """Load Members Configuration"""
 
-    string_fields = [ 'realname_regex', 'server',
-            'database', 'user', 'password', 'server_url', 'users_base',
+    string_fields = [ 'realname_regex', 'server_url', 'users_base',
             'groups_base', 'admin_bind_dn', 'admin_bind_pw' ]
 
     # read configuration file
