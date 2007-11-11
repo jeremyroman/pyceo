@@ -1,4 +1,5 @@
 import urwid
+from csc.apps.urwid.ldapfilter import *
 
 class ButtonText(urwid.Text):
     def __init__(self, callback, *args, **kwargs):
@@ -29,6 +30,11 @@ class SingleIntEdit(urwid.IntEdit):
 class WordEdit(SingleEdit):
     def valid_char(self, ch):
         return urwid.Edit.valid_char(self, ch) and ch != ' '
+
+class LdapFilterWordEdit(LdapFilter, WordEdit):
+    def __init__(self, *args):
+        LdapFilter.__init__(self, WordEdit)
+        WordEdit.__init__(self, *args)
 
 class PassEdit(SingleEdit):
     def get_text(self):

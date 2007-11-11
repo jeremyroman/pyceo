@@ -1,6 +1,7 @@
 import urwid
 from csc.apps.urwid.widgets import *
 from csc.apps.urwid.window import *
+from csc.apps.urwid.ldapfilter import LdapFilter
 
 from csc.adm import accounts, members
 from csc.common.excep import InvalidArgument
@@ -38,9 +39,13 @@ class ClubIntroPage(WizardPanel):
 
 class InfoPage(WizardPanel):
     def init_widgets(self):
-        self.userid = WordEdit("UWdir ID: ")
+        self.userid = LdapFilterWordEdit("UWdir ID: ")
         self.name = SingleEdit("Full name: ")
         self.program = SingleEdit("Program of Study: ")
+        self.userid.set_ldap_filter(
+            "ldap://uwldap.uwaterloo.ca/", "dc=uwaterloo,dc=ca",
+            "uid", {'cn':self.name, 'ou':self.program}
+        )
         self.widgets = [
             urwid.Text( "Member Information - Please Check ID" ),
             urwid.Divider(),
