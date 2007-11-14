@@ -212,7 +212,9 @@ def list_group(group):
     if members:
         ret = {}
         for member in members:
-            ret[member] = get(member)
+            info = get(member)
+            if info:
+                ret[member] = info
         return ret
     else:
         return {}
