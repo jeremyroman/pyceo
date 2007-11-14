@@ -299,6 +299,17 @@ def member_terms(userid):
     else:
         return member['term']
 
+def group_members(group):
+
+    """
+    Returns a list of group members
+    """
+
+    group = ldap_connection.group_lookup(group)
+    if not 'uniqueMember' in group:
+        return []
+    else:
+        return group['uniqueMember']
 
 
 ### Tests ###

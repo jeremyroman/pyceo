@@ -2,14 +2,15 @@ import urwid
 from csc.apps.urwid.ldapfilter import *
 
 class ButtonText(urwid.Text):
-    def __init__(self, callback, *args, **kwargs):
+    def __init__(self, callback, data, *args, **kwargs):
         self.callback = callback
+        self.data = data
         urwid.Text.__init__(self, *args, **kwargs)
     def selectable(self):
         return True
     def keypress(self, size, key):
-        if key == 'enter':
-            self.callback(self.get_text())
+        if key == 'enter' and self.callback:
+            self.callback(self.data)
         else:
             return key
 
@@ -58,7 +59,7 @@ class Wizard(urwid.WidgetWrap):
         self.panels.append( panel )
         if len(self.panels) == 1:
             self.select(0)
-    
+
     def select(self, panelno, set_focus=True):
         if 0 <= panelno < len(self.panels):
             self.selected = panelno
@@ -70,13 +71,13 @@ class Wizard(urwid.WidgetWrap):
                     self.pile.set_focus( 0 )
                 else:
                     self.pile.set_focus( 1 )
-    
+
     def next(self, *args, **kwargs):
         if self.panels[self.selected].check():
             self.select( self.selected )
             return
         self.select(self.selected + 1)
-    
+
     def back(self, *args, **kwargs):
         self.select(self.selected - 1, False)
 

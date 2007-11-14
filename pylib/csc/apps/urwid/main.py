@@ -1,4 +1,4 @@
-import random, time
+import random, time, re
 import urwid, urwid.curses_display
 
 from csc.apps.urwid.widgets import *
@@ -47,17 +47,29 @@ def program_name():
 
     return "%s %s %s" % (cword, eword, oword)
 
+office_data = {
+    "name" : "Office Staff",
+    "group" : "office"
+}
+
+syscom_data = {
+    "name" : "Systems Committee",
+    "group" : "syscom"
+}
+
 def menu_items(items):
-    return [ urwid.AttrWrap( ButtonText( cb, txt ), 'menu', 'selected') for (txt, cb) in items ]
+    return [ urwid.AttrWrap( ButtonText( cb, data, txt ), 'menu', 'selected') for (txt, cb, data) in items ]
 
 def main_menu():
     menu = [
-        ("New Member", new_member),
-        ("Renew Membership", renew_member),
-        ("Create Club Account", new_club),
-        ("Display Member", display_member),
-        ("Search", search_members),
-        ("Exit", raise_abort),
+        ("New Member", new_member, None),
+        ("Renew Membership", renew_member, None),
+        ("Create Club Account", new_club, None),
+        ("Display Member", display_member, None),
+        ("Search", search_members, None),
+        ("Manage Office Staff", group_members, office_data),
+        ("Manage Systems Committee", group_members, syscom_data),
+        ("Exit", raise_abort, None),
     ]
 
     listbox = urwid.ListBox( menu_items( menu ) )
@@ -73,7 +85,7 @@ def push_wizard(name, pages, dimensions=(50, 10)):
     push_window( urwid.Filler( urwid.Padding(
         urwid.LineBox(wiz), 'center', dimensions[0]),
         'middle', dimensions[1] ), name )
-    
+
 def new_member(*args, **kwargs):
     push_wizard("New Member", [
         newmember.IntroPage,
@@ -99,27 +111,57 @@ def renew_member(*args, **kwargs):
         renew.EndPage,
     ])
 
-def display_member(a):
+def display_member(data):
     push_wizard("Display Member", [
         renew.UserPage,
         info.InfoPage,
     ], (60, 15))
 
-def search_members(a):
+def search_members(data):
     menu = [
-        ("Members by term", search_term),
-        ("Members by name", search_name),
-        ("Back", raise_back),
+        ("Members by term", search_term, None),
+        ("Members by name", search_name, None),
+        ("Back", raise_back, None),
     ]
 
     listbox = urwid.ListBox( menu_items( menu ) )
     push_window(listbox, "Search")
 
-def search_name(a):
+def search_name(data):
     push_wizard("By Name", [ search.NamePage ])
 
-def search_term(a):
+def search_term(data):
     push_wizard("By Term", [ search.TermPage ])
+
+def group_members(data):
+    menu = [
+        ("Add %s member" % data["name"].lower(), add_group_member, data),
+        ("Remove %s member" % data["name"].lower(), remove_group_member, data),
+        ("List %s members" % data["name"].lower(), list_group_members, data),
+        ("Back", raise_back, None),
+    ]
+
+    listbox = urwid.ListBox( menu_items( menu ) )
+    push_window(listbox, "Manage %s" % data["name"])
+
+def add_group_member(data):
+    pass
+
+def remove_group_member(data):
+    pass
+
+def list_group_members(data):
+
+    if not members.connected(): members.connect()
+    group_members = members.group_members(data["group"])
+    r = re.compile('^uid=([^,]*)')
+    menu = []
+    for group in group_members:
+        menu.append( (r.match(group).group(1), None, None) )
+    menu.append( ("Back", raise_back, None) )
+
+    listbox = urwid.ListBox( menu_items( menu ) )
+    push_window(listbox, "Members")
 
 def run():
     push_window( main_menu(), program_name() )
