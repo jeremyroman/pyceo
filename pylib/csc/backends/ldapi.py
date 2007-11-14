@@ -403,7 +403,7 @@ class LDAPConnection(object):
 
         dn = 'cn=' + cn + ',' + self.group_base
         attrs = {
-            'objectClass': [ 'top', 'posixGroup' ],
+            'objectClass': [ 'top', 'posixGroup', 'group' ],
             'cn': [ cn ],
             'gidNumber': [ str(gidNumber) ],
         }
