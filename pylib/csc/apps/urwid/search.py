@@ -41,10 +41,30 @@ class NamePage(WizardPanel):
         if not members.connected(): members.connect()
         self.state['name'] = self.name.get_edit_text()
         if not self.state['name']:
-            self.focus_widget( self.term )
+            self.focus_widget( self.name )
             set_status( "Invalid name" )
             return True
         mlist = members.list_name( self.state['name'] ).values()
+        pop_window()
+        member_list( mlist )
+
+class GroupPage(WizardPanel):
+    def init_widgets(self):
+        self.group = SingleEdit("Group: ")
+
+        self.widgets = [
+            urwid.Text( "Members by Group" ),
+            urwid.Divider(),
+            self.group,
+        ]
+    def check(self):
+        if not members.connected(): members.connect()
+        self.state['group'] = self.group.get_edit_text()
+        if not self.state['group']:
+            self.focus_widget( self.group )
+            set_status( "Invalid group" )
+            return True
+        mlist = members.list_group( self.state['group'] ).values()
         pop_window()
         member_list( mlist )
 

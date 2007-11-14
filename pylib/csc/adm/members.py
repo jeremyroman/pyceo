@@ -193,6 +193,31 @@ def list_name(name):
     return ldap_connection.member_search_name(name)
 
 
+def list_group(group):
+    """
+    Build a list of members in a group.
+
+    Parameters:
+        group - the group to match members against
+
+    Returns: a list of member dictionaries
+
+    Example: list_name('syscom'): -> {
+                 'mspang': { 'cn': 'Michael Spang', ... },
+                 ...
+             ]
+    """
+
+    members = group_members(group)
+    if members:
+        ret = {}
+        for member in members:
+            ret[member] = get(member)
+        return ret
+    else:
+        return {}
+
+
 def delete(userid):
     """
     Erase all records of a member.
@@ -306,10 +331,16 @@ def group_members(group):
     """
 
     group = ldap_connection.group_lookup(group)
-    if not 'uniqueMember' in group:
-        return []
+    if group:
+        if 'uniqueMember' in group:
+            r = re.compile('^uid=([^,]*)')
+            return map(lambda x: r.match(x).group(1), group['uniqueMember'])
+        elif 'memberUid' in group:
+            return group['memberUid']
+        else:
+            return []
     else:
-        return group['uniqueMember']
+        return []
 
 
 ### Tests ###

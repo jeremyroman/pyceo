@@ -121,6 +121,7 @@ def search_members(data):
     menu = [
         ("Members by term", search_term, None),
         ("Members by name", search_name, None),
+        ("Members by group", search_group, None),
         ("Back", raise_back, None),
     ]
 
@@ -132,6 +133,9 @@ def search_name(data):
 
 def search_term(data):
     push_wizard("By Term", [ search.TermPage ])
+
+def search_group(data):
+    push_wizard("By Group", [ search.GroupPage ])
 
 def group_members(data):
     menu = [
@@ -151,18 +155,9 @@ def remove_group_member(data):
     pass
 
 def list_group_members(data):
-
     if not members.connected(): members.connect()
-    group_members = members.group_members(data["group"])
-    r = re.compile('^uid=([^,]*)')
-    menu = []
-    for group in group_members:
-        menu.append( (r.match(group).group(1), None, None) )
-    menu.append( ("--------", raise_back, None) )
-    menu.append( ("Back", raise_back, None) )
-
-    listbox = urwid.ListBox( menu_items( menu ) )
-    push_window(listbox, "Members")
+    mlist = members.list_group( data["group"] ).values()
+    search.member_list( mlist )
 
 def run():
     push_window( main_menu(), program_name() )
