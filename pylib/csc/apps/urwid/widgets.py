@@ -1,5 +1,6 @@
 import urwid
 from csc.apps.urwid.ldapfilter import *
+from csc.apps.urwid.window import raise_back
 
 class ButtonText(urwid.Text):
     def __init__(self, callback, data, *args, **kwargs):
@@ -79,6 +80,8 @@ class Wizard(urwid.WidgetWrap):
         self.select(self.selected + 1)
 
     def back(self, *args, **kwargs):
+        if self.selected == 0:
+            raise_back()
         self.select(self.selected - 1, False)
 
 class WizardPanel(urwid.WidgetWrap):

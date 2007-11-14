@@ -55,7 +55,7 @@ def event_loop(ui):
            for k in keys:
               if k == "esc":
                  if not pop_window():
-                     break   
+                     break
               elif k == "window resize":
                  (cols, rows) = ui.get_cols_rows()
               else:
