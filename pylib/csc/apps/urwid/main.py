@@ -158,6 +158,7 @@ def list_group_members(data):
     menu = []
     for group in group_members:
         menu.append( (r.match(group).group(1), None, None) )
+    menu.append( ("--------", raise_back, None) )
     menu.append( ("Back", raise_back, None) )
 
     listbox = urwid.ListBox( menu_items( menu ) )
