@@ -641,6 +641,23 @@ class LDAPConnection(object):
         return gids
 
 
+    def make_modlist(self, old, new):
+        keys = set(old.keys()).union(set(new))
+        mlist = []
+        for key in keys:
+            if key in old and not key in new:
+                mlist.append((ldap.MOD_DELETE, key, list(set(old[key]))))
+            elif key in new and not key in old:
+                mlist.append((ldap.MOD_ADD, key, list(set(new[key]))))
+            else:
+                to_add = list(set(new[key]) - set(old[key]))
+                if len(to_add) > 0:
+                    mlist.append((ldap.MOD_ADD, key, to_add))
+                to_del = list(set(old[key]) - set(new[key]))
+                if len(to_del) > 0:
+                    mlist.append((ldap.MOD_DELETE, key, to_del))
+        return mlist
+
 
 ### Tests ###
 

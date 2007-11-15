@@ -7,6 +7,8 @@ import csc.apps.urwid.newmember as newmember
 import csc.apps.urwid.renew as renew
 import csc.apps.urwid.info as info
 import csc.apps.urwid.search as search
+import csc.apps.urwid.positions as positions
+import csc.apps.urwid.groups as groups
 
 from csc.adm import accounts, members, terms
 from csc.common.excep import InvalidArgument
@@ -49,12 +51,14 @@ def program_name():
 
 office_data = {
     "name" : "Office Staff",
-    "group" : "office"
+    "group" : "office",
+    "groups" : [ "office", "cdrom", "audio", "video", "www" ],
 }
 
 syscom_data = {
     "name" : "Systems Committee",
-    "group" : "syscom"
+    "group" : "syscom",
+    "groups" : [ "office", "staff", "adm", "src" ],
 }
 
 def menu_items(items):
@@ -67,6 +71,7 @@ def main_menu():
         ("Create Club Account", new_club, None),
         ("Display Member", display_member, None),
         ("Search", search_members, None),
+        ("Manage Positions", manage_positions, None),
         ("Manage Office Staff", group_members, office_data),
         ("Manage Systems Committee", group_members, syscom_data),
         ("Exit", raise_abort, None),
@@ -100,7 +105,7 @@ def new_club(*args, **kwargs):
         newmember.ClubIntroPage,
         newmember.ClubInfoPage,
         (newmember.EndPage, "club"),
-    ], (60,15))
+    ], (60, 15))
 
 def renew_member(*args, **kwargs):
     push_wizard("Renew Membership", [
@@ -137,10 +142,23 @@ def search_term(data):
 def search_group(data):
     push_wizard("By Group", [ search.GroupPage ])
 
+def manage_positions(data):
+    push_wizard("Manage Positions", [
+        positions.IntroPage,
+        positions.InfoPage,
+        positions.EndPage,
+    ], (50, 15))
+
 def group_members(data):
+    add_data = data.copy()
+    add_data['type'] = 'Add'
+    remove_data = data.copy()
+    remove_data['type'] = 'Remove'
     menu = [
-        ("Add %s member" % data["name"].lower(), add_group_member, data),
-        ("Remove %s member" % data["name"].lower(), remove_group_member, data),
+        ("Add %s member" % data["name"].lower(),
+            change_group_member, add_data),
+        ("Remove %s member" % data["name"].lower(),
+            change_group_member, remove_data),
         ("List %s members" % data["name"].lower(), list_group_members, data),
         ("Back", raise_back, None),
     ]
@@ -148,11 +166,11 @@ def group_members(data):
     listbox = urwid.ListBox( menu_items( menu ) )
     push_window(listbox, "Manage %s" % data["name"])
 
-def add_group_member(data):
-    pass
-
-def remove_group_member(data):
-    pass
+def change_group_member(data):
+    push_wizard("%s %s Member" % (data["type"], data["name"]), [
+        (groups.ChangeMember, data),
+        groups.EndPage,
+    ])
 
 def list_group_members(data):
     if not members.connected(): members.connect()

@@ -9,7 +9,7 @@ Transactions are used in each method that modifies the database.
 Future changes to the members database that need to be atomic
 must also be moved into this module.
 """
-import re
+import re, ldap
 from csc.adm import terms
 from csc.backends import ldapi
 from csc.common import conf
@@ -220,6 +220,72 @@ def list_group(group):
         return {}
 
 
+def list_positions():
+    """
+    Build a list of positions
+
+    Returns: a list of positions and who holds them
+
+    Example: list_positions(): -> {
+                 'president': { 'mspang': { 'cn': 'Michael Spang', ... } } ],
+                 ...
+             ]
+    """
+
+    ceo_ldap = ldap_connection.ldap
+    user_base = ldap_connection.user_base
+    escape = ldap_connection.escape
+
+    if not ldap_connection.connected(): ldap_connection.connect()
+
+    members = ceo_ldap.search_s(user_base, ldap.SCOPE_SUBTREE, '(position=*)')
+    positions = {}
+    for (_, member) in members:
+        for position in member['position']:
+            if not position in positions:
+                positions[position] = {}
+            positions[position][member['uid'][0]] = member
+    return positions
+
+def set_position(position, members):
+    """
+    Sets a position
+
+    Parameters:
+        position - the position to set
+        members - an array of members that hold the position
+
+    Example: set_position('president', ['dtbartle'])
+    """
+
+    ceo_ldap = ldap_connection.ldap
+    user_base = ldap_connection.user_base
+    escape = ldap_connection.escape
+
+    res = ceo_ldap.search_s(user_base, ldap.SCOPE_SUBTREE,
+        '(&(objectClass=member)(position=%s))' % escape(position))
+    old = set([ member['uid'][0] for (_, member) in res ])
+    new = set(members)
+    mods = {
+        'del': set(old) - set(new),
+        'add': set(new) - set(old),
+    }
+    if len(mods['del']) == 0 and len(mods['add']) == 0:
+        return
+
+    for type in ['del', 'add']:
+        for userid in mods[type]:
+            dn = 'uid=%s,%s' % (escape(userid), user_base)
+            entry1 = {'position' : [position]}
+            entry2 = {} #{'position' : []}
+            entry = ()
+            if type == 'del':
+                entry = (entry1, entry2)
+            elif type == 'add':
+                entry = (entry2, entry1)
+            mlist = ldap_connection.make_modlist(entry[0], entry[1])
+            ceo_ldap.modify_s(dn, mlist)
+
 def delete(userid):
     """
     Erase all records of a member.
@@ -247,6 +313,27 @@ def delete(userid):
 
     return member
 
+
+def change_group_member(action, group, userid):
+
+    ceo_ldap = ldap_connection.ldap
+    user_base = ldap_connection.user_base
+    group_base = ldap_connection.group_base
+    escape = ldap_connection.escape
+
+    user_dn = 'uid=%s,%s' % (escape(userid), user_base)
+    group_dn = 'cn=%s,%s' % (escape(group), group_base)
+    entry1 = {'uniqueMember' : []}
+    entry2 = {'uniqueMember' : [user_dn]}
+    entry = []
+    if action == 'add' or action == 'insert':
+        entry = (entry1, entry2)
+    elif action == 'remove' or action == 'delete':
+        entry = (entry2, entry1)
+    else:
+        raise InvalidArgument("action", action, "invalid action")
+    mlist = ldap_connection.make_modlist(entry[0], entry[1])
+    ceo_ldap.modify_s(group_dn, mlist)
 
 
 ### Term Table ###

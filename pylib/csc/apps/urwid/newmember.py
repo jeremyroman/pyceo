@@ -58,7 +58,7 @@ class InfoPage(WizardPanel):
         self.state['name'] = self.name.get_edit_text()
         self.state['program'] = self.program.get_edit_text()
 
-        if len( self.state['userid'] ) < 4:
+        if len( self.state['userid'] ) < 3:
             self.focus_widget( self.userid )
             set_status("Username is too short")
             return True
@@ -188,5 +188,7 @@ class EndPage(WizardPanel):
         else:
             self.headtext.set_text("User Added")
             self.midtext.set_text("Congratulations, %s has been added "
-                "successfully. Please run 'addhomedir %s'."
+                "successfully. Please run 'addhomedir %s'. "
+                "You should also rebuild the website in order to update the "
+                "memberlist."
                 % (self.state['userid'], self.state['userid']))

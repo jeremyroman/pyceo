@@ -12,11 +12,20 @@ attributetype ( 1.3.6.1.4.1.27934.1.1.3 NAME 'studentid'
     EQUALITY caseIgnoreIA5Match
     SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{8} SINGLE-VALUE )
 
+attributetype ( 1.3.6.1.4.1.27934.1.1.4 NAME 'position'
+    EQUALITY caseIgnoreIA5Match
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{32} )
+
 objectclass ( 1.3.6.1.4.1.27934.1.2.1 NAME 'member'
     SUP top AUXILIARY
     MUST ( cn $ uid )
-    MAY ( studentid $ program $ term $ description ) )
+    MAY ( studentid $ program $ term $ description $ position ) )
 
 objectclass ( 1.3.6.1.4.1.27934.1.2.2 NAME 'club'
     SUP top AUXILIARY
     MUST ( cn $ uid ) )
+
+objectclass ( 1.3.6.1.4.1.27934.1.2.3 NAME 'group'
+    SUP top STRUCTURAL
+    MUST ( cn )
+    MAY ( uniqueMember ) )
