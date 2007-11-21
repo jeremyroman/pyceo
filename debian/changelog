@@ -1,3 +1,15 @@
+ceo (0.3.2) unstable; urgency=low
+
+  [ Michael Spang ]
+  * Fix CEO group add for rfc2307bis
+
+  [ David Bartley ]
+  * Add 'search by group'
+  * Lookup name and program based on uwdir id
+  * Add group and position management
+
+ -- Michael Spang <mspang@uwaterloo.ca>  Wed, 21 Nov 2007 17:21:40 -0500
+
 ceo (0.3.1) unstable; urgency=low
 
   * addhomedir: invalidate nscd tables
