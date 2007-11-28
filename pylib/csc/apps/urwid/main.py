@@ -176,6 +176,9 @@ def group_members(data):
     push_window(listbox, "Manage %s" % data["name"])
 
 def run():
+    members.connect()
+    accounts.connect()
+
     push_window( main_menu(), program_name() )
     event_loop( ui )
 

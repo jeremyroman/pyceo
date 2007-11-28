@@ -88,7 +88,6 @@ class ChangeMember(WizardPanel):
     def check(self):
         self.state['userid'] = self.userid.get_edit_text()
         if self.state['userid']:
-            if not members.connected(): members.connect()
             self.state['member'] = members.get(self.userid.get_edit_text())
         if not self.state['member']:
             set_status("Member not found")

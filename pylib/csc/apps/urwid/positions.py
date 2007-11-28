@@ -31,7 +31,6 @@ class IntroPage(WizardPanel):
 
 class InfoPage(WizardPanel):
     def init_widgets(self):
-        if not members.connected(): members.connect()
         self.widgets = [
             urwid.Text( "Positions" ),
             urwid.Divider(),

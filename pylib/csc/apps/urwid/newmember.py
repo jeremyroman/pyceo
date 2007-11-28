@@ -154,7 +154,6 @@ class EndPage(WizardPanel):
         problem = None
         if self.type == 'member':
             try:
-                if not members.connected(): members.connect()
                 members.new( self.state['userid'], self.state['name'], self.state['program'] )
             except members.InvalidRealName:
                 problem = "Invalid real name"
@@ -165,7 +164,6 @@ class EndPage(WizardPanel):
                     raise
         if not problem:
             try:
-                if not accounts.connected(): accounts.connect()
                 if self.type == 'member':
                     accounts.create_member( self.state['userid'], self.state['password'], self.state['name'] )
                 elif self.type == 'club':

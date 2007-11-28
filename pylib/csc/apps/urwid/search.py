@@ -16,7 +16,6 @@ class TermPage(WizardPanel):
             self.term,
         ]
     def check(self):
-        if not members.connected(): members.connect()
         try:
             self.state['term'] = self.term.get_edit_text()
             terms.parse( self.state['term'] )
@@ -38,7 +37,6 @@ class NamePage(WizardPanel):
             self.name,
         ]
     def check(self):
-        if not members.connected(): members.connect()
         self.state['name'] = self.name.get_edit_text()
         if not self.state['name']:
             self.focus_widget( self.name )
@@ -58,7 +56,6 @@ class GroupPage(WizardPanel):
             self.group,
         ]
     def check(self):
-        if not members.connected(): members.connect()
         self.state['group'] = self.group.get_edit_text()
         if not self.state['group']:
             self.focus_widget( self.group )
