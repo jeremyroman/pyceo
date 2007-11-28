@@ -75,7 +75,7 @@ class NoSuchMember(MemberException):
 # global directory connection
 ldap_connection = ldapi.LDAPConnection()
 
-def connect(auth_callback):
+def connect():
     """Connect to LDAP."""
 
     load_configuration()

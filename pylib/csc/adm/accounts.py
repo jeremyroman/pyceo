@@ -86,7 +86,7 @@ class NoSuchGroup(AccountException):
 ldap_connection = ldapi.LDAPConnection()
 krb_connection = krb.KrbConnection()
 
-def connect(auth_callback):
+def connect():
     """Connect to LDAP and Kerberos and load configuration. You must call before anything else."""
 
     configure()
