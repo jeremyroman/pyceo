@@ -1,4 +1,4 @@
-import urwid
+import urwid, pwd, grp
 from csc.apps.urwid.widgets import *
 from csc.apps.urwid.window import *
 import csc.apps.urwid.search as search
@@ -11,8 +11,8 @@ def menu_items(items):
 
 def change_group_member(data):
     push_wizard("%s %s Member" % (data["type"], data["name"]), [
-        (groups.ChangeMember, data),
-        groups.EndPage,
+        (ChangeMember, data),
+        EndPage,
     ])
 
 def list_group_members(data):
@@ -20,6 +20,16 @@ def list_group_members(data):
     search.member_list( mlist )
 
 def group_members(data):
+    data, euid = data
+
+    # only syscom may modify non-club groups
+    user = pwd.getpwuid(euid).pw_name
+    users = grp.getgrnam('syscom').gr_mem
+    if user not in users:
+        member = members.get(data['group'])
+        if member is None or 'objectClass' not in member or 'club' not in member['objectClass']:
+            return
+
     add_data = data.copy()
     add_data['type'] = 'Add'
     remove_data = data.copy()
@@ -54,6 +64,9 @@ class IntroPage(WizardPanel):
         return False
 
 class InfoPage(WizardPanel):
+    def __init__(self, state, euid):
+        state['euid'] = euid
+        WizardPanel.__init__(self, state)
     def init_widgets(self):
         self.group = WordEdit("Club or Group: ")
         self.widgets = [
@@ -70,7 +83,7 @@ class InfoPage(WizardPanel):
             "group" : group_name,
             "groups" : [group],
         }
-        group_members(data)
+        group_members((data, self.state['euid']))
 
 class ChangeMember(WizardPanel):
     def __init__(self, state, data):

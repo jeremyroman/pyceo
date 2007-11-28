@@ -1,6 +1,17 @@
 import urwid
 from csc.apps.urwid.ldapfilter import *
-from csc.apps.urwid.window import raise_back
+from csc.apps.urwid.window import raise_back, push_window
+
+def push_wizard(name, pages, dimensions=(50, 10)):
+    state = {}
+    wiz = Wizard()
+    for page in pages:
+        if type(page) != tuple:
+            page = (page, )
+        wiz.add_panel( page[0](state, *page[1:]) )
+    push_window( urwid.Filler( urwid.Padding(
+        urwid.LineBox(wiz), 'center', dimensions[0]),
+        'middle', dimensions[1] ), name )
 
 class ButtonText(urwid.Text):
     def __init__(self, callback, data, *args, **kwargs):

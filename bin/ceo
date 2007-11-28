@@ -28,4 +28,4 @@ except OSError, e:
     sys.exit(1)
 
 import csc.apps.urwid.main
-csc.apps.urwid.main.start()
+csc.apps.urwid.main.start(euid, egid)

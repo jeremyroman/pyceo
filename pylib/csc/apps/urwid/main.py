@@ -74,24 +74,15 @@ def main_menu():
         ("Search", search_members, None),
         ("Manage Club or Group Members", manage_group, None),
         ("Manage Positions", manage_positions, None),
-        ("Manage Office Staff", group_members, office_data),
-        ("Manage Systems Committee", group_members, syscom_data),
+        ("Manage Office Staff", groups.group_members,
+            (office_data, ui.euid)),
+        ("Manage Systems Committee", groups.group_members,
+            (syscom_data, ui.euid)),
         ("Exit", raise_abort, None),
     ]
 
     listbox = urwid.ListBox( menu_items( menu ) )
     return listbox
-
-def push_wizard(name, pages, dimensions=(50, 10)):
-    state = {}
-    wiz = Wizard()
-    for page in pages:
-        if type(page) != tuple:
-            page = (page, )
-        wiz.add_panel( page[0](state, *page[1:]) )
-    push_window( urwid.Filler( urwid.Padding(
-        urwid.LineBox(wiz), 'center', dimensions[0]),
-        'middle', dimensions[1] ), name )
 
 def new_member(*args, **kwargs):
     push_wizard("New Member", [
@@ -112,7 +103,7 @@ def new_club(*args, **kwargs):
 def manage_group(*args, **kwargs):
     push_wizard("Manage Club or Group Members", [
         groups.IntroPage,
-        groups.InfoPage,
+        (groups.InfoPage, ui.euid),
     ], (60, 15))
 
 def renew_member(*args, **kwargs):
@@ -157,24 +148,6 @@ def manage_positions(data):
         positions.EndPage,
     ], (50, 15))
 
-def group_members(data):
-    add_data = data.copy()
-    add_data['type'] = 'Add'
-    remove_data = data.copy()
-    remove_data['type'] = 'Remove'
-    menu = [
-        ("Add %s member" % data["name"].lower(),
-            groups.change_group_member, add_data),
-        ("Remove %s member" % data["name"].lower(),
-            groups.change_group_member, remove_data),
-        ("List %s members" % data["name"].lower(),
-            groups.list_group_members, data),
-        ("Back", raise_back, None),
-    ]
-
-    listbox = urwid.ListBox( menu_items( menu ) )
-    push_window(listbox, "Manage %s" % data["name"])
-
 def run():
     members.connect()
     accounts.connect()
@@ -182,7 +155,9 @@ def run():
     push_window( main_menu(), program_name() )
     event_loop( ui )
 
-def start():
+def start(euid, egid):
+    ui.euid = euid
+    ui.egid = egid
     ui.run_wrapper( run )
 
 if __name__ == '__main__':
