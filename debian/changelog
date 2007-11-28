@@ -1,3 +1,13 @@
+ceo (0.3.3) stable testing; urgency=low
+
+  * Add club and group modify page
+  * Add sasl support
+  * Complete group and position management
+  * Remove ceo-old
+  * Fix bugs
+
+ -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Wed, 21 Nov 2007 20:56:14 -0500
+
 ceo (0.3.2) unstable; urgency=low
 
   [ Michael Spang ]

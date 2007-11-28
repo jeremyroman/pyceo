@@ -9,7 +9,6 @@ import csc.apps.urwid.info as info
 import csc.apps.urwid.search as search
 import csc.apps.urwid.positions as positions
 import csc.apps.urwid.groups as groups
-from csc.apps.urwid.error import *
 
 from csc.adm import accounts, members, terms
 from csc.common.excep import InvalidArgument
