@@ -13,7 +13,7 @@ have an LDAP entry, even if the account does not log in directly.
 This module makes use of python-ldap, a Python module with bindings
 to libldap, OpenLDAP's native C client library.
 """
-import ldap.modlist
+import ldap.modlist, ipc, os
 
 
 class LDAPException(Exception):
@@ -41,36 +41,39 @@ class LDAPConnection(object):
     def __init__(self):
         self.ldap = None
 
-    
-    def connect(self, server, bind_dn, bind_pw, user_base, group_base):
+
+    def connect_anon(self, uri, user_base, group_base):
         """
         Establish a connection to the LDAP Server.
 
         Parameters:
-            server     - connection string (e.g. ldap://foo.com, ldaps://bar.com)
-            bind_dn    - distinguished name to bind to
-            bind_pw    - password of bind_dn
+            uri        - connection string (e.g. ldap://foo.com, ldaps://bar.com)
             user_base  - base of the users subtree
             group_base - baes of the group subtree
 
         Example: connect('ldaps:///', 'cn=ceo,dc=csclub,dc=uwaterloo,dc=ca',
                      'secret', 'ou=People,dc=csclub,dc=uwaterloo,dc=ca',
                      'ou=Group,dc=csclub,dc=uwaterloo,dc=ca')
-        
+
         """
 
-        if bind_pw is None: bind_pw = ''
+        # open the connection
+        self.ldap = ldap.initialize(uri)
 
-        try:
+        # authenticate
+        self.ldap.simple_bind_s('', '')
 
-            # open the connection
-            self.ldap = ldap.initialize(server)
+        self.user_base = user_base
+        self.group_base = group_base
 
-            # authenticate
-            self.ldap.simple_bind_s(bind_dn, bind_pw)
+    def connect_sasl(self, uri, bind_dn, mech, realm, userid, password, user_base, group_base):
 
-        except ldap.LDAPError, e:
-            raise LDAPException("unable to connect: %s" % e)
+        # open the connection
+        self.ldap = ldap.initialize(uri)
+
+        # authenticate
+        sasl = Sasl(mech, realm, userid, password)
+        self.ldap.sasl_interactive_bind_s(bind_dn, sasl)
 
         self.user_base = user_base
         self.group_base = group_base
@@ -657,6 +660,31 @@ class LDAPConnection(object):
                 if len(to_del) > 0:
                     mlist.append((ldap.MOD_DELETE, key, to_del))
         return mlist
+
+
+class Sasl:
+
+    CB_USER = 0x4001
+    bind_dn = 'dn:uid=%s,cn=%s,cn=%s,cn=auth'
+
+    def __init__(self, mech, realm, userid, password):
+        self.mech = mech
+        self.bind_dn = self.bind_dn % (userid, realm, mech)
+
+        if mech == 'GSSAPI':
+            type, arg = password
+            kinit = '/usr/bin/kinit'
+            kinit_args = [ 'kinit', '%s@%s' % (userid, realm) ]
+            if type == 'keytab':
+                kinit_args += [ '-k', '-t', arg ]
+            pid, kinit_out, kinit_in = ipc.popeni(kinit, kinit_args)
+            os.waitpid(pid, 0)
+
+    def callback(self, id, challenge, prompt, defresult):
+        if id == self.CB_USER:
+            return self.bind_dn
+        else:
+            return None
 
 
 ### Tests ###

@@ -9,7 +9,7 @@ Transactions are used in each method that modifies the database.
 Future changes to the members database that need to be atomic
 must also be moved into this module.
 """
-import re, ldap
+import re, ldap, os, pwd
 from csc.adm import terms
 from csc.backends import ldapi
 from csc.common import conf
@@ -26,7 +26,8 @@ def load_configuration():
     """Load Members Configuration"""
 
     string_fields = [ 'realname_regex', 'server_url', 'users_base',
-            'groups_base', 'admin_bind_dn', 'admin_bind_pw' ]
+            'groups_base', 'sasl_mech', 'sasl_realm', 'admin_bind_dn',
+            'admin_bind_keytab', 'admin_bind_userid' ]
 
     # read configuration file
     cfg_tmp = conf.read(CONFIG_FILE)
@@ -74,12 +75,14 @@ class NoSuchMember(MemberException):
 # global directory connection
 ldap_connection = ldapi.LDAPConnection()
 
-def connect():
+def connect(auth_callback):
     """Connect to LDAP."""
 
     load_configuration()
-    ldap_connection.connect(cfg['server_url'], cfg['admin_bind_dn'], cfg['admin_bind_pw'], cfg['users_base'], cfg['groups_base'])
-
+    ldap_connection.connect_sasl(cfg['server_url'], cfg['admin_bind_dn'],
+        cfg['sasl_mech'], cfg['sasl_realm'], cfg['admin_bind_userid'],
+        ('keytab', cfg['admin_bind_keytab']), cfg['users_base'],
+        cfg['groups_base'])
 
 def disconnect():
     """Disconnect from LDAP."""

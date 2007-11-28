@@ -4,7 +4,7 @@ UNIX Accounts Administration
 This module contains functions for creating, deleting, and manipulating
 UNIX user accounts and account groups in the CSC LDAP directory.
 """
-import re, pwd, grp, os
+import re, pwd, grp, os, pwd
 from csc.common import conf
 from csc.common.excep import InvalidArgument
 from csc.backends import ldapi, krb
@@ -18,14 +18,14 @@ cfg = {}
 
 def configure():
     """Helper to load the accounts configuration. You need not call this."""
-    
+
     string_fields = [ 'member_shell', 'member_home', 'member_desc',
             'member_group', 'club_shell', 'club_home', 'club_desc',
             'club_group', 'admin_shell', 'admin_home', 'admin_desc',
             'admin_group', 'group_desc', 'username_regex', 'groupname_regex',
             'shells_file', 'server_url', 'users_base', 'groups_base',
-            'admin_bind_dn', 'admin_bind_pw', 'realm', 'admin_principal',
-            'admin_keytab' ]
+            'sasl_mech', 'sasl_realm', 'admin_bind_keytab', 'admin_bind_dn',
+            'admin_bind_userid', 'realm', 'admin_principal', 'admin_keytab' ]
     numeric_fields = [ 'member_min_id', 'member_max_id', 'club_min_id',
             'club_max_id', 'admin_min_id', 'admin_max_id', 'group_min_id',
             'group_max_id', 'min_password_length' ]
@@ -78,7 +78,7 @@ class NoSuchGroup(AccountException):
         self.account, self.source = account, source
     def __str__(self):
         return 'Account "%s" not found in %s' % (self.account, self.source)
-    
+
 
 
 ### Connection Management ###
@@ -86,13 +86,16 @@ class NoSuchGroup(AccountException):
 ldap_connection = ldapi.LDAPConnection()
 krb_connection = krb.KrbConnection()
 
-def connect():
+def connect(auth_callback):
     """Connect to LDAP and Kerberos and load configuration. You must call before anything else."""
 
     configure()
 
     # connect to the LDAP server
-    ldap_connection.connect(cfg['server_url'], cfg['admin_bind_dn'], cfg['admin_bind_pw'], cfg['users_base'], cfg['groups_base'])
+    ldap_connection.connect_sasl(cfg['server_url'], cfg['admin_bind_dn'],
+        cfg['sasl_mech'], cfg['sasl_realm'], cfg['admin_bind_userid'],
+        ('keytab', cfg['admin_bind_keytab']), cfg['users_base'],
+        cfg['groups_base'])
 
     # connect to the Kerberos master server
     krb_connection.connect(cfg['admin_principal'], cfg['admin_keytab'])
