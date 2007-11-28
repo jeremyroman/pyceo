@@ -1,9 +1,76 @@
 import urwid
 from csc.apps.urwid.widgets import *
 from csc.apps.urwid.window import *
+import csc.apps.urwid.search as search
 
 from csc.adm import accounts, members
 from csc.common.excep import InvalidArgument
+
+def menu_items(items):
+    return [ urwid.AttrWrap( ButtonText( cb, data, txt ), 'menu', 'selected') for (txt, cb, data) in items ]
+
+def change_group_member(data):
+    push_wizard("%s %s Member" % (data["type"], data["name"]), [
+        (groups.ChangeMember, data),
+        groups.EndPage,
+    ])
+
+def list_group_members(data):
+    mlist = members.list_group( data["group"] ).values()
+    search.member_list( mlist )
+
+def group_members(data):
+    add_data = data.copy()
+    add_data['type'] = 'Add'
+    remove_data = data.copy()
+    remove_data['type'] = 'Remove'
+    menu = [
+        ("Add %s member" % data["name"].lower(),
+            change_group_member, add_data),
+        ("Remove %s member" % data["name"].lower(),
+            change_group_member, remove_data),
+        ("List %s members" % data["name"].lower(), list_group_members, data),
+        ("Back", raise_back, None),
+    ]
+
+    listbox = urwid.ListBox( menu_items( menu ) )
+    push_window(listbox, "Manage %s" % data["name"])
+
+class IntroPage(WizardPanel):
+    def init_widgets(self):
+        self.widgets = [
+            urwid.Text( "Managing Club or Group" ),
+            urwid.Divider(),
+            urwid.Text( "Adding a member to a club will also grant them "
+                        "access to the club's files and allow them to "
+                        "become_club."
+                        "\n\n"
+                        "Do not manage office and syscom related groups using "
+                        "this interface. Instead use the \"Manage Office "
+                        "Staff\" and \"Manage Systems Committee\" entries "
+                        "from the main menu." )
+        ]
+    def focusable(self):
+        return False
+
+class InfoPage(WizardPanel):
+    def init_widgets(self):
+        self.group = WordEdit("Club or Group: ")
+        self.widgets = [
+            urwid.Text( "Club or Group Information"),
+            urwid.Divider(),
+            self.group,
+        ]
+    def check(self):
+        group = self.group.get_edit_text()
+        # TODO - check that group is valid
+        group_name = group # TODO
+        data = {
+            "name" : group,
+            "group" : group_name,
+            "groups" : [group],
+        }
+        group_members(data)
 
 class ChangeMember(WizardPanel):
     def __init__(self, state, data):
