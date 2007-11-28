@@ -57,6 +57,11 @@ class InfoPage(WizardPanel):
         for (position, widget) in self.position_widgets.iteritems():
             self.state['positions'][position] = \
                 self.parse(widget.get_edit_text())
+            for p in self.state['positions'][position]:
+                if members.get(p) == None:
+                    self.focus_widget(widget)
+                    set_status( "Invalid username: '%s'" % p )
+                    return True
         clear_status()
 
 class EndPage(WizardPanel):
