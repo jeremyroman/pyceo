@@ -23,12 +23,14 @@ def group_members(data):
     data, euid = data
 
     # only syscom may modify non-club groups
-    user = pwd.getpwuid(euid).pw_name
-    users = grp.getgrnam('syscom').gr_mem
-    if user not in users:
-        member = members.get(data['group'])
-        if member is None or 'objectClass' not in member or 'club' not in member['objectClass']:
-            return
+    if data['group'] != 'office':
+        user = pwd.getpwuid(euid).pw_name
+        users = grp.getgrnam('syscom').gr_mem
+        if user not in users:
+            member = members.get(data['group'])
+            if member is None or 'objectClass' not in member \
+                    or 'club' not in member['objectClass']:
+                return
 
     add_data = data.copy()
     add_data['type'] = 'Add'
