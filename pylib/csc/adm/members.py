@@ -211,15 +211,13 @@ def list_group(group):
     """
 
     members = group_members(group)
+    ret = {}
     if members:
-        ret = {}
         for member in members:
             info = get(member)
             if info:
                 ret[member] = info
-        return ret
-    else:
-        return {}
+    return ret
 
 
 def list_positions():
