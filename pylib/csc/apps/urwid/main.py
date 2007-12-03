@@ -74,9 +74,9 @@ def main_menu():
         ("Manage Club or Group Members", manage_group, None),
         ("Manage Positions", manage_positions, None),
         ("Manage Office Staff", groups.group_members,
-            (office_data, ui.euid)),
+            (office_data, ui.uid)),
         ("Manage Systems Committee", groups.group_members,
-            (syscom_data, ui.euid)),
+            (syscom_data, ui.uid)),
         ("Exit", raise_abort, None),
     ]
 
@@ -102,7 +102,7 @@ def new_club(*args, **kwargs):
 def manage_group(*args, **kwargs):
     push_wizard("Manage Club or Group Members", [
         groups.IntroPage,
-        (groups.InfoPage, ui.euid),
+        (groups.InfoPage, ui.uid),
     ], (60, 15))
 
 def renew_member(*args, **kwargs):
@@ -154,9 +154,9 @@ def run():
     push_window( main_menu(), program_name() )
     event_loop( ui )
 
-def start(euid, egid):
-    ui.euid = euid
-    ui.egid = egid
+def start(uid, gid):
+    ui.uid = uid
+    ui.gid = gid
     ui.run_wrapper( run )
 
 if __name__ == '__main__':

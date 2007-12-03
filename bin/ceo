@@ -18,8 +18,10 @@ for pathent in sys.path[:]:
     if not pathent.find('/usr') == 0 and not pathent.find('/var') == 0:
         sys.path.remove(pathent)
 
-euid = os.getuid()
-egid = os.getgid()
+euid = os.geteuid()
+egid = os.getegid()
+uid = os.getuid()
+gid = os.getgid()
 try:
     os.setreuid(euid, euid)
     os.setregid(egid, egid)
@@ -28,4 +30,4 @@ except OSError, e:
     sys.exit(1)
 
 import csc.apps.urwid.main
-csc.apps.urwid.main.start(euid, egid)
+csc.apps.urwid.main.start(uid, gid)

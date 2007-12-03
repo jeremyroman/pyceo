@@ -20,11 +20,11 @@ def list_group_members(data):
     search.member_list( mlist )
 
 def group_members(data):
-    data, euid = data
+    data, uid = data
 
     # only syscom may modify non-club groups
     if data['group'] != 'office':
-        user = pwd.getpwuid(euid).pw_name
+        user = pwd.getpwuid(uid).pw_name
         users = grp.getgrnam('syscom').gr_mem
         if user not in users:
             member = members.get(data['group'])
@@ -66,8 +66,8 @@ class IntroPage(WizardPanel):
         return False
 
 class InfoPage(WizardPanel):
-    def __init__(self, state, euid):
-        state['euid'] = euid
+    def __init__(self, state, uid):
+        state['uid'] = uid
         WizardPanel.__init__(self, state)
     def init_widgets(self):
         self.group = WordEdit("Club or Group: ")
@@ -85,7 +85,7 @@ class InfoPage(WizardPanel):
             "group" : group_name,
             "groups" : [group],
         }
-        group_members((data, self.state['euid']))
+        group_members((data, self.state['uid']))
 
 class ChangeMember(WizardPanel):
     def __init__(self, state, data):
