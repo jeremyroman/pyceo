@@ -11,15 +11,9 @@ When you check out the sources, you will get the entire history along with
 the latest version. You do not need any special permissions to clone a
 repository and start making changes.
 
-To retrieve the ceo sources, type:
+To retrieve the ceo sources, clone the public repository:
 
-    git clone /users/git/mspang/csc.git
-
-This will give you the latest copy of mspang's source tree. Once cloned,
-the repository is independent from the original and collaboration is done
-by "pulling" changes. There may be other repositories to clone from in the
-future.
-
+    git clone /users/git/public/pyceo.git
 
 Making Changes
 --------------

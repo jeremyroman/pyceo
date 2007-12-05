@@ -9,15 +9,9 @@ can safely skip it.
 Building the Package
 --------------------
 
-To build a Debian package out of the sources, run one of the following
-commands at the top of the source tree:
-
-    A. debuild
-    B. dpkg-buildpackage -rfakeroot
-    C. git-buildpackage
-
-It doesn't matter which, so 'debuild' is probably easiest. If all goes well,
-a Debian package and source tarball will appear in the parent directory.
+To build a Debian package out of the sources, run `debuild` at the top
+of the source tree. If all goes well, a Debian package and source tarball
+will appear in the parent directory.
 
 Do NOT build the package as root (rather, don't build anything as root in
 general). Use 'fakeroot' so that the permissions in the .deb can be set
@@ -61,8 +55,7 @@ To install the package:
 
     5. Build the package
 
-        Use 'debuild' or 'fakeroot dpkg-buildpackage -us -uc' to build the
-        package.
+        Use 'debuild' to build the package.
 
     5. Install the package
 
@@ -73,6 +66,12 @@ To install the package:
         You will be left with four files: a .deb, a .tar.gz, a .changes,
         and a .dsc. Save these to a safe place (preferably in /users/git
         so other can find them easily).
+
+    7. Push to /users/git/public/pyceo.git
+
+        This is a convenient hub for pushing/pulling between contributors.
+        You must be in the 'git' group to do this - if you're able to install
+        the package you will certainly be able to add yourself to this group.
 
 If everyone follows these steps, every installed version will be a
 descendant of the previous. Further, since old versions are archived it
