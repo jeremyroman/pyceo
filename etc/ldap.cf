@@ -5,5 +5,9 @@ server_url = "ldaps:///"
 users_base  = "ou=People,dc=csclub,dc=uwaterloo,dc=ca"
 groups_base = "ou=Group,dc=csclub,dc=uwaterloo,dc=ca"
 
-admin_bind_dn = "cn=ceo,dc=csclub,dc=uwaterloo,dc=ca"
-admin_bind_pw = "secret"
+admin_bind_dn =
+admin_bind_userid = "ceo"
+admin_bind_keytab = "/etc/csc/ceo.keytab"
+
+sasl_mech = "GSSAPI"
+sasl_realm = "CSCLUB.UWATERLOO.CA"
