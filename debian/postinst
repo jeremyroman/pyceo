@@ -28,7 +28,7 @@ case "$1" in
         fi
 
         if ! dpkg-statoverride --list /usr/bin/ceoquery > /dev/null; then
-            dpkg-statoverride --add --update $CEO root $SUIDALL /usr/bin/ceoquery
+            dpkg-statoverride --add --update root root 755 /usr/bin/ceoquery
         fi
 
         if ! dpkg-statoverride --list /usr/bin/csc-chsh > /dev/null; then
