@@ -13,7 +13,8 @@ have an LDAP entry, even if the account does not log in directly.
 This module makes use of python-ldap, a Python module with bindings
 to libldap, OpenLDAP's native C client library.
 """
-import ldap.modlist, ipc, os
+import ldap.modlist
+from subprocess import Popen, PIPE
 
 
 class LDAPException(Exception):
@@ -673,12 +674,12 @@ class Sasl:
 
         if mech == 'GSSAPI':
             type, arg = password
-            kinit = '/usr/bin/kinit'
-            kinit_args = [ 'kinit', '%s@%s' % (userid, realm) ]
+            kinit_args = [ '/usr/bin/kinit', '%s@%s' % (userid, realm) ]
             if type == 'keytab':
-                kinit_args += [ '-k', '-t', arg ]
-            pid, kinit_out, kinit_in = ipc.popeni(kinit, kinit_args)
-            os.waitpid(pid, 0)
+                kinit_args += [ '-kt', arg ]
+
+            kinit = Popen(kinit_args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            kinit.wait()
 
     def callback(self, id, challenge, prompt, defresult):
         if id == self.CB_USER:
