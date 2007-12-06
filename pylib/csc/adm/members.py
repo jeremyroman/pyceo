@@ -26,8 +26,8 @@ def load_configuration():
     """Load Members Configuration"""
 
     string_fields = [ 'realname_regex', 'server_url', 'users_base',
-            'groups_base', 'sasl_mech', 'sasl_realm', 'admin_bind_dn',
-            'admin_bind_keytab', 'admin_bind_userid' ]
+            'groups_base', 'sasl_mech', 'sasl_realm', 'admin_bind_keytab',
+            'admin_bind_userid' ]
 
     # read configuration file
     cfg_tmp = conf.read(CONFIG_FILE)
@@ -79,8 +79,8 @@ def connect():
     """Connect to LDAP."""
 
     load_configuration()
-    ldap_connection.connect_sasl(cfg['server_url'], cfg['admin_bind_dn'],
-        cfg['sasl_mech'], cfg['sasl_realm'], cfg['admin_bind_userid'],
+    ldap_connection.connect_sasl(cfg['server_url'], cfg['sasl_mech'],
+        cfg['sasl_realm'], cfg['admin_bind_userid'],
         ('keytab', cfg['admin_bind_keytab']), cfg['users_base'],
         cfg['groups_base'])
 

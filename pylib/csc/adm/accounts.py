@@ -24,7 +24,7 @@ def configure():
             'club_group', 'admin_shell', 'admin_home', 'admin_desc',
             'admin_group', 'group_desc', 'username_regex', 'groupname_regex',
             'shells_file', 'server_url', 'users_base', 'groups_base',
-            'sasl_mech', 'sasl_realm', 'admin_bind_keytab', 'admin_bind_dn',
+            'sasl_mech', 'sasl_realm', 'admin_bind_keytab',
             'admin_bind_userid', 'realm', 'admin_principal', 'admin_keytab' ]
     numeric_fields = [ 'member_min_id', 'member_max_id', 'club_min_id',
             'club_max_id', 'admin_min_id', 'admin_max_id', 'group_min_id',
@@ -92,8 +92,8 @@ def connect():
     configure()
 
     # connect to the LDAP server
-    ldap_connection.connect_sasl(cfg['server_url'], cfg['admin_bind_dn'],
-        cfg['sasl_mech'], cfg['sasl_realm'], cfg['admin_bind_userid'],
+    ldap_connection.connect_sasl(cfg['server_url'], cfg['sasl_mech'],
+        cfg['sasl_realm'], cfg['admin_bind_userid'],
         ('keytab', cfg['admin_bind_keytab']), cfg['users_base'],
         cfg['groups_base'])
 
