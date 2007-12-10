@@ -1,3 +1,9 @@
+ceo (0.3.9) stable testing; urgency=low
+
+  * New release
+
+ -- Michael Spang <mspang@uwaterloo.ca>  Mon, 10 Dec 2007 03:56:06 -0500
+
 ceo (0.3.3) stable testing; urgency=low
 
   * Add club and group modify page
