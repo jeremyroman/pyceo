@@ -1,0 +1,4 @@
+*.o
+/addmember
+/addclub
+/config-test
