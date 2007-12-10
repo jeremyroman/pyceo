@@ -27,6 +27,14 @@ case "$1" in
             dpkg-statoverride --add --update root $OFFICE $SUID /usr/bin/addhomedir
         fi
 
+        if ! dpkg-statoverride --list /usr/bin/addmember > /dev/null; then
+            dpkg-statoverride --add --update root $OFFICE $SUID /usr/bin/addmember
+        fi
+
+        if ! dpkg-statoverride --list /usr/bin/addclub > /dev/null; then
+            dpkg-statoverride --add --update root $OFFICE $SUID /usr/bin/addclub
+        fi
+
         if ! dpkg-statoverride --list /usr/bin/ceoquery > /dev/null; then
             dpkg-statoverride --add --update root root 755 /usr/bin/ceoquery
         fi

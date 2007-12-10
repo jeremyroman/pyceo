@@ -10,6 +10,7 @@ build-stamp:
 	$(CC) -DFULL_PATH='"/usr/lib/csc/addhomedir"' -o build/addhomedir misc/setuid-prog.c
 	$(CC) -DFULL_PATH='"/usr/lib/csc/csc-chfn"' -o build/csc-chfn misc/setuid-prog.c
 	$(CC) -DFULL_PATH='"/usr/lib/csc/csc-chsh"' -o build/csc-chsh misc/setuid-prog.c
+	cd src && make
 	touch build-stamp
 
 clean:
@@ -19,6 +20,7 @@ clean:
 	rm -f build-stamp
 	rm -rf build/
 	find pylib/ -name "*.pyc" -print0 | xargs -0 rm -f
+	cd src && make clean
 
 install: build
 	dh_testdir
@@ -30,7 +32,7 @@ install: build
 	dh_install etc/* etc/csc/
 
 	dh_install bin/ceo bin/addhomedir bin/csc-chsh bin/csc-chfn usr/lib/csc/
-	dh_install build/ceo build/addhomedir bin/ceoquery build/csc-chsh build/csc-chfn usr/bin/
+	dh_install build/ceo build/addhomedir bin/ceoquery build/csc-chsh build/csc-chfn src/addmember src/addclub usr/bin/
 	dh_install misc/csc.schema etc/ldap/schema/
 	
 binary-arch: build install
