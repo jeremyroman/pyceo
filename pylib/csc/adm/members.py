@@ -9,7 +9,7 @@ Transactions are used in each method that modifies the database.
 Future changes to the members database that need to be atomic
 must also be moved into this module.
 """
-import re, ldap, os, pwd
+import re, ldap
 from csc.adm import terms
 from csc.backends import ldapi
 from csc.common import conf
@@ -234,9 +234,6 @@ def list_positions():
 
     ceo_ldap = ldap_connection.ldap
     user_base = ldap_connection.user_base
-    escape = ldap_connection.escape
-
-    if not ldap_connection.connected(): ldap_connection.connect()
 
     members = ceo_ldap.search_s(user_base, ldap.SCOPE_SUBTREE, '(position=*)')
     positions = {}

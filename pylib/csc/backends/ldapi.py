@@ -385,8 +385,6 @@ class LDAPConnection(object):
             raise LDAPException("group search failed: %s" % e)
 
         # list for groups found
-        group_cns = []
-
         results = {}
         for match in matches:
             dn, attrs = match

@@ -1,5 +1,5 @@
-import random, time, re
-import urwid, urwid.curses_display
+import random
+import urwid.curses_display
 
 from csc.apps.urwid.widgets import *
 from csc.apps.urwid.window import *

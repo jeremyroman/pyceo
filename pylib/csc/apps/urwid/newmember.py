@@ -1,7 +1,6 @@
 import urwid
 from csc.apps.urwid.widgets import *
 from csc.apps.urwid.window import *
-from csc.apps.urwid.ldapfilter import LdapFilter
 
 from csc.adm import accounts, members, terms
 from csc.common.excep import InvalidArgument

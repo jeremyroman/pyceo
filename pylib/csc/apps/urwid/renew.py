@@ -56,7 +56,7 @@ class TermPage(WizardPanel):
     def check(self):
         try:
             self.state['terms'] = terms.interval( self.start.get_edit_text(), self.count.value() )
-        except e:
+        except Exception, e:
             self.focus_widget( self.start )
             set_status( "Invalid start term" )
             return True

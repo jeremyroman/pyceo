@@ -4,7 +4,7 @@ UNIX Accounts Administration
 This module contains functions for creating, deleting, and manipulating
 UNIX user accounts and account groups in the CSC LDAP directory.
 """
-import re, pwd, grp, os, pwd, subprocess
+import re, pwd, grp, os, subprocess
 from csc.common import conf
 from csc.common.excep import InvalidArgument
 from csc.backends import ldapi, krb
