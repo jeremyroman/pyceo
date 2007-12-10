@@ -160,4 +160,5 @@ def start(uid, gid):
     ui.run_wrapper( run )
 
 if __name__ == '__main__':
-    start()
+    import os
+    start(os.getuid(), os.getgid())
