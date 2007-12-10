@@ -4,7 +4,7 @@ UNIX Accounts Administration
 This module contains functions for creating, deleting, and manipulating
 UNIX user accounts and account groups in the CSC LDAP directory.
 """
-import re, pwd, grp, os, pwd
+import re, pwd, grp, os, pwd, subprocess
 from csc.common import conf
 from csc.common.excep import InvalidArgument
 from csc.backends import ldapi, krb
@@ -79,6 +79,14 @@ class NoSuchGroup(AccountException):
     def __str__(self):
         return 'Account "%s" not found in %s' % (self.account, self.source)
 
+class ChildFailed(AccountException):
+    def __init__(self, program, status, output):
+        self.program, self.status, self.output = program, status, output
+    def __str__(self):
+        msg = '%s failed with status %d' % (self.program, self.status)
+        if self.output:
+            msg += ': %s' % self.output
+        return msg
 
 
 ### Connection Management ###
@@ -658,7 +666,7 @@ def remove_member(username, groupname):
 
 ### Account Types ###
 
-def create_member(username, password, name):
+def create_member(username, password, name, program):
     """
     Creates a UNIX user account with options tailored to CSC members.
 
@@ -666,6 +674,7 @@ def create_member(username, password, name):
         username - the desired UNIX username
         password - the desired UNIX password
         name     - the member's real name
+        program  - the member's program of study
 
     Exceptions:
         InvalidArgument - on bad account attributes provided
@@ -687,15 +696,13 @@ def create_member(username, password, name):
     if not password or len(password) < cfg['min_password_length']:
         raise InvalidArgument("password", "<hidden>", "too short (minimum %d characters)" % cfg['min_password_length'])
 
-    minimum_id = cfg['member_min_id']
-    maximum_id = cfg['member_max_id']
-    home = cfg['member_home'] + '/' + username
-    description = cfg['member_desc']
-    gecos_field = build_gecos(name)
-    shell = cfg['member_shell']
-    group = cfg['member_group']
+    args = [ "/usr/bin/addmember", "--stdin", username, name, program ]
+    addmember = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = addmember.communicate(password)
+    status = addmember.wait()
 
-    return create(username, name, minimum_id, maximum_id, home, password, description, gecos_field, shell, group)
+    if status:
+        raise ChildFailed("addmember", status, out+err)
 
 
 def create_club(username, name):
@@ -722,16 +729,13 @@ def create_club(username, name):
     if not username or not re.match(cfg['username_regex'], username):
         raise InvalidArgument("username", username, "expected format %s" % repr(cfg['username_regex']))
     
-    password = None
-    minimum_id = cfg['club_min_id']
-    maximum_id = cfg['club_max_id']
-    home = cfg['club_home'] + '/' + username
-    description = cfg['club_desc']
-    gecos_field = build_gecos(name)
-    shell = cfg['club_shell']
-    group = cfg['club_group']
+    args = [ "/usr/bin/addclub", username, name ]
+    addclub = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = addclub.communicate()
+    status = addclub.wait()
 
-    return create(username, name, minimum_id, maximum_id, home, password, description, gecos_field, shell, group)
+    if status:
+        raise ChildFailed("addclub", status, out+err)
 
 
 def create_adm(username, name):

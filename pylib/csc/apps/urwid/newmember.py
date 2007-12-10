@@ -3,7 +3,7 @@ from csc.apps.urwid.widgets import *
 from csc.apps.urwid.window import *
 from csc.apps.urwid.ldapfilter import LdapFilter
 
-from csc.adm import accounts, members
+from csc.adm import accounts, members, terms
 from csc.common.excep import InvalidArgument
 
 class IntroPage(WizardPanel):
@@ -152,41 +152,35 @@ class EndPage(WizardPanel):
         pop_window()
     def activate(self):
         problem = None
-        if self.type == 'member':
-            try:
-                members.new( self.state['userid'], self.state['name'], self.state['program'] )
-            except members.InvalidRealName:
-                problem = "Invalid real name"
-            except InvalidArgument, e:
-                if e.argname == 'uid' and e.explanation == 'duplicate uid':
-                    problem = 'Duplicate userid'
-                else:
-                    raise
-        if not problem:
-            try:
-                if self.type == 'member':
-                    accounts.create_member( self.state['userid'], self.state['password'], self.state['name'] )
-                elif self.type == 'club':
-                    accounts.create_club( self.state['userid'], self.state['name'] )
-                else:
-                    raise Exception("Internal Error")
-            except accounts.NameConflict, e:
-                problem = str(e)
-            except accounts.NoAvailableIDs, e:
-                problem = str(e)
-            except accounts.InvalidArgument, e:
-                problem = str(e)
-            except accounts.LDAPException, e:
-                problem = str(e)
-            except accounts.KrbException, e:
-                problem = str(e)
+        try:
+            if self.type == 'member':
+                accounts.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'] )
+                members.register( self.state['userid'], terms.current() )
+            elif self.type == 'club':
+                accounts.create_club( self.state['userid'], self.state['name'] )
+            else:
+                raise Exception("Internal Error")
+        except accounts.NameConflict, e:
+            problem = str(e)
+        except accounts.NoAvailableIDs, e:
+            problem = str(e)
+        except accounts.InvalidArgument, e:
+            problem = str(e)
+        except accounts.LDAPException, e:
+            problem = str(e)
+        except accounts.KrbException, e:
+            problem = str(e)
+        except accounts.ChildFailed, e:
+            problem = str(e)
+
         if problem:
-            self.headtext.set_text("Failed to add user")
-            self.midtext.set_text("The error was: '%s'" % problem)
+            self.headtext.set_text("Failures Occured Adding User")
+            self.midtext.set_text("The error was:\n%s\nThe account may be partially added "
+                "and you may or may not be able to log in. Please contact systems committee." % problem)
+            return
         else:
             self.headtext.set_text("User Added")
             self.midtext.set_text("Congratulations, %s has been added "
-                "successfully. Please run 'addhomedir %s'. "
-                "You should also rebuild the website in order to update the "
-                "memberlist."
-                % (self.state['userid'], self.state['userid']))
+                "successfully. You should also rebuild the website in "
+                "order to update the memberlist."
+                % self.state['userid'])
