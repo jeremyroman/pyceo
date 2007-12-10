@@ -39,7 +39,7 @@ class ClubIntroPage(WizardPanel):
 
 class InfoPage(WizardPanel):
     def init_widgets(self):
-        self.userid = LdapFilterWordEdit("UWdir ID: ")
+        self.userid = LdapFilterWordEdit("UWuserid: ")
         self.name = SingleEdit("Full name: ")
         self.program = SingleEdit("Program of Study: ")
         self.userid.set_ldap_filter(
