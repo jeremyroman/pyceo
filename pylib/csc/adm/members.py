@@ -9,31 +9,38 @@ Transactions are used in each method that modifies the database.
 Future changes to the members database that need to be atomic
 must also be moved into this module.
 """
-import re, ldap
-from csc.adm import terms
-from csc.backends import ldapi
+import re, subprocess, ldap
 from csc.common import conf
 from csc.common.excep import InvalidArgument
+from csc.backends import ldapi
 
 
 ### Configuration ###
 
-CONFIG_FILE = '/etc/csc/members.cf'
+CONFIG_FILE = '/etc/csc/accounts.cf'
 
 cfg = {}
 
-def load_configuration():
+def configure():
     """Load Members Configuration"""
 
-    string_fields = [ 'realname_regex', 'server_url', 'users_base',
-            'groups_base', 'sasl_mech', 'sasl_realm', 'admin_bind_keytab',
-            'admin_bind_userid' ]
+    string_fields = [ 'member_shell', 'member_home', 'member_desc',
+            'member_group', 'club_shell', 'club_home', 'club_desc',
+            'club_group', 'admin_shell', 'admin_home', 'admin_desc',
+            'admin_group', 'group_desc', 'username_regex', 'groupname_regex',
+            'shells_file', 'server_url', 'users_base', 'groups_base',
+            'sasl_mech', 'sasl_realm', 'admin_bind_keytab',
+            'admin_bind_userid', 'realm', 'admin_principal', 'admin_keytab' ]
+    numeric_fields = [ 'member_min_id', 'member_max_id', 'club_min_id',
+            'club_max_id', 'admin_min_id', 'admin_max_id', 'group_min_id',
+            'group_max_id', 'min_password_length' ]
 
     # read configuration file
     cfg_tmp = conf.read(CONFIG_FILE)
 
     # verify configuration
     conf.check_string_fields(CONFIG_FILE, string_fields, cfg_tmp)
+    conf.check_integer_fields(CONFIG_FILE, numeric_fields, cfg_tmp)
 
     # update the current configuration with the loaded values
     cfg.update(cfg_tmp)
@@ -43,6 +50,7 @@ def load_configuration():
 ### Exceptions ###
 
 ConfigurationException = conf.ConfigurationException
+LDAPException = ldapi.LDAPException
 
 class MemberException(Exception):
     """Base exception class for member-related errors."""
@@ -61,6 +69,14 @@ class NoSuchMember(MemberException):
     def __str__(self):
         return "Member not found: %d" % self.memberid
 
+class ChildFailed(MemberException):
+    def __init__(self, program, status, output):
+        self.program, self.status, self.output = program, status, output
+    def __str__(self):
+        msg = '%s failed with status %d' % (self.program, self.status)
+        if self.output:
+            msg += ': %s' % self.output
+        return msg
 
 
 ### Connection Management ###
@@ -71,7 +87,7 @@ ldap_connection = ldapi.LDAPConnection()
 def connect():
     """Connect to LDAP."""
 
-    load_configuration()
+    configure()
     ldap_connection.connect_sasl(cfg['server_url'], cfg['sasl_mech'],
         cfg['sasl_realm'], cfg['admin_bind_userid'],
         ('keytab', cfg['admin_bind_keytab']), cfg['users_base'],
@@ -91,6 +107,45 @@ def connected():
 
 
 ### Members ###
+
+def create_member(username, password, name, program):
+    """
+    Creates a UNIX user account with options tailored to CSC members.
+
+    Parameters:
+        username - the desired UNIX username
+        password - the desired UNIX password
+        name     - the member's real name
+        program  - the member's program of study
+
+    Exceptions:
+        InvalidArgument - on bad account attributes provided
+
+    Returns: the uid number of the new account
+
+    See: create()
+    """
+
+    # check connection
+    if not connected():
+        raise MemberException("not connected to LDAP and Kerberos")
+
+    # check username format
+    if not username or not re.match(cfg['username_regex'], username):
+        raise InvalidArgument("username", username, "expected format %s" % repr(cfg['username_regex']))
+
+    # check password length
+    if not password or len(password) < cfg['min_password_length']:
+        raise InvalidArgument("password", "<hidden>", "too short (minimum %d characters)" % cfg['min_password_length'])
+
+    args = [ "/usr/bin/addmember", "--stdin", username, name, program ]
+    addmember = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = addmember.communicate(password)
+    status = addmember.wait()
+
+    if status:
+        raise ChildFailed("addmember", status, out+err)
+
 
 def get(userid):
     """
@@ -254,6 +309,39 @@ def change_group_member(action, group, userid):
         raise InvalidArgument("action", action, "invalid action")
     mlist = ldap_connection.make_modlist(entry[0], entry[1])
     ceo_ldap.modify_s(group_dn, mlist)
+
+
+
+### Clubs ###
+
+def create_club(username, name):
+    """
+    Creates a UNIX user account with options tailored to CSC-hosted clubs.
+    
+    Parameters:
+        username - the desired UNIX username
+        name     - the club name
+
+    Exceptions:
+        InvalidArgument - on bad account attributes provided
+
+    Returns: the uid number of the new account
+
+    See: create()
+    """
+
+    # check username format
+    if not username or not re.match(cfg['username_regex'], username):
+        raise InvalidArgument("username", username, "expected format %s" % repr(cfg['username_regex']))
+    
+    args = [ "/usr/bin/addclub", username, name ]
+    addclub = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = addclub.communicate()
+    status = addclub.wait()
+
+    if status:
+        raise ChildFailed("addclub", status, out+err)
+
 
 
 ### Terms ###

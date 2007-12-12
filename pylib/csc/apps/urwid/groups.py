@@ -3,7 +3,7 @@ from csc.apps.urwid.widgets import *
 from csc.apps.urwid.window import *
 import csc.apps.urwid.search as search
 
-from csc.adm import accounts, members
+from csc.adm import members
 from csc.common.excep import InvalidArgument
 
 def menu_items(items):

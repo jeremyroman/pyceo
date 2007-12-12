@@ -10,7 +10,7 @@ import csc.apps.urwid.search as search
 import csc.apps.urwid.positions as positions
 import csc.apps.urwid.groups as groups
 
-from csc.adm import accounts, members, terms
+from csc.adm import members, terms
 from csc.common.excep import InvalidArgument
 
 ui = urwid.curses_display.Screen()
@@ -149,7 +149,6 @@ def manage_positions(data):
 
 def run():
     members.connect()
-    accounts.connect()
 
     push_window( main_menu(), program_name() )
     event_loop( ui )

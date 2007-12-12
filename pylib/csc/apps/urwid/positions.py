@@ -2,7 +2,7 @@ import urwid
 from csc.apps.urwid.widgets import *
 from csc.apps.urwid.window import *
 
-from csc.adm import accounts, members
+from csc.adm import members
 from csc.common.excep import InvalidArgument
 
 position_data = [

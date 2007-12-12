@@ -2,7 +2,7 @@ import urwid
 from csc.apps.urwid.widgets import *
 from csc.apps.urwid.window import *
 
-from csc.adm import accounts, members, terms
+from csc.adm import members, terms
 from csc.common.excep import InvalidArgument
 
 class IntroPage(WizardPanel):
@@ -153,23 +153,17 @@ class EndPage(WizardPanel):
         problem = None
         try:
             if self.utype == 'member':
-                accounts.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'] )
+                members.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'] )
                 members.register( self.state['userid'], terms.current() )
             elif self.utype == 'club':
-                accounts.create_club( self.state['userid'], self.state['name'] )
+                members.create_club( self.state['userid'], self.state['name'] )
             else:
                 raise Exception("Internal Error")
-        except accounts.NameConflict, e:
+        except members.InvalidArgument, e:
             problem = str(e)
-        except accounts.NoAvailableIDs, e:
+        except members.LDAPException, e:
             problem = str(e)
-        except accounts.InvalidArgument, e:
-            problem = str(e)
-        except accounts.LDAPException, e:
-            problem = str(e)
-        except accounts.KrbException, e:
-            problem = str(e)
-        except accounts.ChildFailed, e:
+        except members.ChildFailed, e:
             problem = str(e)
 
         if problem:
