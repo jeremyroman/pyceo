@@ -20,18 +20,6 @@ def list_group_members(data):
     search.member_list( mlist )
 
 def group_members(data):
-    data, uid = data
-
-    # only syscom may modify non-club groups
-    if data['group'] != 'office':
-        user = pwd.getpwuid(uid).pw_name
-        users = grp.getgrnam('syscom').gr_mem
-        if user not in users:
-            member = members.get(data['group'])
-            if member is None or 'objectClass' not in member \
-                    or 'club' not in member['objectClass']:
-                return
-
     add_data = data.copy()
     add_data['action'] = 'Add'
     remove_data = data.copy()

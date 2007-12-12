@@ -15,7 +15,6 @@ char *groups_base = DEF_STR;
 
 char *skeleton_dir = DEF_STR;
 char *quota_prototype = DEF_STR;
-char *homedir_prefix = DEF_STR;
 
 char *member_home = DEF_STR;
 char *member_shell = DEF_STR;
@@ -28,6 +27,8 @@ long club_min_id = DEF_LONG;
 long club_max_id = DEF_LONG;
 
 char *notify_hook = DEF_STR;
+
+long homedir_mode = DEF_LONG;
 
 char *realm = DEF_STR;
 
@@ -42,24 +43,21 @@ char *sasl_mech = DEF_STR;
 
 char *privileged_group = DEF_STR;
 
-long homedir_mode = DEF_LONG;
-long homedir_min_uid = DEF_LONG;
-
 static char *strvarnames[] = { "server_url", "users_base", "admin_principal",
-    "admin_keytab", "skeleton_dir", "quota_prototype", "homedir_prefix",
-    "member_home", "member_shell", "club_home", "club_shell", "realm",
-    "admin_bind_userid", "admin_bind_keytab", "groups_base",
-    "privileged_group", "notify_hook", "sasl_realm", "sasl_mech" };
+    "admin_keytab", "skeleton_dir", "quota_prototype", "member_home",
+    "member_shell", "club_home", "club_shell", "realm", "admin_bind_userid",
+    "admin_bind_keytab", "groups_base", "privileged_group", "notify_hook",
+    "sasl_realm", "sasl_mech" };
 static char **strvars[] = { &server_url, &users_base, &admin_principal,
-    &admin_keytab, &skeleton_dir, &quota_prototype, &homedir_prefix,
-    &member_home, &member_shell, &club_home, &club_shell, &realm,
-    &admin_bind_userid, &admin_bind_keytab, &groups_base,
-    &privileged_group, &notify_hook, &sasl_realm, &sasl_mech };
+    &admin_keytab, &skeleton_dir, &quota_prototype, &member_home,
+    &member_shell, &club_home, &club_shell, &realm, &admin_bind_userid,
+    &admin_bind_keytab, &groups_base, &privileged_group, &notify_hook,
+    &sasl_realm, &sasl_mech };
 
 static char *longvarnames[] = { "member_min_id", "member_max_id",
-    "homedir_mode", "homedir_min_uid", "club_min_id", "club_max_id" };
+    "homedir_mode", "club_min_id", "club_max_id" };
 static long *longvars[] = { &member_min_id, &member_max_id, &homedir_mode,
-    &homedir_min_uid, &club_min_id, &club_max_id };
+    &club_min_id, &club_max_id };
 
 void config_var(char *var, char *val) {
     int i;

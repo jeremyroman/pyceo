@@ -9,8 +9,6 @@ member_min_id = 20001
 member_max_id = 29999
 member_shell = "/bin/bash"
 member_home = "/users"
-member_desc = "CSC Member Account"
-member_group = ""
 
 ### Club Account Options ###
 
@@ -18,8 +16,6 @@ club_min_id = 30001
 club_max_id = 39999
 club_shell = "/bin/bash"
 club_home = "/users"
-club_desc = "CSC Club Account"
-club_group = ""
 
 ### Administrative Account Options
 
@@ -27,26 +23,17 @@ admin_min_id = 10001
 admin_max_id = 19999
 admin_shell = "/bin/bash"
 admin_home = "/users"
-admin_desc = "CSC Administrative Account"
-admin_group = ""
-
-### Account Group Options ###
-
-group_min_id = 10001
-group_max_id = 19999
-group_desc = "CSC Group"
 
 ### Home Directory Options ###
 
 skeleton_dir = "/etc/skel"
 homedir_mode = 0755
-homedir_min_uid = 10000
 quota_prototype = "ctdalek"
 
 ### Validation Tuning ###
 
 username_regex = "^[a-z][-a-z0-9]*$"
-groupname_regex = "^[a-z][-a-z0-9]*$"
-homedir_regex = "^/users/[^\.]+$"
 min_password_length = 4
 shells_file = "/etc/shells"
+privileged_group = "staff"
+notify_hook = "/etc/csc/thingie"

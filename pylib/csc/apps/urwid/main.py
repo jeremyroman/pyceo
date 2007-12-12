@@ -1,5 +1,4 @@
-import random
-import urwid.curses_display
+import random, ldap, urwid.curses_display
 
 from csc.apps.urwid.widgets import *
 from csc.apps.urwid.window import *
@@ -73,10 +72,8 @@ def main_menu():
         ("Search", search_members, None),
         ("Manage Club or Group Members", manage_group, None),
         ("Manage Positions", manage_positions, None),
-        ("Manage Office Staff", groups.group_members,
-            (office_data, ui.uid)),
-        ("Manage Systems Committee", groups.group_members,
-            (syscom_data, ui.uid)),
+        ("Manage Office Staff", groups.group_members, office_data),
+        ("Manage Systems Committee", groups.group_members, syscom_data),
         ("Exit", raise_abort, None),
     ]
 
@@ -153,11 +150,13 @@ def run():
     push_window( main_menu(), program_name() )
     event_loop( ui )
 
-def start(uid, gid):
-    ui.uid = uid
-    ui.gid = gid
-    ui.run_wrapper( run )
+def start():
+    try:
+        ui.run_wrapper( run )
+    except ldap.LOCAL_ERROR, e:
+        print e[0]['info']
+        print "Hint: You may need to run 'kinit'"
 
 if __name__ == '__main__':
     import os
-    start(os.getuid(), os.getgid())
+    start()

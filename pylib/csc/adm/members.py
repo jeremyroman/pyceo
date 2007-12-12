@@ -24,16 +24,11 @@ cfg = {}
 def configure():
     """Load Members Configuration"""
 
-    string_fields = [ 'member_shell', 'member_home', 'member_desc',
-            'member_group', 'club_shell', 'club_home', 'club_desc',
-            'club_group', 'admin_shell', 'admin_home', 'admin_desc',
-            'admin_group', 'group_desc', 'username_regex', 'groupname_regex',
-            'shells_file', 'server_url', 'users_base', 'groups_base',
-            'sasl_mech', 'sasl_realm', 'admin_bind_keytab',
-            'admin_bind_userid', 'realm', 'admin_principal', 'admin_keytab' ]
-    numeric_fields = [ 'member_min_id', 'member_max_id', 'club_min_id',
-            'club_max_id', 'admin_min_id', 'admin_max_id', 'group_min_id',
-            'group_max_id', 'min_password_length' ]
+    string_fields = [ 'username_regex', 'shells_file', 'server_url',
+            'users_base', 'groups_base', 'sasl_mech', 'sasl_realm',
+            'admin_bind_keytab', 'admin_bind_userid', 'realm',
+            'admin_principal', 'admin_keytab' ]
+    numeric_fields = [ 'min_password_length' ]
 
     # read configuration file
     cfg_tmp = conf.read(CONFIG_FILE)
@@ -88,10 +83,9 @@ def connect():
     """Connect to LDAP."""
 
     configure()
+
     ldap_connection.connect_sasl(cfg['server_url'], cfg['sasl_mech'],
-        cfg['sasl_realm'], cfg['admin_bind_userid'],
-        ('keytab', cfg['admin_bind_keytab']), cfg['users_base'],
-        cfg['groups_base'])
+        cfg['sasl_realm'], cfg['users_base'], cfg['groups_base'])
 
 def disconnect():
     """Disconnect from LDAP."""
@@ -188,8 +182,7 @@ def list_name(name):
 
     Parameters:
         name - the name to match members against
-
-    Returns: a list of member dictionaries
+Returns: a list of member dictionaries
 
     Example: list_name('Spang'): -> {
                  'mspang': { 'cn': 'Michael Spang', ... },

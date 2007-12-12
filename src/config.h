@@ -4,12 +4,8 @@ extern char *server_url;
 extern char *users_base;
 extern char *groups_base;
 
-extern char *admin_bind_dn;
-extern char *admin_bind_pw;
-
 extern char *skeleton_dir;
 extern char *quota_prototype;
-extern char *homedir_prefix;
 
 extern char *member_home;
 extern char *member_shell;
@@ -24,7 +20,6 @@ extern long club_max_id;
 extern char *notify_hook;
 
 extern long homedir_mode;
-extern long homedir_min_uid;
 
 extern char *realm;
 

@@ -9,22 +9,6 @@ When run from an unprivileged account, authentication will be performed
 before the account information is changed.
 """
 import os, sys, pwd, getopt, PAM
-
-safe_environment = ['LOGNAME', 'USERNAME', 'USER', 'HOME', 'TERM', 'LANG'
-    'LC_ALL', 'LC_COLLATE', 'LC_CTYPE', 'LC_MESSAGES', 'LC_MONETARY',
-    'LC_NUMERIC', 'LC_TIME', 'UID', 'GID', 'SSH_CONNECTION', 'SSH_AUTH_SOCK',
-    'SSH_CLIENT']
-
-for key in os.environ.keys():
-    if key not in safe_environment:
-        del os.environ[key]
-
-os.environ['PATH'] = '/usr/sbin:/usr/bin:/sbin:/bin'
-
-for pathent in sys.path[:]:
-    if not pathent.find('/usr') == 0:
-        sys.path.remove(pathent)
-
 from csc.common.excep import InvalidArgument
 from csc.adm import accounts
 

@@ -68,13 +68,13 @@ class LDAPConnection(object):
         self.group_base = group_base
 
 
-    def connect_sasl(self, uri, mech, realm, userid, password, user_base, group_base):
+    def connect_sasl(self, uri, mech, realm, user_base, group_base):
 
         # open the connection
         self.ldap = ldap.initialize(uri)
 
         # authenticate
-        sasl = Sasl(mech, realm, userid, password)
+        sasl = Sasl(mech, realm)
         self.ldap.sasl_interactive_bind_s('', sasl)
 
         self.user_base = user_base
@@ -364,16 +364,9 @@ class LDAPConnection(object):
 
 class Sasl:
 
-    def __init__(self, mech, realm, userid, password):
+    def __init__(self, mech, realm):
         self.mech = mech
-        if mech == 'GSSAPI':
-            credtype, cred = password
-            kinit_args = [ '/usr/bin/kinit', '%s@%s' % (userid, realm) ]
-            if credtype == 'keytab':
-                kinit_args += [ '-kt', cred ]
-
-            kinit = Popen(kinit_args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-            kinit.wait()
+        self.realm = realm
 
     def callback(self, id, challenge, prompt, defresult):
         return ''

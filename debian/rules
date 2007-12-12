@@ -2,15 +2,8 @@
 
 PYTHON := python2.4
 
-build: build-stamp
-
-build-stamp:
-	mkdir build
-	$(CC) -DFULL_PATH='"/usr/lib/csc/ceo"' -o build/ceo misc/setuid-prog.c
-	$(CC) -DFULL_PATH='"/usr/lib/csc/csc-chfn"' -o build/csc-chfn misc/setuid-prog.c
-	$(CC) -DFULL_PATH='"/usr/lib/csc/csc-chsh"' -o build/csc-chsh misc/setuid-prog.c
+build:
 	cd src && make
-	touch build-stamp
 
 clean:
 	dh_testdir
@@ -30,8 +23,7 @@ install: build
 	dh_install pylib/* usr/lib/$(PYTHON)/site-packages/
 	dh_install etc/* etc/csc/
 
-	dh_install bin/ceo bin/csc-chsh bin/csc-chfn usr/lib/csc/
-	dh_install build/ceo bin/ceoquery build/csc-chsh build/csc-chfn src/addmember src/addclub usr/bin/
+	dh_install bin/ceo bin/ceoquery bin/csc-chsh bin/csc-chfn src/addmember src/addclub usr/bin/
 	dh_install misc/csc.schema etc/ldap/schema/
 	
 binary-arch: build install
