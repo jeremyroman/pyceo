@@ -120,10 +120,6 @@ def create_member(username, password, name, program):
     See: create()
     """
 
-    # check connection
-    if not connected():
-        raise MemberException("not connected to LDAP and Kerberos")
-
     # check username format
     if not username or not re.match(cfg['username_regex'], username):
         raise InvalidArgument("username", username, "expected format %s" % repr(cfg['username_regex']))
