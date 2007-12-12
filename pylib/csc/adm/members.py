@@ -54,13 +54,6 @@ class InvalidTerm(MemberException):
     def __str__(self):
         return "Term is invalid: %s" % self.term
 
-class InvalidRealName(MemberException):
-    """Exception class for invalid real names."""
-    def __init__(self, name):
-        self.name = name
-    def __str__(self):
-        return "Name is invalid: %s" % self.name
-
 class NoSuchMember(MemberException):
     """Exception class for nonexistent members."""
     def __init__(self, memberid):
@@ -97,50 +90,7 @@ def connected():
 
 
 
-### Member Table ###
-
-def new(uid, realname, program=None):
-    """
-    Registers a new CSC member. The member is added to the members table
-    and registered for the current term.
-
-    Parameters:
-        uid       - the initial user id
-        realname  - the full real name of the member
-        program   - the program of study of the member
-
-    Returns: the username of the new member
-
-    Exceptions:
-        InvalidRealName    - if the real name is malformed
-
-    Example: new("Michael Spang", program="CS") -> "mspang"
-    """
-
-    # blank attributes should be NULL
-    if program == '': program = None
-    if uid == '': uid = None
-
-
-    # check real name format (UNIX account real names must not contain [,:=])
-    if not re.match(cfg['realname_regex'], realname):
-        raise InvalidRealName(realname)
-
-    # check for duplicate userid
-    member = ldap_connection.user_lookup(uid)
-    if member:
-        raise InvalidArgument("uid", uid, "duplicate uid")
-
-    # add the member to the directory
-    ldap_connection.member_add(uid, realname, program)
-
-    # register them for this term in the directory
-    member = ldap_connection.member_lookup(uid)
-    member['term'] = [ terms.current() ]
-    ldap_connection.user_modify(uid, member)
-
-    return uid
-
+### Members ###
 
 def get(userid):
     """
@@ -283,33 +233,6 @@ def set_position(position, members):
             mlist = ldap_connection.make_modlist(entry[0], entry[1])
             ceo_ldap.modify_s(dn, mlist)
 
-def delete(userid):
-    """
-    Erase all records of a member.
-
-    Note: real members are never removed from the database
-
-    Returns: ldap entry of the member
-
-    Exceptions:
-        NoSuchMember - if the user id does not exist
-
-    Example: delete('ctdalek') -> { 'cn': [ 'Calum T. Dalek' ], 'term': ['s1993'], ... }
-    """
-
-    # save member data
-    member = ldap_connection.user_lookup(userid)
-
-    # bail if not found
-    if not member:
-        raise NoSuchMember(userid)
-
-    # remove data from the directory
-    uid = member['uid'][0]
-    ldap_connection.user_delete(uid)
-
-    return member
-
 
 def change_group_member(action, group, userid):
 
@@ -333,7 +256,7 @@ def change_group_member(action, group, userid):
     ceo_ldap.modify_s(group_dn, mlist)
 
 
-### Term Table ###
+### Terms ###
 
 def register(userid, term_list):
     """
@@ -391,25 +314,6 @@ def registered(userid, term):
     return 'term' in member and term in member['term']
 
 
-def member_terms(userid):
-    """
-    Retrieves a list of terms a member is
-    registered for.
-
-    Parameters:
-        userid - the member's username
-
-    Returns: list of term strings
-
-    Example: registered('ctdalek') -> 's1993'
-    """
-
-    member = ldap_connection.member_lookup(userid)
-    if not 'term' in member:
-        return []
-    else:
-        return member['term']
-
 def group_members(group):
 
     """
@@ -427,96 +331,3 @@ def group_members(group):
             return []
     else:
         return []
-
-
-### Tests ###
-
-if __name__ == '__main__':
-
-    from csc.common.test import *
-
-    # t=test m=member u=updated
-    tmname = 'Test Member'
-    tmuid = 'testmember'
-    tmprogram = 'Metaphysics'
-    tm2name = 'Test Member 2'
-    tm2uid = 'testmember2'
-    tm2uname = 'Test Member II'
-    tm2uprogram = 'Pseudoscience'
-
-    tmdict = {'cn': [tmname], 'uid': [tmuid], 'program': [tmprogram] }
-    tm2dict = {'cn': [tm2name], 'uid': [tm2uid] }
-    tm2udict = {'cn': [tm2uname], 'uid': [tm2uid], 'program': [tm2uprogram] }
-
-    thisterm = terms.current()
-    nextterm = terms.next(thisterm)
-
-    test(connect)
-    connect()
-    success()
-
-    test(connected)
-    assert_equal(True, connected())
-    success()
-
-    test(new)
-    tmid = new(tmuid, tmname, tmprogram)
-    tm2id = new(tm2uid, tm2name)
-    success()
-
-    test(registered)
-    assert_equal(True, registered(tmid, thisterm))
-    assert_equal(True, registered(tm2id, thisterm))
-    assert_equal(False, registered(tmid, nextterm))
-    success()
-
-    test(get)
-    tmp = get(tmid)
-    del tmp['objectClass']
-    del tmp['term']
-    assert_equal(tmdict, tmp)
-    tmp = get(tm2id)
-    del tmp['objectClass']
-    del tmp['term']
-    assert_equal(tm2dict, tmp)
-    success()
-
-    test(list_name)
-    assert_equal(True, tmid in list_name(tmname).keys())
-    assert_equal(True, tm2id in list_name(tm2name).keys())
-    success()
-
-    test(register)
-    register(tmid, nextterm)
-    assert_equal(True, registered(tmid, nextterm))
-    success()
-
-    test(member_terms)
-    assert_equal([thisterm, nextterm], member_terms(tmid))
-    assert_equal([thisterm], member_terms(tm2id))
-    success()
-
-    test(list_term)
-    assert_equal(True, tmid in list_term(thisterm).keys())
-    assert_equal(True, tmid in list_term(nextterm).keys())
-    assert_equal(True, tm2id in list_term(thisterm).keys())
-    assert_equal(False, tm2id in list_term(nextterm).keys())
-    success()
-
-    test(get)
-    tmp = get(tm2id)
-    del tmp['objectClass']
-    del tmp['term']
-    assert_equal(tm2dict, tmp)
-    success()
-
-    test(delete)
-    delete(tmid)
-    delete(tm2id)
-    success()
-
-    test(disconnect)
-    disconnect()
-    assert_equal(False, connected())
-    disconnect()
-    success()
