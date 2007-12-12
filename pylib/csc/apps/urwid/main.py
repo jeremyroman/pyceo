@@ -99,7 +99,7 @@ def new_club(*args, **kwargs):
 def manage_group(*args, **kwargs):
     push_wizard("Manage Club or Group Members", [
         groups.IntroPage,
-        (groups.InfoPage, ui.uid),
+        groups.InfoPage,
     ], (60, 15))
 
 def renew_member(*args, **kwargs):

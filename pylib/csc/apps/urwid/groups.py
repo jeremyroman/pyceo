@@ -54,9 +54,6 @@ class IntroPage(WizardPanel):
         return False
 
 class InfoPage(WizardPanel):
-    def __init__(self, state, uid):
-        state['uid'] = uid
-        WizardPanel.__init__(self, state)
     def init_widgets(self):
         self.group = WordEdit("Club or Group: ")
         self.widgets = [
@@ -73,7 +70,7 @@ class InfoPage(WizardPanel):
             "group" : group_name,
             "groups" : [group],
         }
-        group_members((data, self.state['uid']))
+        group_members(data)
 
 class ChangeMember(WizardPanel):
     def __init__(self, state, data):
