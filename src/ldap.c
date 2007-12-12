@@ -122,6 +122,12 @@ int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, 
 
     mods[++i] = xmalloc(sizeof(LDAPMod));
     mods[i]->mod_op = LDAP_MOD_ADD;
+    mods[i]->mod_type = "loginShell";
+    char *shells[] = { shell, NULL };
+    mods[i]->mod_values = shells;
+
+    mods[++i] = xmalloc(sizeof(LDAPMod));
+    mods[i]->mod_op = LDAP_MOD_ADD;
     mods[i]->mod_type = "uidNumber";
     char idno[16];
     snprintf(idno, sizeof(idno), "%d", no);
