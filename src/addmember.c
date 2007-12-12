@@ -59,7 +59,7 @@ int addmember() {
         deny("user %s already exists", userid);
 
     if (ceo_read_password(password, sizeof(password), use_stdin))
-        return;
+        return 1;
 
     ceo_krb5_init();
     ceo_ldap_init();
