@@ -666,10 +666,10 @@ class Sasl:
     def __init__(self, mech, realm, userid, password):
         self.mech = mech
         if mech == 'GSSAPI':
-            type, arg = password
+            credtype, cred = password
             kinit_args = [ '/usr/bin/kinit', '%s@%s' % (userid, realm) ]
-            if type == 'keytab':
-                kinit_args += [ '-kt', arg ]
+            if credtype == 'keytab':
+                kinit_args += [ '-kt', cred ]
 
             kinit = Popen(kinit_args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
             kinit.wait()

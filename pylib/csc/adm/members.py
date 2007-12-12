@@ -270,15 +270,15 @@ def set_position(position, members):
     if len(mods['del']) == 0 and len(mods['add']) == 0:
         return
 
-    for type in ['del', 'add']:
-        for userid in mods[type]:
+    for action in ['del', 'add']:
+        for userid in mods[action]:
             dn = 'uid=%s,%s' % (escape(userid), user_base)
             entry1 = {'position' : [position]}
             entry2 = {} #{'position' : []}
             entry = ()
-            if type == 'del':
+            if action == 'del':
                 entry = (entry1, entry2)
-            elif type == 'add':
+            elif action == 'add':
                 entry = (entry2, entry1)
             mlist = ldap_connection.make_modlist(entry[0], entry[1])
             ceo_ldap.modify_s(dn, mlist)

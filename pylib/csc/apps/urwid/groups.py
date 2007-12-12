@@ -10,7 +10,7 @@ def menu_items(items):
     return [ urwid.AttrWrap( ButtonText( cb, data, txt ), 'menu', 'selected') for (txt, cb, data) in items ]
 
 def change_group_member(data):
-    push_wizard("%s %s Member" % (data["type"], data["name"]), [
+    push_wizard("%s %s Member" % (data["action"], data["name"]), [
         (ChangeMember, data),
         EndPage,
     ])
@@ -33,9 +33,9 @@ def group_members(data):
                 return
 
     add_data = data.copy()
-    add_data['type'] = 'Add'
+    add_data['action'] = 'Add'
     remove_data = data.copy()
-    remove_data['type'] = 'Remove'
+    remove_data['action'] = 'Remove'
     menu = [
         ("Add %s member" % data["name"].lower(),
             change_group_member, add_data),
@@ -96,7 +96,7 @@ class ChangeMember(WizardPanel):
 
         data = self.state['data']
         self.widgets = [
-            urwid.Text( "%s %s Member" % (data['type'], data['name']) ),
+            urwid.Text( "%s %s Member" % (data['action'], data['name']) ),
             urwid.Divider(),
             self.userid,
         ]
@@ -125,21 +125,21 @@ class EndPage(WizardPanel):
         pop_window()
     def activate(self):
         data = self.state['data']
-        type = data['type'].lower()
+        action = data['action'].lower()
         failed = []
         for group in data['groups']:
             try:
-                members.change_group_member(type, group, self.state['userid'])
+                members.change_group_member(action, group, self.state['userid'])
             except:
                 failed.append(group)
         if len(failed) == 0:
-            self.headtext.set_text("%s succeeded" % data['type'])
+            self.headtext.set_text("%s succeeded" % data['action'])
             self.midtext.set_text("Congratulations, the group modification "
                 "has succeeded.")
         else:
-            self.headtext.set_text("%s partially succeeded" % data['type'])
+            self.headtext.set_text("%s partially succeeded" % data['action'])
             self.midtext.set_text("Failed to %s member to %s for the "
                 "following groups: %s. This may indicate an attempt to add a "
                 "duplicate group member or to delete a non-present group "
-                "member." % (data['type'].lower(), data['name'],
+                "member." % (data['action'].lower(), data['name'],
                 ', '.join(failed)))

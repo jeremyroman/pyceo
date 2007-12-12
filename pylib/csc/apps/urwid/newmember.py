@@ -135,7 +135,7 @@ class PassPage(WizardPanel):
 
 class EndPage(WizardPanel):
     def __init__(self, state, utype='member'):
-        self.type = utype
+        self.utype = utype
         WizardPanel.__init__(self, state)
     def init_widgets(self):
         self.headtext = urwid.Text("")
@@ -152,10 +152,10 @@ class EndPage(WizardPanel):
     def activate(self):
         problem = None
         try:
-            if self.type == 'member':
+            if self.utype == 'member':
                 accounts.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'] )
                 members.register( self.state['userid'], terms.current() )
-            elif self.type == 'club':
+            elif self.utype == 'club':
                 accounts.create_club( self.state['userid'], self.state['name'] )
             else:
                 raise Exception("Internal Error")
