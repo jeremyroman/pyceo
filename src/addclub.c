@@ -135,7 +135,7 @@ int addclub() {
     ceo_ldap_cleanup();
     ceo_krb5_cleanup();
 
-    return !krb_ok && !user_ok && !group_ok && !home_ok && quota_ok;
+    return krb_ok || user_ok || group_ok || home_ok || quota_ok;
 }
 
 int main(int argc, char *argv[]) {
