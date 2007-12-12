@@ -355,6 +355,11 @@ def register(userid, term_list):
     Example: register(3349, ["w2007", "s2007"])
     """
 
+    ceo_ldap = ldap_connection.ldap
+    user_base = ldap_connection.user_base
+    escape = ldap_connection.escape
+    user_dn = 'uid=%s,%s' % (escape(userid), user_base)
+
     if type(term_list) in (str, unicode):
         term_list = [ term_list ]
 
@@ -365,16 +370,21 @@ def register(userid, term_list):
     if not ldap_member:
         raise NoSuchMember(userid)
 
+    new_member = ldap_member.copy()
+    new_member['term'] = new_member['term'][:]
+
     for term in term_list:
 
         # check term syntax
         if not re.match('^[wsf][0-9]{4}$', term):
             raise InvalidTerm(term)
 
-        # add the term to the directory
-        ldap_member['term'].append(term)
+        # add the term to the entry
+        if not term in ldap_member['term']:
+            new_member['term'].append(term)
 
-    ldap_connection.user_modify(userid, ldap_member)
+    mlist = ldap_connection.make_modlist(ldap_member, new_member)
+    ceo_ldap.modify_s(user_dn, mlist)
 
 
 def registered(userid, term):
