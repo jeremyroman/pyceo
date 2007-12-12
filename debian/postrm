@@ -7,10 +7,6 @@ case "$1" in
             dpkg-statoverride --remove /usr/bin/ceo || true
         fi
 
-        if dpkg-statoverride --list /usr/bin/addhomedir > /dev/null; then
-            dpkg-statoverride --remove /usr/bin/addhomedir || true
-        fi
-
         if dpkg-statoverride --list /usr/bin/ceoquery > /dev/null; then
             dpkg-statoverride --remove /usr/bin/ceoquery || true
         fi

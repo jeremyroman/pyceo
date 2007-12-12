@@ -23,10 +23,6 @@ case "$1" in
             dpkg-statoverride --add --update $CEO $OFFICE $SUID /usr/bin/ceo
         fi
 
-        if ! dpkg-statoverride --list /usr/bin/addhomedir > /dev/null; then
-            dpkg-statoverride --add --update root $OFFICE $SUID /usr/bin/addhomedir
-        fi
-
         if ! dpkg-statoverride --list /usr/bin/addmember > /dev/null; then
             dpkg-statoverride --add --update root $OFFICE $SUID /usr/bin/addmember
         fi
