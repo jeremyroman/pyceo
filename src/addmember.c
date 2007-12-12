@@ -45,7 +45,7 @@ static void usage() {
     exit(2);
 }
 
-void addmember() {
+int addmember() {
     int krb_ok, user_ok, group_ok, home_ok, quota_ok;
     int id;
     char homedir[1024];
@@ -190,7 +190,5 @@ int main(int argc, char *argv[]) {
     if (argc - optind)
         program = argv[optind++];
 
-    addmember();
-
-    return 0;
+    return addmember();
 }

@@ -40,7 +40,7 @@ static void usage() {
     exit(2);
 }
 
-void addclub() {
+int addclub() {
     int krb_ok, user_ok, group_ok, home_ok, quota_ok;
     int id;
     char homedir[1024];
@@ -175,7 +175,5 @@ int main(int argc, char *argv[]) {
     userid = argv[optind++];
     name = argv[optind++];
 
-    addclub();
-
-    return 0;
+    return addclub();
 }
