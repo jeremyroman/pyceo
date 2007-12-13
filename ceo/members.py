@@ -10,7 +10,7 @@ Future changes to the members database that need to be atomic
 must also be moved into this module.
 """
 import re, subprocess, ldap
-from ceo import conf, excep, ldapi
+from ceo import conf, ldapi
 from ceo.excep import InvalidArgument
 
 
@@ -43,8 +43,8 @@ def configure():
 
 ### Exceptions ###
 
+LDAPException = ldap.LDAPError
 ConfigurationException = conf.ConfigurationException
-LDAPException = ldapi.LDAPException
 
 class MemberException(Exception):
     """Base exception class for member-related errors."""
@@ -76,26 +76,30 @@ class ChildFailed(MemberException):
 ### Connection Management ###
 
 # global directory connection
-ldap_connection = ldapi.LDAPConnection()
+ld = None
 
 def connect():
     """Connect to LDAP."""
 
     configure()
 
-    ldap_connection.connect_sasl(cfg['server_url'], cfg['sasl_mech'],
-        cfg['sasl_realm'], cfg['users_base'], cfg['groups_base'])
+    global ld
+    ld = ldapi.connect_sasl(cfg['server_url'],
+            cfg['sasl_mech'], cfg['sasl_realm'])
+
 
 def disconnect():
     """Disconnect from LDAP."""
 
-    ldap_connection.disconnect()
+    global ld
+    ld.unbind_s()
+    ld = None
 
 
 def connected():
     """Determine whether the connection has been established."""
 
-    return ldap_connection.connected()
+    return ld and ld.connected()
 
 
 
@@ -149,7 +153,7 @@ def get(userid):
              }
     """
 
-    return ldap_connection.user_lookup(userid)
+    return ldapi.lookup(ld, 'uid', userid, cfg['users_base'])
 
 
 def list_term(term):
@@ -168,7 +172,10 @@ def list_term(term):
              }
     """
 
-    return ldap_connection.member_search_term(term)
+    members = ldapi.search(ld, cfg['users_base'],
+            '(&(objectClass=member)(term=%s))', [ term ])
+
+    return dict([(member['uid'], member) for member in members])
 
 
 def list_name(name):
@@ -177,7 +184,8 @@ def list_name(name):
 
     Parameters:
         name - the name to match members against
-Returns: a list of member dictionaries
+
+    Returns: a list of member dictionaries
 
     Example: list_name('Spang'): -> {
                  'mspang': { 'cn': 'Michael Spang', ... },
@@ -185,7 +193,10 @@ Returns: a list of member dictionaries
              ]
     """
 
-    return ldap_connection.member_search_name(name)
+    members = ldapi.search(ld, cfg['users_base'],
+            '(&(objectClass=member)(cn~=%s))', [ name ])
+
+    return dict([(member['uid'], member) for member in members])
 
 
 def list_group(group):
@@ -225,10 +236,7 @@ def list_positions():
              ]
     """
 
-    ceo_ldap = ldap_connection.ldap
-    user_base = ldap_connection.user_base
-
-    members = ceo_ldap.search_s(user_base, ldap.SCOPE_SUBTREE, '(position=*)')
+    members = ld.search_s(cfg['users_base'], ldap.SCOPE_SUBTREE, '(position=*)')
     positions = {}
     for (_, member) in members:
         for position in member['position']:
@@ -236,6 +244,7 @@ def list_positions():
                 positions[position] = {}
             positions[position][member['uid'][0]] = member
     return positions
+
 
 def set_position(position, members):
     """
@@ -248,12 +257,8 @@ def set_position(position, members):
     Example: set_position('president', ['dtbartle'])
     """
 
-    ceo_ldap = ldap_connection.ldap
-    user_base = ldap_connection.user_base
-    escape = ldap_connection.escape
-
-    res = ceo_ldap.search_s(user_base, ldap.SCOPE_SUBTREE,
-        '(&(objectClass=member)(position=%s))' % escape(position))
+    res = ld.search_s(cfg['users_base'], ldap.SCOPE_SUBTREE,
+        '(&(objectClass=member)(position=%s))' % ldapi.escape(position))
     old = set([ member['uid'][0] for (_, member) in res ])
     new = set(members)
     mods = {
@@ -265,7 +270,7 @@ def set_position(position, members):
 
     for action in ['del', 'add']:
         for userid in mods[action]:
-            dn = 'uid=%s,%s' % (escape(userid), user_base)
+            dn = 'uid=%s,%s' % (ldapi.escape(userid), cfg['users_base'])
             entry1 = {'position' : [position]}
             entry2 = {} #{'position' : []}
             entry = ()
@@ -273,19 +278,13 @@ def set_position(position, members):
                 entry = (entry1, entry2)
             elif action == 'add':
                 entry = (entry2, entry1)
-            mlist = ldap_connection.make_modlist(entry[0], entry[1])
-            ceo_ldap.modify_s(dn, mlist)
+            mlist = ldapi.make_modlist(entry[0], entry[1])
+            ld.modify_s(dn, mlist)
 
 
 def change_group_member(action, group, userid):
-
-    ceo_ldap = ldap_connection.ldap
-    user_base = ldap_connection.user_base
-    group_base = ldap_connection.group_base
-    escape = ldap_connection.escape
-
-    user_dn = 'uid=%s,%s' % (escape(userid), user_base)
-    group_dn = 'cn=%s,%s' % (escape(group), group_base)
+    user_dn = 'uid=%s,%s' % (ldapi.escape(userid), cfg['users_base'])
+    group_dn = 'cn=%s,%s' % (ldapi.escape(group), cfg['groups_base'])
     entry1 = {'uniqueMember' : []}
     entry2 = {'uniqueMember' : [user_dn]}
     entry = []
@@ -295,8 +294,8 @@ def change_group_member(action, group, userid):
         entry = (entry2, entry1)
     else:
         raise InvalidArgument("action", action, "invalid action")
-    mlist = ldap_connection.make_modlist(entry[0], entry[1])
-    ceo_ldap.modify_s(group_dn, mlist)
+    mlist = ldapi.make_modlist(entry[0], entry[1])
+    ld.modify_s(group_dn, mlist)
 
 
 
@@ -350,15 +349,12 @@ def register(userid, term_list):
     Example: register(3349, ["w2007", "s2007"])
     """
 
-    ceo_ldap = ldap_connection.ldap
-    user_base = ldap_connection.user_base
-    escape = ldap_connection.escape
-    user_dn = 'uid=%s,%s' % (escape(userid), user_base)
+    user_dn = 'uid=%s,%s' % (ldapi.escape(userid), cfg['users_base'])
 
     if type(term_list) in (str, unicode):
         term_list = [ term_list ]
 
-    ldap_member = ldap_connection.member_lookup(userid)
+    ldap_member = get(userid)
     if ldap_member and 'term' not in ldap_member:
         ldap_member['term'] = []
 
@@ -378,8 +374,8 @@ def register(userid, term_list):
         if not term in ldap_member['term']:
             new_member['term'].append(term)
 
-    mlist = ldap_connection.make_modlist(ldap_member, new_member)
-    ceo_ldap.modify_s(user_dn, mlist)
+    mlist = ldapi.make_modlist(ldap_member, new_member)
+    ld.modify_s(user_dn, mlist)
 
 
 def registered(userid, term):
@@ -396,7 +392,7 @@ def registered(userid, term):
     Example: registered("mspang", "f2006") -> True
     """
 
-    member = ldap_connection.member_lookup(userid)
+    member = get(userid)
     return 'term' in member and term in member['term']
 
 
@@ -406,7 +402,8 @@ def group_members(group):
     Returns a list of group members
     """
 
-    group = ldap_connection.group_lookup(group)
+    group = ldapi.lookup(ld, 'cn', group, cfg['groups_base'])
+
     if group:
         if 'uniqueMember' in group:
             r = re.compile('^uid=([^,]*)')
