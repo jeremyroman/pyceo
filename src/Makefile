@@ -5,6 +5,9 @@ KADM := $(shell krb5-config --libs krb5 kadm-client)
 
 LIBCEO := util.o common.o config.o parser.o ldap.o krb5.o kadm.o addhomedir.o
 
+DESTDIR :=
+PREFIX := /usr/local
+
 all: addmember addclub
 
 clean:
@@ -18,3 +21,8 @@ addclub: $(LIBCEO) addclub.o
 
 config-test: config-test.o parser.o util.o
 	$(CC) $(LDFLAGS) $^ -o $@
+
+install: addmember addclub
+	install -d $(DESTDIR)$(PREFIX)/bin
+	install addmember addclub $(DESTDIR)$(PREFIX)/bin
+

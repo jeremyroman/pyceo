@@ -2,12 +2,12 @@ Source: ceo
 Section: admin
 Priority: optional
 Maintainer: Michael Spang <mspang@uwaterloo.ca>
-Build-Depends: debhelper (>= 4.0.0)
+Build-Depends: debhelper (>= 5.0.0), python-dev (>= 2.4), python-support (>= 0.3), libkrb5-dev, libldap2-dev, libsasl2-dev
 Standards-Version: 3.7.2
 
 Package: ceo
 Architecture: any
-Depends: python2.4, python-ldap, python-urwid, krb5-user, less, python-pam, ${shlibs:Depends}
+Depends: python-ldap, python-urwid, python-pam, ${python:Depends}, ${shlibs:Depends}
 Recommends: quota
 Description: Computer Science Club Administrative Utilities
  This package contains the CSC Electronic Office

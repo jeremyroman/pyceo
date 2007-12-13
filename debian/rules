@@ -1,48 +1,36 @@
 #!/usr/bin/make -f
 
-PYTHON := python2.4
-
 build:
+	python setup.py -q build
 	cd src && make
 
 clean:
 	dh_testdir
 	dh_testroot
 	dh_clean
-	rm -f build-stamp
-	rm -rf build/
-	find pylib/ -name "*.pyc" -print0 | xargs -0 rm -f
-	cd src && make clean
+	$(MAKE) -C src clean
+	python setup.py -q clean -a
 
 install: build
 	dh_testdir
 	dh_testroot
-
-	dh_installdirs etc/csc usr/lib/$(PYTHON)/site-packages usr/share/csc \
-	               usr/lib/csc usr/bin etc/ldap/schema
-	dh_install pylib/* usr/lib/$(PYTHON)/site-packages/
-	dh_install etc/* etc/csc/
-
-	dh_install bin/ceo bin/ceoquery bin/csc-chsh bin/csc-chfn src/addmember src/addclub usr/bin/
-	dh_install misc/csc.schema etc/ldap/schema/
+	dh_installdirs
+	python setup.py -q install --no-compile -O0 --root=debian/ceo
+	$(MAKE) -C src DESTDIR=$(PWD)/debian/ceo PREFIX=/usr install
 	
 binary-arch: build install
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs 
-	dh_installdocs docs/*
+	dh_installdocs
 	dh_installexamples
 	dh_install
-#	dh_installlogrotate
-#	dh_installcron
 	dh_installman
 	dh_link
 	dh_strip
 	dh_compress
 	dh_fixperms
-#	dh_perl
-#	dh_python
-#	dh_makeshlibs
+	dh_pysupport
 	dh_installdeb
 	dh_shlibdeps
 	dh_gencontrol
