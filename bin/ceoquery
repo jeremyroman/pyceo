@@ -3,7 +3,7 @@
 ceoquery - a script to lookup member and account information
 """
 import os, sys
-from csc.adm import members, terms
+from ceo import members, terms
 
 try:
     members.connect()

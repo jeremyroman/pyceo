@@ -1,16 +1,9 @@
 import random, ldap, urwid.curses_display
-
-from csc.apps.urwid.widgets import *
-from csc.apps.urwid.window import *
-import csc.apps.urwid.newmember as newmember
-import csc.apps.urwid.renew as renew
-import csc.apps.urwid.info as info
-import csc.apps.urwid.search as search
-import csc.apps.urwid.positions as positions
-import csc.apps.urwid.groups as groups
-
-from csc.adm import members, terms
-from csc.common.excep import InvalidArgument
+from ceo import members, terms
+from ceo.excep import InvalidArgument
+from ceo.urwid.widgets import *
+from ceo.urwid.window import *
+from ceo.urwid import newmember, renew, info, search, positions, groups
 
 ui = urwid.curses_display.Screen()
 

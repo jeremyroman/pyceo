@@ -1,10 +1,9 @@
-import urwid, pwd, grp
-from csc.apps.urwid.widgets import *
-from csc.apps.urwid.window import *
-import csc.apps.urwid.search as search
-
-from csc.adm import members
-from csc.common.excep import InvalidArgument
+import urwid
+from ceo import members
+from ceo.excep import InvalidArgument
+from ceo.urwid import search
+from ceo.urwid.widgets import *
+from ceo.urwid.window import *
 
 def menu_items(items):
     return [ urwid.AttrWrap( ButtonText( cb, data, txt ), 'menu', 'selected') for (txt, cb, data) in items ]

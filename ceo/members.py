@@ -10,9 +10,8 @@ Future changes to the members database that need to be atomic
 must also be moved into this module.
 """
 import re, subprocess, ldap
-from csc.common import conf
-from csc.common.excep import InvalidArgument
-from csc.backends import ldapi
+from ceo import conf, excep, ldapi
+from ceo.excep import InvalidArgument
 
 
 ### Configuration ###

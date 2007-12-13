@@ -233,7 +233,7 @@ def next_unregistered(registered):
 
 if __name__ == '__main__':
 
-    from csc.common.test import *
+    from ceo.test import test, assert_equal, success
 
     test(parse); assert_equal(110, parse('f2006')); success()
     test(generate); assert_equal('f2006', generate(110)); success()

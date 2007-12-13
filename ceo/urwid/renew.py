@@ -1,9 +1,7 @@
 import urwid
-
-from csc.apps.urwid.widgets import *
-from csc.apps.urwid.window import *
-
-from csc.adm import members, terms
+from ceo import members, terms
+from ceo.urwid.widgets import *
+from ceo.urwid.window import *
 
 class IntroPage(WizardPanel):
     def init_widgets(self):

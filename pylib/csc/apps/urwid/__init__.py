@@ -1,3 +1,0 @@
-"""
-Urwid User Interface
-"""

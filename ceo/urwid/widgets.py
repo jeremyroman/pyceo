@@ -1,6 +1,6 @@
 import urwid
-from csc.apps.urwid.ldapfilter import *
-from csc.apps.urwid.window import raise_back, push_window
+from ceo.urwid.ldapfilter import *
+from ceo.urwid.window import raise_back, push_window
 
 def push_wizard(name, pages, dimensions=(50, 10)):
     state = {}

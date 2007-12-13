@@ -1,10 +1,8 @@
 import urwid
-
-from csc.apps.urwid.widgets import *
-from csc.apps.urwid.window import *
-
-from csc.adm import members, terms
-from csc.common.excep import InvalidArgument
+from ceo import members, terms
+from ceo.excep import InvalidArgument
+from ceo.urwid.widgets import *
+from ceo.urwid.window import *
 
 class TermPage(WizardPanel):
     def init_widgets(self):

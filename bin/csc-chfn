@@ -9,8 +9,8 @@ When run from an unprivileged account, authentication will be performed
 before the account information is changed.
 """
 import os, sys, pwd, getopt, PAM
-from csc.common.excep import InvalidArgument
-from csc.adm import accounts
+from ceo import accounts
+from ceo.excep import InvalidArgument
 
 progname = os.path.basename(sys.argv[0])
 
