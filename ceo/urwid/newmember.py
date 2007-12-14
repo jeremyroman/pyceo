@@ -1,6 +1,5 @@
 import urwid
 from ceo import members, terms
-from ceo.excep import InvalidArgument
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 

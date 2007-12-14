@@ -19,10 +19,10 @@ class LdapFilter:
             if key == 'enter' or key == 'down' or key == 'up':
                 attr = self.escape(self.attr)
                 search = self.escape(self.widget.get_edit_text(self))
-                filter = '(%s=%s)' % (attr, search)
+                ldfilter = '(%s=%s)' % (attr, search)
                 try:
                     matches = self.ldap.search_s(self.base,
-                        ldap.SCOPE_SUBTREE, filter)
+                        ldap.SCOPE_SUBTREE, ldfilter)
                     if len(matches) > 0:
                         (_, attrs) = matches[0]
                         for (k, v) in self.map.items():

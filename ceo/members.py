@@ -52,6 +52,7 @@ class MemberException(Exception):
 class InvalidTerm(MemberException):
     """Exception class for malformed terms."""
     def __init__(self, term):
+        MemberException.__init__(self)
         self.term = term
     def __str__(self):
         return "Term is invalid: %s" % self.term
@@ -59,12 +60,14 @@ class InvalidTerm(MemberException):
 class NoSuchMember(MemberException):
     """Exception class for nonexistent members."""
     def __init__(self, memberid):
+        MemberException.__init__(self)
         self.memberid = memberid
     def __str__(self):
         return "Member not found: %d" % self.memberid
 
 class ChildFailed(MemberException):
     def __init__(self, program, status, output):
+        MemberException.__init__(self)
         self.program, self.status, self.output = program, status, output
     def __str__(self):
         msg = '%s failed with status %d' % (self.program, self.status)

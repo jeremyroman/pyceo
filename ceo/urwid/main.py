@@ -1,6 +1,5 @@
 import random, ldap, urwid.curses_display
-from ceo import members, terms
-from ceo.excep import InvalidArgument
+from ceo import members
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 from ceo.urwid import newmember, renew, info, search, positions, groups
@@ -151,5 +150,4 @@ def start():
         print "Hint: You may need to run 'kinit'"
 
 if __name__ == '__main__':
-    import os
     start()
