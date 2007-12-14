@@ -43,11 +43,13 @@ def configure():
 
 ### Exceptions ###
 
-LDAPException = ldap.LDAPError
-ConfigurationException = conf.ConfigurationException
-
 class MemberException(Exception):
     """Base exception class for member-related errors."""
+    def __init__(self, ex):
+        Exception.__init__(self)
+        self.ex = ex
+    def __str__(self):
+        return str(self.ex)
 
 class InvalidTerm(MemberException):
     """Exception class for malformed terms."""
@@ -134,10 +136,13 @@ def create_member(username, password, name, program):
     if not password or len(password) < cfg['min_password_length']:
         raise InvalidArgument("password", "<hidden>", "too short (minimum %d characters)" % cfg['min_password_length'])
 
-    args = [ "/usr/bin/addmember", "--stdin", username, name, program ]
-    addmember = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = addmember.communicate(password)
-    status = addmember.wait()
+    try:
+        args = [ "/usr/bin/addmember", "--stdin", username, name, program ]
+        addmember = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = addmember.communicate(password)
+        status = addmember.wait()
+    except OSError, e:
+        raise MemberException(e)
 
     if status:
         raise ChildFailed("addmember", status, out+err)
@@ -324,10 +329,13 @@ def create_club(username, name):
     if not username or not re.match(cfg['username_regex'], username):
         raise InvalidArgument("username", username, "expected format %s" % repr(cfg['username_regex']))
     
-    args = [ "/usr/bin/addclub", username, name ]
-    addclub = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = addclub.communicate()
-    status = addclub.wait()
+    try:
+        args = [ "/usr/bin/addclub", username, name ]
+        addclub = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = addclub.communicate()
+        status = addclub.wait()
+    except OSError, e:
+        raise MemberException(e)
 
     if status:
         raise ChildFailed("addclub", status, out+err)

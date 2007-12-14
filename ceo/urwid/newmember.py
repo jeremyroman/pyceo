@@ -1,4 +1,4 @@
-import urwid
+import ldap, urwid
 from ceo import members, terms
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
@@ -159,15 +159,16 @@ class EndPage(WizardPanel):
                 raise Exception("Internal Error")
         except members.InvalidArgument, e:
             problem = str(e)
-        except members.LDAPException, e:
+        except ldap.LDAPError, e:
             problem = str(e)
-        except members.ChildFailed, e:
+        except members.MemberException, e:
             problem = str(e)
 
         if problem:
             self.headtext.set_text("Failures Occured Adding User")
-            self.midtext.set_text("The error was:\n%s\nThe account may be partially added "
-                "and you may or may not be able to log in. Please contact systems committee." % problem)
+            self.midtext.set_text("The error was:\n\n%s\n\nThe account may be partially added "
+                "and you may or may not be able to log in. Or perhaps you are not office staff. "
+                "If this was not expected please contact systems committee." % problem)
             return
         else:
             self.headtext.set_text("User Added")

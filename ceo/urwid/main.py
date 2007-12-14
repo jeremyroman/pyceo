@@ -1,5 +1,5 @@
 import random, ldap, urwid.curses_display
-from ceo import members
+from ceo import members, ldapi
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 from ceo.urwid import newmember, renew, info, search, positions, groups
@@ -146,8 +146,12 @@ def start():
     try:
         ui.run_wrapper( run )
     except ldap.LOCAL_ERROR, e:
-        print e[0]['info']
+        print ldapi.format_ldaperror(e)
         print "Hint: You may need to run 'kinit'"
+    except ldap.INSUFFICIENT_ACCESS, e:
+        print ldapi.format_ldaperror(e)
+        print "You probably aren't permitted to do whatever you just tried."
+        print "Admittedly, ceo probably shouldn't have crashed either."
 
 if __name__ == '__main__':
     start()

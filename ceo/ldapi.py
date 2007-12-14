@@ -111,6 +111,17 @@ def make_modlist(old, new):
     return mlist
 
 
+def format_ldaperror(ex):
+    desc = ex[0].get('desc', '')
+    info = ex[0].get('info', '')
+    if desc and info:
+        return "%s: %s" % (desc, info)
+    elif desc:
+        return desc
+    else:
+        return str(ex)
+
+
 class Sasl:
 
     def __init__(self, mech, realm):

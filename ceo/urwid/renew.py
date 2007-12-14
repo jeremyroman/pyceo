@@ -1,5 +1,5 @@
-import urwid
-from ceo import members, terms
+import urwid, ldap
+from ceo import members, terms, ldapi
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 
@@ -102,14 +102,20 @@ class EndPage(WizardPanel):
     def focusable(self):
         return False
     def activate(self):
+        problem = None
         try:
             members.register( self.state['userid'], self.state['terms'] )
             self.headtext.set_text("Registration Succeeded")
             self.midtext.set_text("The member has been registered for the following "
                              "terms: " + ", ".join(self.state['terms']) + ".")
-        except Exception, e:
+        except ldap.LDAPError, e:
+            problem = ldapi.format_ldaperror(e)
+        except members.MemberException, e:
+            problem = str(e)
+        if problem:
             self.headtext.set_text("Failed to Register")
-            self.midtext.set_text("You may refund any fees paid or retry."
-                             "The error was: '%s'" % e)
+            self.midtext.set_text("You may refund any fees paid or retry. "
+                             "The error was:\n\n%s" % problem)
+
     def check(self):
         pop_window()
