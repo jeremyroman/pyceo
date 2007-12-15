@@ -183,7 +183,7 @@ def list_term(term):
     members = ldapi.search(ld, cfg['users_base'],
             '(&(objectClass=member)(term=%s))', [ term ])
 
-    return dict([(member['uid'], member) for member in members])
+    return dict([(member[1]['uid'][0], member[1]) for member in members])
 
 
 def list_name(name):
@@ -204,7 +204,7 @@ def list_name(name):
     members = ldapi.search(ld, cfg['users_base'],
             '(&(objectClass=member)(cn~=%s))', [ name ])
 
-    return dict([(member['uid'], member) for member in members])
+    return dict([(member[1]['uid'][0], member[1]) for member in members])
 
 
 def list_group(group):
