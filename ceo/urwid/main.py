@@ -1,4 +1,4 @@
-import random, ldap, urwid.curses_display
+import sys, random, ldap, urwid.curses_display
 from ceo import members, ldapi
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
@@ -137,13 +137,16 @@ def manage_positions(data):
     ], (50, 15))
 
 def run():
-    members.connect()
-
     push_window( main_menu(), program_name() )
     event_loop( ui )
 
 def start():
     try:
+        print "Connecting...",
+        sys.stdout.flush()
+        members.connect()
+        print "done."
+
         ui.run_wrapper( run )
     except ldap.LOCAL_ERROR, e:
         print ldapi.format_ldaperror(e)
