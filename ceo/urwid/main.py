@@ -1,4 +1,4 @@
-import sys, random, ldap, urwid.curses_display
+import sys, random, ldap, urwid.curses_display, getpass
 from ceo import members, ldapi
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
@@ -148,9 +148,9 @@ def run():
 
 def start():
     try:
-        print "Connecting...",
+        print "Connecting...\n",
         sys.stdout.flush()
-        members.connect()
+        members.connect(AuthCallback())
         print "done."
 
         ui.run_wrapper( run )
@@ -161,6 +161,14 @@ def start():
         print ldapi.format_ldaperror(e)
         print "You probably aren't permitted to do whatever you just tried."
         print "Admittedly, ceo probably shouldn't have crashed either."
+
+class AuthCallback:
+    def callback(self, error):
+        try:
+            return getpass.getpass("Password: ")
+        except KeyboardInterrupt:
+            print ""
+            sys.exit(1)
 
 if __name__ == '__main__':
     start()

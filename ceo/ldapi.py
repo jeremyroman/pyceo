@@ -4,16 +4,17 @@ LDAP Utilities
 This module makes use of python-ldap, a Python module with bindings
 to libldap, OpenLDAP's native C client library.
 """
-import ldap.modlist
+import ldap.modlist, os, pwd
+from subprocess import Popen, PIPE
 
 
-def connect_sasl(uri, mech, realm):
+def connect_sasl(uri, mech, realm, password):
 
     # open the connection
     ld = ldap.initialize(uri)
 
     # authenticate
-    sasl = Sasl(mech, realm)
+    sasl = Sasl(mech, realm, password)
     ld.sasl_interactive_bind_s('', sasl)
 
     return ld
@@ -124,9 +125,17 @@ def format_ldaperror(ex):
 
 class Sasl:
 
-    def __init__(self, mech, realm):
+    def __init__(self, mech, realm, password):
         self.mech = mech
         self.realm = realm
+
+        if mech == 'GSSAPI' and password is not None:
+            userid = pwd.getpwuid(os.getuid()).pw_name
+            kinit = '/usr/bin/kinit'
+            kinit_args = [ kinit, '%s@%s' % (userid, realm) ]
+            kinit = Popen(kinit_args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            kinit.stdin.write('%s\n' % password)
+            kinit.wait()
 
     def callback(self, id, challenge, prompt, defresult):
         return ''
