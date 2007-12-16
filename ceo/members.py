@@ -90,11 +90,15 @@ def connect(auth_callback):
 
     global ld
     password = None
+    tries = 0
     while ld is None:
         try:
             ld = ldapi.connect_sasl(cfg['server_url'], cfg['sasl_mech'],
                 cfg['sasl_realm'], password)
         except ldap.LOCAL_ERROR, e:
+            tries += 1
+            if tries > 3:
+                raise e
             password = auth_callback.callback(e)
             if password == None:
                 raise e

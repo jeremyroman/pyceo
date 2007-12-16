@@ -156,7 +156,6 @@ def start():
         ui.run_wrapper( run )
     except ldap.LOCAL_ERROR, e:
         print ldapi.format_ldaperror(e)
-        print "Hint: You may need to run 'kinit'"
     except ldap.INSUFFICIENT_ACCESS, e:
         print ldapi.format_ldaperror(e)
         print "You probably aren't permitted to do whatever you just tried."
