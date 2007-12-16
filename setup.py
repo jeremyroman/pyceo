@@ -6,6 +6,6 @@ setup(
     name='ceo',
     description='CSC Electronic Office',
     packages=[ 'ceo', 'ceo.urwid' ],
-    scripts=['bin/ceo', 'bin/ceoquery', 'bin/csc-chfn', 'bin/csc-chsh'],
+    scripts=['bin/ceo', 'bin/ceoquery' ],
 )
 
