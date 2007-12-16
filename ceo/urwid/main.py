@@ -140,7 +140,7 @@ def change_shell(data):
         shell.YouPage,
         shell.ShellPage,
         shell.EndPage
-    ], (50, 15))
+    ], (50, 20))
 
 def run():
     push_window( main_menu(), program_name() )
