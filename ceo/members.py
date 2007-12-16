@@ -83,14 +83,21 @@ class ChildFailed(MemberException):
 # global directory connection
 ld = None
 
-def connect():
+def connect(auth_callback):
     """Connect to LDAP."""
 
     configure()
 
     global ld
-    ld = ldapi.connect_sasl(cfg['server_url'],
-            cfg['sasl_mech'], cfg['sasl_realm'])
+    password = None
+    while ld is None:
+        try:
+            ld = ldapi.connect_sasl(cfg['server_url'], cfg['sasl_mech'],
+                cfg['sasl_realm'], password)
+        except ldap.LOCAL_ERROR, e:
+            password = auth_callback.callback(e)
+            if password == None:
+                raise e
 
 
 def disconnect():
