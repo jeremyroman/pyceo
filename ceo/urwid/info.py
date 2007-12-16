@@ -25,11 +25,13 @@ class InfoPage(WizardPanel):
         name    = member.get('cn', [''])[0]
         userid  = self.state['userid']
         program = member.get('program', [''])[0]
+        shell   = member.get('loginShell', [''])[0]
         terms   = member.get('term', [])
 
         self.name.set_text("Name: %s" % name)
         self.userid.set_text("User: %s" % userid)
         self.program.set_text("Program: %s" % program)
+        self.program.set_text("Shell: %s" % shell)
         self.terms.set_text("Terms: %s" % ", ".join(terms))
     def check(self):
         pop_window()

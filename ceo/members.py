@@ -9,7 +9,7 @@ Transactions are used in each method that modifies the database.
 Future changes to the members database that need to be atomic
 must also be moved into this module.
 """
-import re, subprocess, ldap
+import os, re, subprocess, ldap
 from ceo import conf, ldapi
 from ceo.excep import InvalidArgument
 
@@ -304,6 +304,32 @@ def change_group_member(action, group, userid):
         raise InvalidArgument("action", action, "invalid action")
     mlist = ldapi.make_modlist(entry[0], entry[1])
     ld.modify_s(group_dn, mlist)
+
+
+
+### Shells ###
+
+def get_shell(userid):
+    member = ldapi.lookup(ld, 'uid', userid, cfg['users_base'])
+    if not member:
+        raise NoSuchMember(userid)
+    if 'loginShell' not in member:
+        return
+    return member['loginShell'][0]
+
+
+def get_shells():
+    return [ sh for sh in open(cfg['shells_file']).read().split("\n")
+                if sh
+                and sh[0] == '/'
+                and not '#' in sh
+                and os.access(sh, os.X_OK) ]
+
+
+def set_shell(userid, shell):
+    if not shell in get_shells():
+        raise InvalidArgument("shell", shell, "is not in %s" % cfg['shells_file'])
+    ldapi.modify(ld, 'uid', userid, cfg['users_base'], [ (ldap.MOD_REPLACE, 'loginShell', [ shell ]) ])
 
 
 

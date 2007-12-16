@@ -2,7 +2,7 @@ import sys, random, ldap, urwid.curses_display
 from ceo import members, ldapi
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
-from ceo.urwid import newmember, renew, info, search, positions, groups
+from ceo.urwid import newmember, renew, info, search, positions, groups, shell
 
 ui = urwid.curses_display.Screen()
 
@@ -52,15 +52,13 @@ syscom_data = {
     "groups" : [ "office", "staff", "adm", "src" ],
 }
 
-def menu_items(items):
-    return [ urwid.AttrWrap( ButtonText( cb, data, txt ), 'menu', 'selected') for (txt, cb, data) in items ]
-
 def main_menu():
     menu = [
         ("New Member", new_member, None),
         ("Renew Membership", renew_member, None),
         ("Create Club Account", new_club, None),
         ("Display Member", display_member, None),
+        ("Change Shell", change_shell, None),
         ("Search", search_members, None),
         ("Manage Club or Group Members", manage_group, None),
         ("Manage Positions", manage_positions, None),
@@ -134,6 +132,14 @@ def manage_positions(data):
         positions.IntroPage,
         positions.InfoPage,
         positions.EndPage,
+    ], (50, 15))
+
+def change_shell(data):
+    push_wizard("Change Shell", [
+        shell.IntroPage,
+        shell.YouPage,
+        shell.ShellPage,
+        shell.EndPage
     ], (50, 15))
 
 def run():

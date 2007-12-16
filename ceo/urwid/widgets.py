@@ -2,6 +2,9 @@ import urwid
 from ceo.urwid.ldapfilter import *
 from ceo.urwid.window import raise_back, push_window
 
+def menu_items(items):
+    return [ urwid.AttrWrap( ButtonText( cb, data, txt ), 'menu', 'selected') for (txt, cb, data) in items ]
+
 def push_wizard(name, pages, dimensions=(50, 10)):
     state = {}
     wiz = Wizard()
