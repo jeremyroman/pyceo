@@ -1,0 +1,16 @@
+.TH ADDMEMBER 1 "December 16, 2007"
+.SH NAME
+addmember \- add club members to the directory
+.SH SYNOPSIS
+.B addmember
+userid name [ program ]
+.SH DESCRIPTION
+.B Addmember
+performs all tasks necessary for creation of a new CSC member. It creates
+an LDAP entry, Kerberos principal, and home directory for the new member.
+It does NOT register the new member for any terms. This must be done after
+the member is created.
+.SH SEE ALSO
+.BR ceo (1).
+.SH AUTHOR
+Michael Spang <mspang@csclub.uwaterloo.ca>
