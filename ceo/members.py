@@ -45,7 +45,7 @@ def configure():
 
 class MemberException(Exception):
     """Base exception class for member-related errors."""
-    def __init__(self, ex):
+    def __init__(self, ex=None):
         Exception.__init__(self)
         self.ex = ex
     def __str__(self):
