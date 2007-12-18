@@ -31,7 +31,7 @@ def abslookup(ld, dn, objectclass=None):
             matches = ld.search_s(dn, ldap.SCOPE_BASE)
     except ldap.NO_SUCH_OBJECT:
         return None
-            
+
     # dn was found, but didn't match the objectclass filter
     if len(matches) < 1:
         return None
