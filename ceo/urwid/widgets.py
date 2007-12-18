@@ -54,7 +54,8 @@ class WordEdit(SingleEdit):
 
 class LdapWordEdit(WordEdit):
     ldap = None
-    tabbing = False
+    index = None
+
     def __init__(self, uri, base, attr, *args):
         try:
             self.ldap = ldap.initialize(uri)
@@ -64,32 +65,34 @@ class LdapWordEdit(WordEdit):
         self.base = base
         self.attr = ldapi.escape(attr)
         return WordEdit.__init__(self, *args)
+
     def keypress(self, size, key):
-        if key == 'tab' and self.ldap != None:
-            if self.tabbing:
-                self.index = (self.index + 1) % len(self.choices)
+        if (key == 'tab' or key == 'shift tab') and self.ldap != None:
+            if self.index != None:
+                if key == 'tab':
+                    self.index = (self.index + 1) % len(self.choices)
+                elif key == 'shift tab':
+                    self.index = (self.index - 1) % len(self.choices)
                 text = self.choices[self.index]
                 self.set_edit_text(text)
                 self.set_edit_pos(len(text))
             else:
                 try:
-                    search = ldapi.escape(self.get_edit_text())
+                    text = self.get_edit_text()
+                    search = ldapi.escape(text)
                     matches = self.ldap.search_s(self.base,
                         ldap.SCOPE_SUBTREE, '(%s=%s*)' % (self.attr, search))
-                    self.choices = []
+                    self.choices = [ text ]
                     for match in matches:
                         (_, attrs) = match
                         self.choices += attrs['uid']
-                    if len(self.choices) > 0:
-                        self.index = 0
-                        self.tabbing = True
-                        text = self.choices[self.index]
-                        self.set_edit_text(text)
-                        self.set_edit_pos(len(text))
+                    self.choices.sort()
+                    self.index = 0
+                    self.keypress(size, key)
                 except ldap.LDAPError, e:
                     pass
         else:
-            self.tabbing = False
+            self.index = None
             return WordEdit.keypress(self, size, key)
 
 class LdapFilterWordEdit(LdapWordEdit):
