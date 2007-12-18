@@ -1,6 +1,11 @@
-import urwid
-from ceo.urwid.ldapfilter import *
+import urwid, ldap
 from ceo.urwid.window import raise_back, push_window
+import ceo.ldapi as ldapi
+
+uwldap_uri = "ldap://uwldap.uwaterloo.ca/"
+uwldap_base = "dc=uwaterloo,dc=ca"
+csclub_uri = "ldap://ldap1.csclub.uwaterloo.ca/ ldap://ldap2.csclub.uwaterloo.ca"
+csclub_base = "dc=csclub,dc=uwaterloo,dc=ca"
 
 def menu_items(items):
     return [ urwid.AttrWrap( ButtonText( cb, data, txt ), 'menu', 'selected') for (txt, cb, data) in items ]
@@ -47,10 +52,65 @@ class WordEdit(SingleEdit):
     def valid_char(self, ch):
         return urwid.Edit.valid_char(self, ch) and ch != ' '
 
-class LdapFilterWordEdit(LdapFilter, WordEdit):
-    def __init__(self, *args):
-        LdapFilter.__init__(self, WordEdit)
-        WordEdit.__init__(self, *args)
+class LdapWordEdit(WordEdit):
+    ldap = None
+    tabbing = False
+    def __init__(self, uri, base, attr, *args):
+        try:
+            self.ldap = ldap.initialize(uri)
+            self.ldap.simple_bind_s("", "")
+        except ldap.LDAPError:
+            return WordEdit.__init__(self, *args)
+        self.base = base
+        self.attr = ldapi.escape(attr)
+        return WordEdit.__init__(self, *args)
+    def keypress(self, size, key):
+        if key == 'tab' and self.ldap != None:
+            if self.tabbing:
+                self.index = (self.index + 1) % len(self.choices)
+                text = self.choices[self.index]
+                self.set_edit_text(text)
+                self.set_edit_pos(len(text))
+            else:
+                try:
+                    search = ldapi.escape(self.get_edit_text())
+                    matches = self.ldap.search_s(self.base,
+                        ldap.SCOPE_SUBTREE, '(%s=%s*)' % (self.attr, search))
+                    self.choices = []
+                    for match in matches:
+                        (_, attrs) = match
+                        self.choices += attrs['uid']
+                    if len(self.choices) > 0:
+                        self.index = 0
+                        self.tabbing = True
+                        text = self.choices[self.index]
+                        self.set_edit_text(text)
+                        self.set_edit_pos(len(text))
+                except ldap.LDAPError, e:
+                    pass
+        else:
+            self.tabbing = False
+            return WordEdit.keypress(self, size, key)
+
+class LdapFilterWordEdit(LdapWordEdit):
+    def __init__(self, uri, base, attr, map, *args):
+        LdapWordEdit.__init__(self, uri, base, attr, *args)
+        self.map = map
+    def keypress(self, size, key):
+        if self.ldap != None:
+            if key == 'enter' or key == 'down' or key == 'up':
+                search = ldapi.escape(self.get_edit_text())
+                try:
+                    matches = self.ldap.search_s(self.base,
+                        ldap.SCOPE_SUBTREE, '(%s=%s)' % (self.attr, search))
+                    if len(matches) > 0:
+                        (_, attrs) = matches[0]
+                        for (k, v) in self.map.items():
+                            if attrs.has_key(k) and len(attrs[k]) > 0:
+                                v.set_edit_text(attrs[k][0])
+                except ldap.LDAPError:
+                    pass
+        return LdapWordEdit.keypress(self, size, key)
 
 class PassEdit(SingleEdit):
     def get_text(self):

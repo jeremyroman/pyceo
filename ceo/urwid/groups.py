@@ -53,7 +53,8 @@ class IntroPage(WizardPanel):
 
 class InfoPage(WizardPanel):
     def init_widgets(self):
-        self.group = WordEdit("Club or Group: ")
+        self.group = LdapWordEdit(csclub_uri, csclub_base, 'uid',
+            "Club or Group: ")
         self.widgets = [
             urwid.Text( "Club or Group Information"),
             urwid.Divider(),
@@ -75,7 +76,8 @@ class ChangeMember(WizardPanel):
         state['data'] = data
         WizardPanel.__init__(self, state)
     def init_widgets(self):
-        self.userid = WordEdit("Username: ")
+        self.userid = LdapWordEdit(csclub_uri, csclub_base, 'uid',
+            "Username: ")
 
         data = self.state['data']
         self.widgets = [

@@ -17,7 +17,8 @@ class IntroPage(WizardPanel):
 class YouPage(WizardPanel):
     def init_widgets(self):
         you = pwd.getpwuid(os.getuid()).pw_name
-        self.userid = WordEdit("Username: ", you)
+        self.userid = LdapWordEdit(csclub_uri, csclub_base, 'uid',
+            "Username: ", you)
 
         self.widgets = [
             urwid.Text( "Member Information" ),

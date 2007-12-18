@@ -16,7 +16,8 @@ class IntroPage(WizardPanel):
 
 class UserPage(WizardPanel):
     def init_widgets(self):
-        self.userid = WordEdit("Username: ")
+        self.userid = LdapWordEdit(csclub_uri, csclub_base, 'uid',
+            "Username: ")
 
         self.widgets = [
             urwid.Text( "Member Information" ),

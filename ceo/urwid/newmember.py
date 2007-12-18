@@ -36,13 +36,10 @@ class ClubIntroPage(WizardPanel):
 
 class InfoPage(WizardPanel):
     def init_widgets(self):
-        self.userid = LdapFilterWordEdit("UWuserid: ")
         self.name = SingleEdit("Full name: ")
         self.program = SingleEdit("Program of Study: ")
-        self.userid.set_ldap_filter(
-            "ldap://uwldap.uwaterloo.ca/", "dc=uwaterloo,dc=ca",
-            "uid", {'cn':self.name, 'ou':self.program}
-        )
+        self.userid = LdapFilterWordEdit(uwldap_uri, uwldap_base, 'uid',
+            {'cn':self.name, 'ou':self.program}, "UWuserid: ")
         self.widgets = [
             urwid.Text( "Member Information - Please Check ID" ),
             urwid.Divider(),

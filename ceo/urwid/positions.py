@@ -36,7 +36,8 @@ class InfoPage(WizardPanel):
         positions = members.list_positions()
         self.position_widgets = {}
         for (position, text) in position_data:
-            widget = WordEdit("%s: " % text)
+            widget = LdapWordEdit(csclub_uri, csclub_base, 'uid',
+                "%s: " % text)
             if position in positions:
                 widget.set_edit_text(','.join(positions[position].keys()))
             else:
