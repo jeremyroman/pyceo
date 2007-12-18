@@ -115,14 +115,14 @@ class EndPage(WizardPanel):
         for group in data['groups']:
             try:
                 members.change_group_member(action, group, self.state['userid'])
-            except:
+            except ldap.LDAPError:
                 failed.append(group)
         if len(failed) == 0:
             self.headtext.set_text("%s succeeded" % data['action'])
             self.midtext.set_text("Congratulations, the group modification "
                 "has succeeded.")
         else:
-            self.headtext.set_text("%s partially succeeded" % data['action'])
+            self.headtext.set_text("%s Results" % data['action'])
             self.midtext.set_text("Failed to %s member to %s for the "
                 "following groups: %s. This may indicate an attempt to add a "
                 "duplicate group member or to delete a member that was not in "

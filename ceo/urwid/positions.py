@@ -76,11 +76,20 @@ class EndPage(WizardPanel):
     def focusable(self):
         return False
     def activate(self):
+        failed = []
         for (position, info) in self.state['positions'].iteritems():
-            members.set_position(position, info)
-        self.headtext.set_text("Positions Updated")
-        self.midtext.set_text("Congratulations, positions have been updated. "
-            "You should rebuild the website in order to update the Positions "
-            "page.")
+            try:
+                members.set_position(position, info)
+            except ldap.LDAPError:
+                failed.append(position)
+        if len(failed) == 0:
+            self.headtext.set_text("Positions Updated")
+            self.midtext.set_text("Congratulations, positions have been "
+                "updated. You should rebuild the website in order to update "
+                "the Positions page.")
+        else:
+            self.headtext.set_text("Positions Results")
+            self.midtext.set_text("Failed to update the following positions: "
+                "%s." % join(failed))
     def check(self):
         pop_window()
