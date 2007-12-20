@@ -14,6 +14,21 @@ class IntroPage(WizardPanel):
     def focusable(self):
         return False
 
+class ClubUserIntroPage(IntroPage):
+    def init_widgets(self):
+        self.widgets = [
+            urwid.Text( "Renewing Club User Account" ),
+            urwid.Divider(),
+            urwid.Text( "In order for clubs to maintain websites hosted by "
+                        "the Computer Science Club, they need access to our "
+                        "machines. We grant accounts to club users at no charge "
+                        "in order to provide this access. Registering a user "
+                        "in this way grants one term of free access to our "
+                        "machines, without any other membership privileges "
+                        "(they can't vote, hold office, etc). If such a user "
+                        "decides to join, use the Renew Membership option." )
+        ]
+
 class UserPage(WizardPanel):
     def init_widgets(self):
         self.userid = LdapWordEdit(csclub_uri, csclub_base, 'uid',
@@ -35,6 +50,9 @@ class UserPage(WizardPanel):
             return True
 
 class TermPage(WizardPanel):
+    def __init__(self, state, utype='member'):
+        self.utype = utype
+        WizardPanel.__init__(self, state)
     def init_widgets(self):
         self.start = SingleEdit("Start: ")
         self.count = SingleIntEdit("Count: ")
@@ -47,10 +65,14 @@ class TermPage(WizardPanel):
         ]
     def activate(self):
         if not self.start.get_edit_text():
-            old_terms = []
-            if 'term' in self.state['member']:
-                old_terms = self.state['member']['term']
-            self.start.set_edit_text( terms.next_unregistered( old_terms ) )
+            self.terms = self.state['member'].get('term', [])
+            self.nmterms = self.state['member'].get('nonMemberTerm', [])
+
+            if self.utype == 'member':
+                self.start.set_edit_text( terms.next_unregistered( self.terms ) )
+            else:
+                self.start.set_edit_text( terms.next_unregistered( self.terms + self.nmterms ) )
+
             self.count.set_edit_text( "1" )
     def check(self):
         try:
@@ -60,7 +82,12 @@ class TermPage(WizardPanel):
             set_status( "Invalid start term" )
             return True
         for term in self.state['terms']:
-            if members.registered( self.state['userid'], term):
+            if self.utype == 'member':
+                already = term in self.terms
+            else:
+                already = term in self.terms or term in self.nmterms
+
+            if already:
                 self.focus_widget( self.start )
                 set_status( "Already registered for " + term )
                 return True
@@ -91,6 +118,9 @@ class PayPage(WizardPanel):
                        "continuing. " % ( len(regterms), plural, len(regterms * 2)))
 
 class EndPage(WizardPanel):
+    def __init__(self, state, utype='member'):
+        self.utype = utype
+        WizardPanel.__init__(self, state)
     def init_widgets(self):
         self.headtext = urwid.Text("")
         self.midtext = urwid.Text("")
@@ -105,10 +135,15 @@ class EndPage(WizardPanel):
     def activate(self):
         problem = None
         try:
-            members.register( self.state['userid'], self.state['terms'] )
             self.headtext.set_text("Registration Succeeded")
-            self.midtext.set_text("The member has been registered for the following "
-                             "terms: " + ", ".join(self.state['terms']) + ".")
+            if self.utype == 'member':
+                members.register( self.state['userid'], self.state['terms'] )
+                self.midtext.set_text("The member has been registered for the following "
+                                 "terms: " + ", ".join(self.state['terms']) + ".")
+            else:
+                members.register_nonmember( self.state['userid'], self.state['terms'] )
+                self.midtext.set_text("The club user has been registered for the following "
+                                 "terms: " + ", ".join(self.state['terms']) + ".")
         except ldap.LDAPError, e:
             problem = ldapi.format_ldaperror(e)
         except members.MemberException, e:

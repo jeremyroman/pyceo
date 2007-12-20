@@ -17,19 +17,32 @@ class IntroPage(WizardPanel):
 class ClubIntroPage(WizardPanel):
     def init_widgets(self):
         self.widgets = [
-            urwid.Text( "Club Services" ),
+            urwid.Text( "Club Accounts" ),
             urwid.Divider(),
             urwid.Text( "We provide other UW clubs accounts for email and "
                         "web hosting, free of charge. Like members, clubs "
                         "get web hosting at %s. We can also arrange for "
                         "uwaterloo.ca subdomains; please instruct the club "
                         "representative to contact the systems committee "
-                        "for more information."
-                        "\n\nNote: This is not complete. Authorizing members "
-                        "to access the club account still requires manual "
-                        "intervention."
-                        % "http://csclub.uwaterloo.ca/~clubid/"
-            )
+                        "for more information. Club accounts do not have "
+                        "passwords, and exist primarily to own club data. "
+                        % "http://csclub.uwaterloo.ca/~clubid/" ),
+        ]
+    def focusable(self):
+        return False
+
+class ClubUserIntroPage(WizardPanel):
+    def init_widgets(self):
+        self.widgets = [
+            urwid.Text( "Club Rep Account" ),
+            urwid.Divider(),
+            urwid.Text( "This is for people who need access to a club account, "
+                        "but are not currently interested in full CSC membership. "
+                        "Registering a user in this way grants one term of free "
+                        "access to our machines, without any other membership "
+                        "privileges (they can't vote, hold office, etc). If such "
+                        "a user later decides to join, use the Renew Membership "
+                        "option." ),
         ]
     def focusable(self):
         return False
@@ -150,6 +163,9 @@ class EndPage(WizardPanel):
             if self.utype == 'member':
                 members.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'] )
                 members.register( self.state['userid'], terms.current() )
+            elif self.utype == 'clubuser':
+                members.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'] )
+                members.register_nonmember( self.state['userid'], terms.current() )
             elif self.utype == 'club':
                 members.create_club( self.state['userid'], self.state['name'] )
             else:

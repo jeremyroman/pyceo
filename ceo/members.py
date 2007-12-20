@@ -426,6 +426,41 @@ def register(userid, term_list):
     ld.modify_s(user_dn, mlist)
 
 
+def register_nonmember(userid, term_list):
+    """Registers a non-member for one or more terms."""
+
+    user_dn = 'uid=%s,%s' % (ldapi.escape(userid), cfg['users_base'])
+
+    if type(term_list) in (str, unicode):
+        term_list = [ term_list ]
+
+    ldap_member = get(userid)
+    if not ldap_member:
+        raise NoSuchMember(userid)
+
+    if 'term' not in ldap_member:
+        ldap_member['term'] = []
+    if 'nonMemberTerm' not in ldap_member:
+        ldap_member['nonMemberTerm'] = []
+
+    new_member = ldap_member.copy()
+    new_member['nonMemberTerm'] = new_member['nonMemberTerm'][:]
+
+    for term in term_list:
+
+        # check term syntax
+        if not re.match('^[wsf][0-9]{4}$', term):
+            raise InvalidTerm(term)
+
+        # add the term to the entry
+        if not term in ldap_member['nonMemberTerm'] \
+                and not term in ldap_member['term']:
+            new_member['nonMemberTerm'].append(term)
+
+    mlist = ldapi.make_modlist(ldap_member, new_member)
+    ld.modify_s(user_dn, mlist)
+
+
 def registered(userid, term):
     """
     Determines whether a member is registered

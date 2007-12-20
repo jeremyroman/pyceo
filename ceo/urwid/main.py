@@ -55,8 +55,10 @@ syscom_data = {
 def main_menu():
     menu = [
         ("New Member", new_member, None),
+        ("New Club Rep", new_club_user, None),
         ("Renew Membership", renew_member, None),
-        ("Create Club Account", new_club, None),
+        ("Renew Club Rep", renew_club_user, None),
+        ("New Club", new_club, None),
         ("Display Member", display_member, None),
         ("Change Shell", change_shell, None),
         ("Search", search_members, None),
@@ -86,6 +88,15 @@ def new_club(*args, **kwargs):
         (newmember.EndPage, "club"),
     ], (60, 15))
 
+def new_club_user(*args, **kwargs):
+    push_wizard("New Club Rep Account", [
+        newmember.ClubUserIntroPage,
+        newmember.InfoPage,
+        newmember.SignPage,
+        newmember.PassPage,
+        (newmember.EndPage, "clubuser"),
+    ], (60, 15))
+
 def manage_group(*args, **kwargs):
     push_wizard("Manage Club or Group Members", [
         groups.IntroPage,
@@ -100,6 +111,14 @@ def renew_member(*args, **kwargs):
         renew.PayPage,
         renew.EndPage,
     ])
+
+def renew_club_user(*args, **kwargs):
+    push_wizard("Renew Club Rep Account", [
+        renew.ClubUserIntroPage,
+        renew.UserPage,
+        (renew.TermPage, "clubuser"),
+        (renew.EndPage, "clubuser"),
+    ], (60, 15))
 
 def display_member(data):
     push_wizard("Display Member", [
