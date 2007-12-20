@@ -7,6 +7,7 @@ class InfoPage(WizardPanel):
         self.userid = urwid.Text("")
         self.name = urwid.Text("")
         self.terms = urwid.Text("")
+        self.nmterms = urwid.Text("")
         self.program = urwid.Text("")
 
         self.widgets = [
@@ -17,6 +18,7 @@ class InfoPage(WizardPanel):
             self.program,
             urwid.Divider(),
             self.terms,
+            self.nmterms,
         ]
     def focusable(self):
         return False
@@ -27,11 +29,15 @@ class InfoPage(WizardPanel):
         program = member.get('program', [''])[0]
         shell   = member.get('loginShell', [''])[0]
         terms   = member.get('term', [])
+        nmterms = member.get('nonMemberTerm', [])
 
         self.name.set_text("Name: %s" % name)
         self.userid.set_text("User: %s" % userid)
         self.program.set_text("Program: %s" % program)
         self.program.set_text("Shell: %s" % shell)
         self.terms.set_text("Terms: %s" % ", ".join(terms))
+
+        if nmterms:
+            self.nmterms.set_text("Rep Terms: %s" % ", ".join(nmterms))
     def check(self):
         pop_window()
