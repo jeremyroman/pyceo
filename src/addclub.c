@@ -41,7 +41,7 @@ static void usage() {
 }
 
 int addclub() {
-    int krb_ok, user_ok, group_ok, home_ok, quota_ok;
+    int krb_ok, user_ok, group_ok, sudo_ok, home_ok, quota_ok;
     int id;
     char homedir[1024];
 
@@ -77,6 +77,10 @@ int addclub() {
     group_ok = user_ok || ceo_add_group(userid, groups_base, id);
     if (!group_ok)
         logmsg("successfully created group for %s", userid);
+
+    sudo_ok = user_ok || ceo_add_group_sudo(userid, sudo_base);
+    if (!sudo_ok)
+        logmsg("successfully added group sudo entry for %s", userid);
 
     home_ok = user_ok || ceo_create_home(homedir, id, id);
     if (!home_ok)

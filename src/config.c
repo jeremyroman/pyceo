@@ -12,6 +12,7 @@ char *server_url = DEF_STR;
 
 char *users_base = DEF_STR;
 char *groups_base = DEF_STR;
+char *sudo_base = DEF_STR;
 
 char *skeleton_dir = DEF_STR;
 char *quota_prototype = DEF_STR;
@@ -47,12 +48,12 @@ static char *strvarnames[] = { "server_url", "users_base", "admin_principal",
     "admin_keytab", "skeleton_dir", "quota_prototype", "member_home",
     "member_shell", "club_home", "club_shell", "realm", "admin_bind_userid",
     "admin_bind_keytab", "groups_base", "privileged_group", "notify_hook",
-    "sasl_realm", "sasl_mech" };
+    "sasl_realm", "sasl_mech", "sudo_base" };
 static char **strvars[] = { &server_url, &users_base, &admin_principal,
     &admin_keytab, &skeleton_dir, &quota_prototype, &member_home,
     &member_shell, &club_home, &club_shell, &realm, &admin_bind_userid,
     &admin_bind_keytab, &groups_base, &privileged_group, &notify_hook,
-    &sasl_realm, &sasl_mech };
+    &sasl_realm, &sasl_mech, &sudo_base };
 
 static char *longvarnames[] = { "member_min_id", "member_max_id",
     "homedir_mode", "club_min_id", "club_max_id" };

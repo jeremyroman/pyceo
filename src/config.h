@@ -3,6 +3,7 @@
 extern char *server_url;
 extern char *users_base;
 extern char *groups_base;
+extern char *sudo_base;
 
 extern char *skeleton_dir;
 extern char *quota_prototype;

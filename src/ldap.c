@@ -90,6 +90,76 @@ int ceo_add_group(char *cn, char *basedn, int no) {
     return ret;
 }
 
+int ceo_add_group_sudo(char *group, char *basedn) {
+    if (!group || !basedn)
+        fatal("addgroup: Invalid argument");
+
+    LDAPMod *mods[8];
+    int i = -1;
+    int ret = 0;
+
+    char cn[17];
+    snprintf(cn, sizeof(cn), "%%%s", group);
+
+    mods[++i] = xmalloc(sizeof(LDAPMod));
+    mods[i]->mod_op = LDAP_MOD_ADD;
+    mods[i]->mod_type = "objectClass";
+    char *objectClasses[] = { "top", "sudoRole", NULL };
+    mods[i]->mod_values = objectClasses;
+
+    mods[++i] = xmalloc(sizeof(LDAPMod));
+    mods[i]->mod_op = LDAP_MOD_ADD;
+    mods[i]->mod_type = "cn";
+    char *uids[] = { cn, NULL };
+    mods[i]->mod_values = uids;
+
+    mods[++i] = xmalloc(sizeof(LDAPMod));
+    mods[i]->mod_op = LDAP_MOD_ADD;
+    mods[i]->mod_type = "sudoUser";
+    char *sudouser[] = { cn, NULL };
+    mods[i]->mod_values = sudouser;
+
+    mods[++i] = xmalloc(sizeof(LDAPMod));
+    mods[i]->mod_op = LDAP_MOD_ADD;
+    mods[i]->mod_type = "sudoHost";
+    char *sudohost[] = { "ALL", NULL };
+    mods[i]->mod_values = sudohost;
+
+    mods[++i] = xmalloc(sizeof(LDAPMod));
+    mods[i]->mod_op = LDAP_MOD_ADD;
+    mods[i]->mod_type = "sudoCommand";
+    char *sudocommand[] = { "ALL", NULL };
+    mods[i]->mod_values = sudocommand;
+
+    mods[++i] = xmalloc(sizeof(LDAPMod));
+    mods[i]->mod_op = LDAP_MOD_ADD;
+    mods[i]->mod_type = "sudoOption";
+    char *sudooption[] = { "!authenticate", NULL };
+    mods[i]->mod_values = sudooption;
+
+    mods[++i] = xmalloc(sizeof(LDAPMod));
+    mods[i]->mod_op = LDAP_MOD_ADD;
+    mods[i]->mod_type = "sudoRunAs";
+    char *sudorunas[] = { group, NULL };
+    mods[i]->mod_values = sudorunas;
+
+    char dn[1024];
+    snprintf(dn, sizeof(dn), "cn=%%%s,%s", group, basedn);
+
+    mods[++i] = NULL;
+
+    if (ldap_add_s(ld, dn, mods) != LDAP_SUCCESS) {
+        ldap_err("addgroup");
+        ret = -1;
+    }
+
+    i = 0;
+    while (mods[i])
+        free(mods[i++]);
+
+    return ret;
+}
+
 int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, char *shell, int no, ...) {
     va_list args;
 
