@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/acl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -49,6 +50,7 @@ int addmember() {
     int krb_ok, user_ok, group_ok, home_ok, quota_ok;
     int id;
     char homedir[1024];
+    acl_t acl = NULL, dacl = NULL;
 
     logmsg("adding uid=%s cn=%s program=%s by %s", userid, name, program, user);
 
@@ -57,6 +59,18 @@ int addmember() {
 
     if (!force && getpwnam(userid) != NULL)
         deny("user %s already exists", userid);
+
+    snprintf(homedir, sizeof(homedir), "%s/%s", member_home, userid);
+
+    acl = acl_from_text(member_home_acl);
+    if (acl == NULL)
+        fatalpe("Unable to parse member_home_acl");
+
+    if (*member_home_acl) {
+        dacl = acl_from_text(member_home_dacl);
+        if (dacl == NULL)
+            fatalpe("Unable to parse member_home_dacl");
+    }
 
     if (ceo_read_password(password, sizeof(password), use_stdin))
         return 1;
@@ -70,8 +84,6 @@ int addmember() {
 
     if ((id = ceo_new_uid(member_min_id, member_max_id)) <= 0)
         fatal("no available uids in range [%d, %d]", member_min_id, member_max_id);
-
-    snprintf(homedir, sizeof(homedir), "%s/%s", member_home, userid);
 
     krb_ok = ceo_del_princ(userid);
     krb_ok = krb_ok || ceo_add_princ(userid, password);
@@ -87,7 +99,7 @@ int addmember() {
     if (!group_ok)
         logmsg("successfully created group for %s", userid);
 
-    home_ok = user_ok || ceo_create_home(homedir, id, id);
+    home_ok = user_ok || ceo_create_home(homedir, id, id, acl, dacl);
     if (!home_ok)
         logmsg("successfully created home directory for %s", userid);
 

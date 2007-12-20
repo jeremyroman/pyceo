@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/acl.h>
 #include <dirent.h>
 #include <pwd.h>
 #include <fcntl.h>
@@ -10,14 +11,14 @@
 #include "util.h"
 #include "config.h"
 
-int ceo_create_home(char *homedir, uid_t uid, gid_t gid) {
+int ceo_create_home(char *homedir, uid_t uid, gid_t gid, acl_t acl, acl_t dacl) {
     int mask;
     DIR *skel;
     struct dirent *skelent;
 
     mask = umask(0);
 
-    if (mkdir(homedir, homedir_mode)) {
+    if (mkdir(homedir, 0755)) {
         errorpe("failed to create %s", homedir);
         return -1;
     }
@@ -109,8 +110,20 @@ int ceo_create_home(char *homedir, uid_t uid, gid_t gid) {
 
     closedir(skel);
 
-    if (chown(homedir, uid, gid))
+    if (chown(homedir, uid, gid)) {
         errorpe("failed to chown %s", homedir);
+        return -1;
+    }
+
+    if (acl && acl_set_file(homedir, ACL_TYPE_ACCESS, acl)) {
+        errorpe("failed to set acl for %s", homedir);
+        return -1;
+    }
+
+    if (dacl && acl_set_file(homedir, ACL_TYPE_DEFAULT, dacl)) {
+        errorpe("failed to set default acl for %s", homedir);
+        return -1;
+    }
 
     umask(mask);
 

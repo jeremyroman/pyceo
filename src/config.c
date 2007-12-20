@@ -17,19 +17,21 @@ char *sudo_base = DEF_STR;
 char *skeleton_dir = DEF_STR;
 char *quota_prototype = DEF_STR;
 
-char *member_home = DEF_STR;
 char *member_shell = DEF_STR;
 long member_min_id = DEF_LONG;
 long member_max_id = DEF_LONG;
+char *member_home = DEF_STR;
+char *member_home_acl = DEF_STR;
+char *member_home_dacl = DEF_STR;
 
-char *club_home = DEF_STR;
 char *club_shell = DEF_STR;
 long club_min_id = DEF_LONG;
 long club_max_id = DEF_LONG;
+char *club_home = DEF_STR;
+char *club_home_acl = DEF_STR;
+char *club_home_dacl = DEF_STR;
 
 char *notify_hook = DEF_STR;
-
-long homedir_mode = DEF_LONG;
 
 char *realm = DEF_STR;
 
@@ -48,16 +50,18 @@ static char *strvarnames[] = { "server_url", "users_base", "admin_principal",
     "admin_keytab", "skeleton_dir", "quota_prototype", "member_home",
     "member_shell", "club_home", "club_shell", "realm", "admin_bind_userid",
     "admin_bind_keytab", "groups_base", "privileged_group", "notify_hook",
-    "sasl_realm", "sasl_mech", "sudo_base" };
+    "sasl_realm", "sasl_mech", "sudo_base", "member_home_acl",
+    "member_home_dacl", "club_home_acl", "club_home_dacl" };
 static char **strvars[] = { &server_url, &users_base, &admin_principal,
     &admin_keytab, &skeleton_dir, &quota_prototype, &member_home,
     &member_shell, &club_home, &club_shell, &realm, &admin_bind_userid,
     &admin_bind_keytab, &groups_base, &privileged_group, &notify_hook,
-    &sasl_realm, &sasl_mech, &sudo_base };
+    &sasl_realm, &sasl_mech, &sudo_base, &member_home_acl, &member_home_dacl,
+    &club_home_acl, &club_home_dacl };
 
 static char *longvarnames[] = { "member_min_id", "member_max_id",
-    "homedir_mode", "club_min_id", "club_max_id" };
-static long *longvars[] = { &member_min_id, &member_max_id, &homedir_mode,
+    "club_min_id", "club_max_id" };
+static long *longvars[] = { &member_min_id, &member_max_id,
     &club_min_id, &club_max_id };
 
 void config_var(char *var, char *val) {

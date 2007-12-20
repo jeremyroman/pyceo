@@ -8,15 +8,19 @@ extern char *sudo_base;
 extern char *skeleton_dir;
 extern char *quota_prototype;
 
-extern char *member_home;
 extern char *member_shell;
 extern long member_min_id;
 extern long member_max_id;
+extern char *member_home;
+extern char *member_home_acl;
+extern char *member_home_dacl;
 
-extern char *club_home;
 extern char *club_shell;
 extern long club_min_id;
 extern long club_max_id;
+extern char *club_home;
+extern char *club_home_acl;
+extern char *club_home_dacl;
 
 extern char *notify_hook;
 
