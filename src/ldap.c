@@ -286,18 +286,6 @@ int ceo_new_uid(int min, int max) {
     return -1;
 }
 
-int ceo_add_club(char *uid, char *cn) {
-    int id = ceo_new_uid(club_min_id, club_max_id);
-
-    if (ceo_add_user(uid, users_base, "club", cn, club_home, club_shell, id, NULL))
-        return -1;
-
-    if (ceo_add_group(uid, groups_base, id))
-        return -1;
-
-    return 0;
-}
-
 int ceo_user_exists(char *uid) {
     char *attrs[] = { LDAP_NO_ATTRS, NULL };
     LDAPMessage *msg = NULL;
