@@ -1,3 +1,39 @@
+ceo (0.4.2) stable testing; urgency=low
+
+  [ David Bartley ]
+  * Add password prompt
+  * Only allow 3 password attempts
+  * Remove extraneous whitespace
+  * Add tab completion for userid fields
+  * Clarify group failure
+  * Improve exception handling
+  * Improved tab-completion
+  * Add sudo entry to ldap when creating clubs
+
+  [ Michael Spang ]
+  * Reorganize build process
+  * Reorganize namespace
+  * Use python-ldap directly in members
+  * Cleanup warnings: unused imports, etc
+  * Better error handling in the gui
+  * Fix list by term and list by name
+  * Display "Connecting..." during gui startup
+  * Remove chfn and chsh and allow shell changes in the gui
+  * Enlarge the shells list
+  * Don't try to install chsh and chfn
+  * Remove python-pam dependency
+  * Remove ceoquery
+  * Add manpages and remove TODO
+  * Allow init of MemberException with no arguments
+  * Remove obsolete function ceo_add_club()
+  * POSIX ACL support in addhomedir and addclub
+  * Add club representative support
+  * Show "Rep Terms" when displaying member
+  * Conditionally shows terms
+  * Add git-buildpackage configuration
+
+ -- Michael Spang <mspang@uwaterloo.ca>  Mon, 24 Dec 2007 13:41:27 -0500
+
 ceo (0.4.1) stable testing; urgency=low
 
   * Minor fixes
