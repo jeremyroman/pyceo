@@ -35,8 +35,8 @@ class InfoPage(WizardPanel):
         self.userid.set_text("User: %s" % userid)
         self.program.set_text("Program: %s" % program)
         self.program.set_text("Shell: %s" % shell)
-        self.terms.set_text("Terms: %s" % ", ".join(terms))
-
+        if terms:
+            self.terms.set_text("Terms: %s" % ", ".join(terms))
         if nmterms:
             self.nmterms.set_text("Rep Terms: %s" % ", ".join(nmterms))
     def check(self):
