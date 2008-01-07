@@ -9,6 +9,7 @@ position_data = [
     ('treasurer',       'Treasurer'),
     ('secretary',       'Secretary'),
     ('sysadmin',        'System Administrator'),
+    ('cro',             'Chief Returning Officer'),
     ('librarian',       'Librarian'),
     ('imapd',           'Imapd'),
     ('webmaster',       'Web Master'),
