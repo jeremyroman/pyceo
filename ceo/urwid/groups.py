@@ -112,7 +112,7 @@ class EndPage(WizardPanel):
         data = self.state['data']
         action = data['action'].lower()
         failed = []
-        for group in data['groups']:
+        for group in data['groups'] + [data['group']]:
             try:
                 members.change_group_member(action, group, self.state['userid'])
             except ldap.LDAPError:

@@ -43,7 +43,7 @@ def program_name():
 office_data = {
     "name" : "Office Staff",
     "group" : "office",
-    "groups" : [ "office", "cdrom", "audio", "video", "www" ],
+    "groups" : [ "cdrom", "audio", "video", "www" ],
 }
 
 syscom_data = {
