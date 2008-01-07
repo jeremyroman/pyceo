@@ -126,5 +126,5 @@ class EndPage(WizardPanel):
             self.midtext.set_text("Failed to %s member to %s for the "
                 "following groups: %s. This may indicate an attempt to add a "
                 "duplicate group member or to delete a member that was not in "
-                " the group." % (data['action'].lower(), data['name'],
+                "the group." % (data['action'].lower(), data['name'],
                 ', '.join(failed)))
