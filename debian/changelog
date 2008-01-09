@@ -1,3 +1,11 @@
+ceo (0.4.3) stable testing; urgency=low
+
+  * Add cro to positions
+  * Fix typo
+  * Fix group modification code
+
+ -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Tue, 08 Jan 2008 19:58:19 -0500
+
 ceo (0.4.2) stable testing; urgency=low
 
   [ David Bartley ]
