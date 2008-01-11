@@ -1,5 +1,4 @@
-import sys, random, ldap, urwid.curses_display, getpass
-from ceo import members, ldapi
+import sys, random, urwid.curses_display
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 from ceo.urwid import newmember, renew, info, search, positions, groups, shell
@@ -166,27 +165,7 @@ def run():
     event_loop( ui )
 
 def start():
-    try:
-        print "Connecting...\n",
-        sys.stdout.flush()
-        members.connect(AuthCallback())
-        print "done."
-
-        ui.run_wrapper( run )
-    except ldap.LOCAL_ERROR, e:
-        print ldapi.format_ldaperror(e)
-    except ldap.INSUFFICIENT_ACCESS, e:
-        print ldapi.format_ldaperror(e)
-        print "You probably aren't permitted to do whatever you just tried."
-        print "Admittedly, ceo probably shouldn't have crashed either."
-
-class AuthCallback:
-    def callback(self, error):
-        try:
-            return getpass.getpass("Password: ")
-        except KeyboardInterrupt:
-            print ""
-            sys.exit(1)
+    ui.run_wrapper( run )
 
 if __name__ == '__main__':
     start()
