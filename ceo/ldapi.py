@@ -47,7 +47,7 @@ def lookup(ld, rdntype, rdnval, base, objectclass=None):
     return abslookup(ld, dn, objectclass)
 
 
-def search(ld, base, search_filter, params, scope=ldap.SCOPE_SUBTREE, attrlist=None, attrsonly=0):
+def search(ld, base, search_filter, params=[], scope=ldap.SCOPE_SUBTREE, attrlist=None, attrsonly=0):
 
     real_filter = search_filter % tuple(escape(x) for x in params)
 
