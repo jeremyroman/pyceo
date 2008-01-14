@@ -174,6 +174,9 @@ def get(userid):
 
     return ldapi.lookup(ld, 'uid', userid, cfg['users_base'])
 
+def uid2dn(uid):
+    return 'uid=%s,%s' % (ldapi.escape(uid), cfg['users_base'])
+
 
 def list_term(term):
     """
@@ -185,16 +188,15 @@ def list_term(term):
     Returns: a list of members
 
     Example: list_term('f2006'): -> {
-                 'mspang': { 'cn': 'Michael Spang', ... },
-                 'ctdalek': { 'cn': 'Calum T. Dalek', ... },
+                 'uid=mspang, ou=...': { 'cn': 'Michael Spang', ... },
+                 'uid=ctdalek, ou=...': { 'cn': 'Calum T. Dalek', ... },
                  ...
              }
     """
 
     members = ldapi.search(ld, cfg['users_base'],
             '(&(objectClass=member)(term=%s))', [ term ])
-
-    return dict([(member[1]['uid'][0], member[1]) for member in members])
+    return dict([(member[0], member[1]) for member in members])
 
 
 def list_name(name):
@@ -207,15 +209,14 @@ def list_name(name):
     Returns: a list of member dictionaries
 
     Example: list_name('Spang'): -> {
-                 'mspang': { 'cn': 'Michael Spang', ... },
+                 'uid=mspang, ou=...': { 'cn': 'Michael Spang', ... },
                  ...
              ]
     """
 
     members = ldapi.search(ld, cfg['users_base'],
             '(&(objectClass=member)(cn~=%s))', [ name ])
-
-    return dict([(member[1]['uid'][0], member[1]) for member in members])
+    return dict([(member[0], member[1]) for member in members])
 
 
 def list_group(group):
@@ -228,7 +229,7 @@ def list_group(group):
     Returns: a list of member dictionaries
 
     Example: list_name('syscom'): -> {
-                 'mspang': { 'cn': 'Michael Spang', ... },
+                 'uid=mspang, ou=...': { 'cn': 'Michael Spang', ... },
                  ...
              ]
     """
@@ -239,8 +240,24 @@ def list_group(group):
         for member in members:
             info = get(member)
             if info:
-                ret[member] = info
+                ret[uid2dn(member)] = info
     return ret
+
+
+def list_all():
+    """
+    Build a list of all members
+
+    Returns: a list of member dictionaries
+
+    Example: list_name('Spang'): -> {
+                 'uid=mspang, ou=...': { 'cn': 'Michael Spang', ... },
+                 ...
+             ]
+    """
+
+    members = ldapi.search(ld, cfg['users_base'], '(objectClass=member)')
+    return dict([(member[0], member[1]) for member in members])
 
 
 def list_positions():
