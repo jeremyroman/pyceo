@@ -45,6 +45,7 @@ int addclub() {
     int krb_ok, user_ok, group_ok, sudo_ok, home_ok, quota_ok;
     int id;
     char homedir[1024];
+    char acl_s[1024], dacl_s[1024];
     acl_t acl = NULL, dacl = NULL;
 
     logmsg("adding uid=%s cn=%s by %s", userid, name, user);
@@ -56,12 +57,14 @@ int addclub() {
         deny("user %s already exists", userid);
 
     snprintf(homedir, sizeof(homedir), "%s/%s", club_home, userid);
+    snprintf(acl_s, sizeof(acl_s), club_home_acl, userid);
 
     acl = acl_from_text(club_home_acl);
     if (acl == NULL)
         fatalpe("Unable to parse club_home_acl");
 
     if (*club_home_acl) {
+        snprintf(dacl_s, sizeof(dacl_s), club_home_dacl, userid);
         dacl = acl_from_text(club_home_dacl);
         if (dacl == NULL)
             fatalpe("Unable to parse club_home_dacl");
