@@ -26,9 +26,11 @@ def help():
     print '  %s' % c
 
 def memberlist(args):
-  mlist = members.list_term(terms.current()).values()
-  print type(mlist)
-  for member in mlist:
+  mlist = members.list_term(terms.current())
+  dns = mlist.keys()
+  dns.sort()
+  for dn in dns:
+    member = mlist[dn]
     print '%s %s %s' % (
       member['uid'][0].ljust(12),
       member['cn'][0].ljust(30),
