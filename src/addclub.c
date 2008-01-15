@@ -57,19 +57,6 @@ int addclub() {
         deny("user %s already exists", userid);
 
     snprintf(homedir, sizeof(homedir), "%s/%s", club_home, userid);
-    snprintf(acl_s, sizeof(acl_s), club_home_acl, userid);
-
-    acl = acl_from_text(acl_s);
-    if (acl == NULL)
-        fatalpe("Unable to parse club_home_acl");
-
-    if (*club_home_acl) {
-        snprintf(dacl_s, sizeof(dacl_s), club_home_dacl, userid);
-        dacl = acl_from_text(dacl_s);
-        if (dacl == NULL)
-            fatalpe("Unable to parse club_home_dacl");
-    }
-
     ceo_krb5_init();
     ceo_ldap_init();
     ceo_kadm_init();
@@ -79,6 +66,20 @@ int addclub() {
 
     if ((id = ceo_new_uid(member_min_id, member_max_id)) <= 0)
         fatal("no available uids in range [%d, %d]", member_min_id, member_max_id);
+
+    snprintf(acl_s, sizeof(acl_s), club_home_acl, id);
+
+    acl = acl_from_text(acl_s);
+    if (acl == NULL)
+        fatalpe("Unable to parse club_home_acl");
+
+    if (*club_home_dacl) {
+        snprintf(dacl_s, sizeof(dacl_s), club_home_dacl, id);
+        dacl = acl_from_text(dacl_s);
+        if (dacl == NULL)
+            fatalpe("Unable to parse club_home_dacl");
+    }
+
 
     krb_ok = ceo_del_princ(userid);
     if (!krb_ok)
