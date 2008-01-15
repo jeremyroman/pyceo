@@ -59,13 +59,13 @@ int addclub() {
     snprintf(homedir, sizeof(homedir), "%s/%s", club_home, userid);
     snprintf(acl_s, sizeof(acl_s), club_home_acl, userid);
 
-    acl = acl_from_text(club_home_acl);
+    acl = acl_from_text(acl_s);
     if (acl == NULL)
         fatalpe("Unable to parse club_home_acl");
 
     if (*club_home_acl) {
         snprintf(dacl_s, sizeof(dacl_s), club_home_dacl, userid);
-        dacl = acl_from_text(club_home_dacl);
+        dacl = acl_from_text(dacl_s);
         if (dacl == NULL)
             fatalpe("Unable to parse club_home_dacl");
     }
