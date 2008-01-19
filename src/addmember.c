@@ -76,14 +76,14 @@ int addmember() {
     if ((id = ceo_new_uid(member_min_id, member_max_id)) <= 0)
         fatal("no available uids in range [%d, %d]", member_min_id, member_max_id);
 
-    snprintf(acl_s, sizeof(acl_s), club_home_acl, id);
+    snprintf(acl_s, sizeof(acl_s), member_home_acl, id);
 
     acl = acl_from_text(acl_s);
     if (acl == NULL)
         fatalpe("Unable to parse member_home_acl");
 
     if (*member_home_acl) {
-        snprintf(dacl_s, sizeof(dacl_s), club_home_dacl, id);
+        snprintf(dacl_s, sizeof(dacl_s), member_home_dacl, id);
         dacl = acl_from_text(dacl_s);
         if (dacl == NULL)
             fatalpe("Unable to parse member_home_dacl");
