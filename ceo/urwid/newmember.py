@@ -1,5 +1,5 @@
 import ldap, urwid
-from ceo import members, terms
+from ceo import members, terms, uwldap
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 
@@ -51,7 +51,7 @@ class InfoPage(WizardPanel):
     def init_widgets(self):
         self.name = SingleEdit("Full name: ")
         self.program = SingleEdit("Program of Study: ")
-        self.userid = LdapFilterWordEdit(uwldap_uri, uwldap_base, 'uid',
+        self.userid = LdapFilterWordEdit(uwldap.uri(), uwldap.base(), 'uid',
             {'cn':self.name, 'ou':self.program}, "UWuserid: ")
         self.widgets = [
             urwid.Text( "Member Information - Please Check ID" ),

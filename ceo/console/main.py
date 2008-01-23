@@ -3,9 +3,6 @@ from getopt import getopt
 from ceo import members, terms
 import ceo.ldapi as ldapi
 
-uwldap_uri = "ldap://uwldap.uwaterloo.ca/"
-uwldap_base = "dc=uwaterloo,dc=ca"
-
 shortopts = [
 ]
 
@@ -39,11 +36,11 @@ def memberlist(args):
 
 def updateprogram(args):
   mlist = members.list_all().items()
-  uwldap = ldap.initialize(uwldap_uri)
+  uwldap = ldap.initialize(uwldap_uri())
   fd = sys.stdin.fileno()
   for (dn, member) in mlist:
     uid = member['uid'][0]
-    user = uwldap.search_s(uwldap_base, ldap.SCOPE_SUBTREE,
+    user = uwldap.search_s(uwldap_base(), ldap.SCOPE_SUBTREE,
       '(uid=%s)' % ldapi.escape(uid))
     if len(user) == 0:
       continue

@@ -2,8 +2,6 @@ import urwid, ldap
 from ceo.urwid.window import raise_back, push_window
 import ceo.ldapi as ldapi
 
-uwldap_uri = "ldap://uwldap.uwaterloo.ca/"
-uwldap_base = "dc=uwaterloo,dc=ca"
 csclub_uri = "ldap://ldap1.csclub.uwaterloo.ca/ ldap://ldap2.csclub.uwaterloo.ca"
 csclub_base = "dc=csclub,dc=uwaterloo,dc=ca"
 
