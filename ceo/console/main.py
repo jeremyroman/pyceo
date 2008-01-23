@@ -1,6 +1,6 @@
 import sys, ldap, termios
 from getopt import getopt
-from ceo import members, terms
+from ceo import members, terms, uwldap
 import ceo.ldapi as ldapi
 
 shortopts = [
@@ -11,7 +11,7 @@ longopts = [
 
 def start():
   (opts, args) = getopt(sys.argv[1:], shortopts, longopts)
-  if len(args) == 1:
+  if len(args) >= 1:
     if args[0] in commands:
       commands[args[0]](args[1:])
     else:
@@ -36,11 +36,11 @@ def memberlist(args):
 
 def updateprogram(args):
   mlist = members.list_all().items()
-  uwldap = ldap.initialize(uwldap_uri())
+  uwl = ldap.initialize(uwldap.uri())
   fd = sys.stdin.fileno()
   for (dn, member) in mlist:
     uid = member['uid'][0]
-    user = uwldap.search_s(uwldap_base(), ldap.SCOPE_SUBTREE,
+    user = uwl.search_s(uwldap.base(), ldap.SCOPE_SUBTREE,
       '(uid=%s)' % ldapi.escape(uid))
     if len(user) == 0:
       continue
@@ -71,9 +71,30 @@ def updateprogram(args):
     # TODO: don't use members.ld directly
     members.ld.modify_s(dn, mlist)
 
+def expiredaccounts(args):
+  send_email = False
+  if len(args) == 1 and args[0] == '--email':
+    sys.stderr.write("If you want to send an account expiration notice to " \
+      "these users then type 'Yes, do this' and hit enter\n")
+    if raw_input() == 'Yes, do this':
+      send_email = True
+  uwl = ldap.initialize(uwldap.uri())
+  mlist = members.expired_accounts()
+  for member in mlist.values():
+    uid = member['uid'][0]
+    name = member['cn'][0]
+    email = uid
+    user = uwl.search_s(uwldap.base(), ldap.SCOPE_SUBTREE,
+      '(uid=%s)' % ldapi.escape(uid))
+    if len(user) > 0  and 'mailLocalAddress' in user[0][1]:
+      email = user[0][1]['mailLocalAddress'][0]
+    if send_email:
+      members.send_account_expired_email(name, email)
+    print '%s %s %s' % (uid.ljust(12), name.ljust(30), email)
 
 # list of commands
 commands = {
   'memberlist' : memberlist,
   'updateprogram' : updateprogram,
+  'expiredaccounts' : expiredaccounts,
 }

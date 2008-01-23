@@ -10,7 +10,7 @@ Future changes to the members database that need to be atomic
 must also be moved into this module.
 """
 import os, re, subprocess, ldap
-from ceo import conf, ldapi
+from ceo import conf, ldapi, terms
 from ceo.excep import InvalidArgument
 
 
@@ -26,7 +26,7 @@ def configure():
     string_fields = [ 'username_regex', 'shells_file', 'server_url',
             'users_base', 'groups_base', 'sasl_mech', 'sasl_realm',
             'admin_bind_keytab', 'admin_bind_userid', 'realm',
-            'admin_principal', 'admin_keytab' ]
+            'admin_principal', 'admin_keytab', 'expired_account_email' ]
     numeric_fields = [ 'min_password_length' ]
 
     # read configuration file
@@ -514,3 +514,13 @@ def group_members(group):
             return []
     else:
         return []
+
+def expired_accounts():
+    members = ldapi.search(ld, cfg['users_base'],
+        '(&(objectClass=member)(!(|(term=%s)(nonMemberTerm=%s))))' %
+        (terms.current(), terms.current()))
+    return dict([(member[0], member[1]) for member in members])
+
+def send_account_expired_email(name, email):
+    args = [ cfg['expired_account_email'], name, email ]
+    os.spawnv(os.P_WAIT, cfg['expired_account_email'], args)
