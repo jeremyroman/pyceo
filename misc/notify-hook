@@ -1,0 +1,57 @@
+#!/bin/sh
+
+prog=$1
+auth=$2
+shift 2
+
+tmp="$(tempfile)"
+trap "rm $tmp" 0
+exec >"$tmp"
+
+authrn="$(getent passwd "$auth" | awk -F: '{ print $5 }' | sed 's/,.*//')"
+
+echo "From: $prog <ceo+$prog@csclub.uwaterloo.ca>"
+echo "To: Membership and Accounts <ceo@csclub.uwaterloo.ca>"
+echo "Cc: $authrn <$auth@csclub.uwaterloo.ca>"
+
+if test "$prog" = addmember; then
+    user=$1 name=$2 dept=$3; shift 3
+    subj="New Member: $user"
+    test -z "$dept" && dept="things unknown"
+    body="Name: $name
+Account: $user
+Program: $dept
+Added by: $auth"
+
+elif test "$prog" = addclub; then
+    user=$1 name=$2; shift 2
+    subj="New Club Account: $user"
+    body="Club: $name
+Account: $user
+Added by: $auth"
+
+else
+    exit 1
+fi
+
+output=$(cat)
+
+echo "X-Auth-User: $auth"
+echo "X-New-User: $user"
+echo "X-New-Name: $name"
+echo "Subject: $subj"
+echo
+echo "$body" | fmt -s
+echo
+
+if test -n "$output"; then
+    echo
+    echo "$output"
+fi
+
+echo
+echo Your Friend,
+echo "$prog"
+
+exec >&- 2>&-
+/usr/sbin/sendmail -t -f "ceo@csclub.uwaterloo.ca" < "$tmp"

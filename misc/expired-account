@@ -1,0 +1,49 @@
+#!/bin/sh
+
+name=$1
+email=$2
+shift 2
+
+tmp="$(tempfile)"
+trap "rm $tmp" 0
+exec >"$tmp"
+
+echo "From: Computer Science Club <ceo+expired@csclub.uwaterloo.ca>"
+echo "Reply-to: CSClub Exec <exec@csclub.uwaterloo.ca>"
+echo "To: $name <$email>"
+echo "Subject: [CSClub] Account Expiration"
+echo ""
+echo "Hello,
+
+We noticed that your Computer Science Club membership has expired. We would
+like to remind you of the many benifits of being a member of the club:
+
+* 2 GiB of disk quota
+* Web space
+* Email address
+* Shell account
+* Access to our library
+
+If you would like to renew your membership (the fee is \$2 per term), we have
+various methods of doing so:
+
+* Come by our office (MC 3036)
+* Send us a PayPal donation and send us the transaction id; see
+    http://csclub.uwaterloo.ca/about/donations for details
+* Mail us a cheque; here's our address:
+    Computer Science Club
+    Math & Computer 3036/3037
+    University of Waterloo
+    200 University Avenue West
+    Waterloo, ON  N3L 3G1
+    Canada
+
+If you have any questions, feel free to contact us by phone at
+(519) 888-4567 x33870, or by email at exec@csclub.uwaterloo.ca.
+
+Regards,
+
+The Computer Science Club"
+
+exec >&- 2>&-
+/usr/sbin/sendmail -t -f "ceo@csclub.uwaterloo.ca" < "$tmp"
