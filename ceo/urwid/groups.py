@@ -67,7 +67,7 @@ class InfoPage(WizardPanel):
         data = {
             "name" : group,
             "group" : group_name,
-            "groups" : [group],
+            "groups" : [],
         }
         group_members(data)
 
