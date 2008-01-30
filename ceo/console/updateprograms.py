@@ -15,7 +15,7 @@ class UpdatePrograms:
       user = user[0][1]
       oldprog = member.get('program', [''])[0]
       newprog = user.get('ou', [''])[0]
-      if oldprog == newprog:
+      if oldprog == newprog or newprog == '':
         continue
       sys.stdout.write("%s: '%s' => '%s'? (y/n) " % (uid, oldprog, newprog))
       new = old = termios.tcgetattr(fd)
