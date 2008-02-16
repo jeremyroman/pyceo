@@ -5,8 +5,9 @@ import ceo.ldapi as ldapi
 csclub_uri = "ldap://ldap1.csclub.uwaterloo.ca/ ldap://ldap2.csclub.uwaterloo.ca"
 csclub_base = "dc=csclub,dc=uwaterloo,dc=ca"
 
-def menu_items(items):
-    return [ urwid.AttrWrap( ButtonText( cb, data, txt ), 'menu', 'selected') for (txt, cb, data) in items ]
+def make_menu(items):
+    items = [ urwid.AttrWrap( ButtonText( cb, data, txt ), 'menu', 'selected') for (txt, cb, data) in items ]
+    return urwid.ListBox( items )
 
 def push_wizard(name, pages, dimensions=(50, 10)):
     state = {}

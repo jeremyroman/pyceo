@@ -4,9 +4,6 @@ from ceo.urwid import search
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 
-def menu_items(items):
-    return [ urwid.AttrWrap( ButtonText( cb, data, txt ), 'menu', 'selected') for (txt, cb, data) in items ]
-
 def change_group_member(data):
     push_wizard("%s %s Member" % (data["action"], data["name"]), [
         (ChangeMember, data),
@@ -22,17 +19,15 @@ def group_members(data):
     add_data['action'] = 'Add'
     remove_data = data.copy()
     remove_data['action'] = 'Remove'
-    menu = [
+    menu = make_menu([
         ("Add %s member" % data["name"].lower(),
             change_group_member, add_data),
         ("Remove %s member" % data["name"].lower(),
             change_group_member, remove_data),
         ("List %s members" % data["name"].lower(), list_group_members, data),
         ("Back", raise_back, None),
-    ]
-
-    listbox = urwid.ListBox( menu_items( menu ) )
-    push_window(listbox, "Manage %s" % data["name"])
+    ])
+    push_window(menu, "Manage %s" % data["name"])
 
 class IntroPage(WizardPanel):
     def init_widgets(self):

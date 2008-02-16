@@ -1,7 +1,8 @@
 import sys, random, urwid.curses_display
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
-from ceo.urwid import newmember, renew, info, search, positions, groups, shell
+from ceo.urwid import newmember, renew, info, search, positions, groups, \
+    shell, library
 
 ui = urwid.curses_display.Screen()
 
@@ -50,26 +51,6 @@ syscom_data = {
     "group" : "syscom",
     "groups" : [ "office", "staff", "adm", "src" ],
 }
-
-def main_menu():
-    menu = [
-        ("New Member", new_member, None),
-        ("New Club Rep", new_club_user, None),
-        ("Renew Membership", renew_member, None),
-        ("Renew Club Rep", renew_club_user, None),
-        ("New Club", new_club, None),
-        ("Display Member", display_member, None),
-        ("Change Shell", change_shell, None),
-        ("Search", search_members, None),
-        ("Manage Club or Group Members", manage_group, None),
-        ("Manage Positions", manage_positions, None),
-        ("Manage Office Staff", groups.group_members, office_data),
-        ("Manage Systems Committee", groups.group_members, syscom_data),
-        ("Exit", raise_abort, None),
-    ]
-
-    listbox = urwid.ListBox( menu_items( menu ) )
-    return listbox
 
 def new_member(*args, **kwargs):
     push_wizard("New Member", [
@@ -161,7 +142,23 @@ def change_shell(data):
     ], (50, 20))
 
 def run():
-    push_window( main_menu(), program_name() )
+    menu = make_menu([
+        ("New Member", new_member, None),
+        ("New Club Rep", new_club_user, None),
+        ("Renew Membership", renew_member, None),
+        ("Renew Club Rep", renew_club_user, None),
+        ("New Club", new_club, None),
+        ("Display Member", display_member, None),
+        ("Change Shell", change_shell, None),
+        ("Search", search_members, None),
+        ("Manage Club or Group Members", manage_group, None),
+        ("Manage Positions", manage_positions, None),
+        ("Manage Office Staff", groups.group_members, office_data),
+        ("Manage Systems Committee", groups.group_members, syscom_data),
+        ("Library", library.library, None),
+        ("Exit", raise_abort, None),
+    ])
+    push_window( menu, program_name() )
     event_loop( ui )
 
 def start():
