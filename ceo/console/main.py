@@ -5,11 +5,13 @@ from ceo import members, terms, uwldap, ldapi
 from ceo.console.memberlist import MemberList
 from ceo.console.updateprograms import UpdatePrograms
 from ceo.console.expiredaccounts import ExpiredAccounts
+from ceo.console.inactive import Inactive
 
 commands = {
   'memberlist' : MemberList(),
   'updateprograms' : UpdatePrograms(),
   'expiredaccounts' : ExpiredAccounts(),
+  'inactive': Inactive(),
 }
 
 shortopts = [
