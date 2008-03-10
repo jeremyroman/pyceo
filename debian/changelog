@@ -1,3 +1,12 @@
+ceo (0.4.5) stable testing; urgency=low
+
+  * Don't offer to update to an empty program
+  * It's doubtful that a user would need to mount a floppy disk
+  * Add library stubs and refactor menu creation
+  * Add inactive command
+
+ -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Mon, 10 Mar 2008 00:35:09 -0400
+
 ceo (0.4.4) stable testing; urgency=low
 
   [ David Bartley ]
