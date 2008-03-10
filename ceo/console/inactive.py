@@ -17,5 +17,5 @@ class Inactive:
         term = "f0000"
         term = reduce(max_term, member.get("term", []), term)
         term = reduce(max_term, member.get("nonMemberTerm", []), term)
-        if terms.delta(term, terms.current()) > delta:
+        if terms.delta(term, terms.current()) >= delta:
             print "%s %s" % (member['uid'][0].ljust(12), term)
