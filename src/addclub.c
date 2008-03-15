@@ -161,11 +161,11 @@ int addclub() {
 int main(int argc, char *argv[]) {
     int opt;
 
+    prog = basename(argv[0]);
     openlog(prog, 0, LOG_AUTHPRIV);
 
     configure();
 
-    prog = basename(argv[0]);
     user = ceo_get_user();
     privileged = ceo_get_privileged();
 
