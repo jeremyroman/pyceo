@@ -1,4 +1,5 @@
 *.o
 /addmember
 /addclub
+/zfsaddhomedir
 /config-test

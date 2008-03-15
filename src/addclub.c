@@ -1,7 +1,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/acl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -42,11 +41,10 @@ static void usage() {
 }
 
 int addclub() {
-    int krb_ok, user_ok, group_ok, sudo_ok, home_ok, quota_ok;
+    int krb_ok, user_ok, group_ok, sudo_ok, home_ok;
     int id;
     char homedir[1024];
-    char acl_s[1024], dacl_s[1024];
-    acl_t acl = NULL, dacl = NULL;
+    char acl_s[1024] = {0};
 
     logmsg("adding uid=%s cn=%s by %s", userid, name, user);
 
@@ -67,19 +65,7 @@ int addclub() {
     if ((id = ceo_new_uid(club_min_id, club_max_id)) <= 0)
         fatal("no available uids in range [%d, %d]", club_min_id, club_max_id);
 
-    snprintf(acl_s, sizeof(acl_s), club_home_acl, id);
-
-    acl = acl_from_text(acl_s);
-    if (acl == NULL)
-        fatalpe("Unable to parse club_home_acl");
-
-    if (*club_home_dacl) {
-        snprintf(dacl_s, sizeof(dacl_s), club_home_dacl, id);
-        dacl = acl_from_text(dacl_s);
-        if (dacl == NULL)
-            fatalpe("Unable to parse club_home_dacl");
-    }
-
+    snprintf(acl_s, sizeof(acl_s), club_home_acl, userid);
 
     krb_ok = ceo_del_princ(userid);
     if (!krb_ok)
@@ -98,13 +84,9 @@ int addclub() {
     if (!sudo_ok)
         logmsg("successfully added group sudo entry for %s", userid);
 
-    home_ok = user_ok || ceo_create_home(homedir, id, id, acl, dacl);
+    home_ok = user_ok || ceo_create_home(homedir, id, id, homedir_mode, acl_s);
     if (!home_ok)
         logmsg("successfully created home directory for %s", userid);
-
-    quota_ok = user_ok || ceo_set_quota(quota_prototype, id);
-    if (!quota_ok)
-        logmsg("successfully set quota for %s", userid);
 
     logmsg("done uid=%s", userid);
 
@@ -136,9 +118,7 @@ int addclub() {
             fprintf(hkf, "failed to create group\n");
         if (home_ok)
             fprintf(hkf, "failed to create home directory\n");
-        if (quota_ok)
-            fprintf(hkf, "failed to set quota\n");
-        if (!group_ok && !home_ok && !quota_ok)
+        if (!group_ok && !home_ok)
             fprintf(hkf, "all failures went undetected\n");
 
         fclose(hkf);
@@ -155,7 +135,7 @@ int addclub() {
     ceo_ldap_cleanup();
     ceo_krb5_cleanup();
 
-    return krb_ok || user_ok || group_ok || home_ok || quota_ok;
+    return krb_ok || user_ok || group_ok || home_ok;
 }
 
 int main(int argc, char *argv[]) {
