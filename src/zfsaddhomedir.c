@@ -96,8 +96,8 @@ int main(int argc, char *argv[]) {
                         break;
                     }
                 }
-            if (fchown(destfd, uid, gid))
-                errorpe("chown: %s", dest);
+                if (fchown(destfd, uid, gid))
+                    errorpe("chown: %s", dest);
 
                 close(srcfd);
                 close(destfd);
