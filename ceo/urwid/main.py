@@ -107,15 +107,13 @@ def display_member(data):
     ], (60, 15))
 
 def search_members(data):
-    menu = [
+    menu = make_menu([
         ("Members by term", search_term, None),
         ("Members by name", search_name, None),
         ("Members by group", search_group, None),
         ("Back", raise_back, None),
-    ]
-
-    listbox = urwid.ListBox( menu_items( menu ) )
-    push_window(listbox, "Search")
+    ])
+    push_window(menu, "Search")
 
 def search_name(data):
     push_wizard("By Name", [ search.NamePage ])

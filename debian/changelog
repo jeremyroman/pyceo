@@ -1,3 +1,10 @@
+ceo (0.4.6) stable testing; urgency=low
+
+  * Fix off-by-one error
+  * Search menu bug fix
+
+ -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Sat, 15 Mar 2008 02:13:25 -0400
+
 ceo (0.4.5) stable testing; urgency=low
 
   * Don't offer to update to an empty program
