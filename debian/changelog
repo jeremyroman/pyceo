@@ -1,3 +1,14 @@
+ceo (0.4.7) stable testing; urgency=low
+
+  [ David Bartley ]
+  * Add zfsaddhomedir
+
+  [ Michael Spang ]
+  * Initialize program name in openlog
+  * Whitespace fix
+
+ -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Tue, 25 Mar 2008 14:13:36 -0400
+
 ceo (0.4.6) stable testing; urgency=low
 
   * Fix off-by-one error
