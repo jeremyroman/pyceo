@@ -2,6 +2,13 @@ import ldap
 from ceo import members, uwldap
 
 class ExpiredAccounts:
+  help = '''
+expiredaccounts [--email]
+
+Displays a list of expired accounts. If --email is specified, expired account
+owners will be emailed. The email will go to the email listed in uwdir.
+'''
+
   def main(self, args):
     send_email = False
     if len(args) == 1 and args[0] == '--email':

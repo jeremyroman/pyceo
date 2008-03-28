@@ -2,6 +2,11 @@ import ldap, sys, termios
 from ceo import members, uwldap, ldapi
 
 class UpdatePrograms:
+  help = '''
+updateprograms
+
+Interactively updates the program field for an account by querying uwdir.
+'''
   def main(self, args):
     mlist = members.list_all().items()
     uwl = ldap.initialize(uwldap.uri())

@@ -7,9 +7,15 @@ def max_term(term1, term2):
         return term2
 
 class Inactive:
+  help = '''
+inactive delta-terms
+
+Prints a list of accounts that have been inactive (i.e. not unpaid) for
+delta-terms.
+'''
   def main(self, args):
     if len(args) != 1:
-        print "Usage: ceo inactive delta-terms"
+        print self.help
         return
     delta = int(args[0])
     mlist = members.list_all()
