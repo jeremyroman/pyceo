@@ -2,7 +2,7 @@ CFLAGS ?= -ggdb -Wall -O2
 CFLAGS += -I../include
 
 LIBCEO_OBJECTS := util.o common.o config.o parser.o ldap.o krb5.o kadm.o addhomedir.o
-LIBCEO_LDFLAGS := -lacl -lldap $(shell krb5-config --libs krb5 kadm-client)
+LIBCEO_LDFLAGS := -lldap $(shell krb5-config --libs krb5 kadm-client)
 
 DESTDIR :=
 PREFIX := /usr/local

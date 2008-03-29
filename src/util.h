@@ -11,6 +11,10 @@
 #define NORETURN
 #endif
 
+#ifndef LOG_AUTHPRIV
+#define LOG_AUTHPRIV LOG_AUTH
+#endif
+
 int spawnv(const char *, char *[]);
 
 NORETURN void fatal(const char *, ...);

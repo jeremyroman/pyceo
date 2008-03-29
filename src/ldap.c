@@ -3,8 +3,10 @@
 #include <pwd.h>
 #include <grp.h>
 #include <sasl/sasl.h>
-#include <ldap.h>
 #include <krb5.h>
+
+#define LDAP_DEPRECATED 1
+#include <ldap.h>
 
 #include "ldap.h"
 #include "krb5.h"
