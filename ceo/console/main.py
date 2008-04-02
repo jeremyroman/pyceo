@@ -36,7 +36,11 @@ def help():
       print 'Unknown command %s.' % args[0]
   else:
     print ''
-    print 'Available commands:'
+    print 'To run the ceo GUI, type \'ceo\''
+    print ''
+    print 'To run a ceo console command, type \'ceo command\''
+    print ''
+    print 'Available console commands:'
     for c in commands:
       print '  %s' % c
     print ''
