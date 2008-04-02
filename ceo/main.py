@@ -6,10 +6,6 @@ from ceo import ldapi, members
 
 def start():
     try:
-        if len(sys.argv) >= 2 and sys.argv[1] == '--help':
-          ceo.console.main.help()
-          sys.exit(0)
-
         members.connect(AuthCallback())
 
         if len(sys.argv) == 1:

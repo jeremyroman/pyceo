@@ -1,5 +1,4 @@
 import sys, ldap, termios
-from getopt import getopt
 from ceo import members, terms, uwldap, ldapi
 
 from ceo.console.memberlist import MemberList
@@ -13,24 +12,20 @@ commands = {
   'expiredaccounts' : ExpiredAccounts(),
   'inactive': Inactive(),
 }
-
-shortopts = [
-]
-
-longopts = [
-]
+help_opts = [ '--help', '-h' ]
 
 def start():
-  (opts, args) = getopt(sys.argv[1:], shortopts, longopts)
-  if len(args) >= 1:
-    if args[0] in commands:
-      command = commands[args[0]]
-      if len(args) >= 2 and args[1] in ['--help', '-h']:
-        print command.help
-      else:
-        command.main(args[1:])
+  args = sys.argv[1:]
+  if args[0] in help_opts:
+    help()
+  elif args[0] in commands:
+    command = commands[args[0]]
+    if len(args) >= 2 and args[1] in help_opts:
+      print command.help
     else:
-      print "Invalid command '%s'" % args[0]
+      command.main(args[1:])
+  else:
+    print "Invalid command '%s'" % args[0]
 
 def help():
   args = sys.argv[2:]
