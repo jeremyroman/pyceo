@@ -504,16 +504,10 @@ def group_members(group):
 
     group = ldapi.lookup(ld, 'cn', group, cfg['groups_base'])
 
-    if group:
-        if 'uniqueMember' in group:
-            r = re.compile('^uid=([^,]*)')
-            return map(lambda x: r.match(x).group(1), group['uniqueMember'])
-        elif 'memberUid' in group:
-            return group['memberUid']
-        else:
-            return []
-    else:
-        return []
+    if group and 'uniqueMember' in group:
+        r = re.compile('^uid=([^,]*)')
+        return map(lambda x: r.match(x).group(1), group['uniqueMember'])
+    return []
 
 def expired_accounts():
     members = ldapi.search(ld, cfg['users_base'],
