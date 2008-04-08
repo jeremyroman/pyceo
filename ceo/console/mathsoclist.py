@@ -3,9 +3,10 @@ import re
 
 class MathSocList:
   help = '''
-mathsoclist
+mathsoclist [term]
 
-Prints a current list of members that are likely to be paying MathSoc members.
+Displays a list of members for a term that are likely to be paying MathSoc
+members; defaults to the current term if term is not given.
 '''
 
   regex = ".*(mat/|vpa/se|computer science|math).*"
@@ -13,7 +14,10 @@ Prints a current list of members that are likely to be paying MathSoc members.
 
   def main(self, args):
     regex = re.compile(self.regex)
-    mlist = members.list_term(terms.current())
+    if len(args) == 1:
+        mlist = members.list_term(args[0])
+    else:
+        mlist = members.list_term(terms.current())
     dns = mlist.keys()
     dns.sort()
     for dn in dns:
