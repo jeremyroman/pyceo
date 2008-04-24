@@ -1,3 +1,15 @@
+ceo (0.4.8) stable testing; urgency=low
+
+  * No point in recommending quota anymore
+  * Add help for command-line ceo
+  * Drop memberUid support; all groups use uniqueMember now
+  * Simplify help
+  * Improve help message
+  * Add mathsoclist command
+  * Add term argument to mathsoclist
+
+ -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Thu, 24 Apr 2008 19:57:12 -0400
+
 ceo (0.4.7) stable testing; urgency=low
 
   [ David Bartley ]
