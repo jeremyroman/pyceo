@@ -26,7 +26,8 @@ def configure():
     string_fields = [ 'username_regex', 'shells_file', 'server_url',
             'users_base', 'groups_base', 'sasl_mech', 'sasl_realm',
             'admin_bind_keytab', 'admin_bind_userid', 'realm',
-            'admin_principal', 'admin_keytab', 'expired_account_email' ]
+            'admin_principal', 'admin_keytab', 'expired_account_email',
+            'mathsoc_regex', 'mathsoc_dont_count' ]
     numeric_fields = [ 'min_password_length' ]
 
     # read configuration file
