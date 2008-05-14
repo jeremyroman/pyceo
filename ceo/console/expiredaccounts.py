@@ -1,4 +1,4 @@
-import ldap
+import sys, ldap
 from ceo import members, uwldap
 
 class ExpiredAccounts:
