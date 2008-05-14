@@ -10,7 +10,7 @@ class Inactive:
   help = '''
 inactive delta-terms
 
-Prints a list of accounts that have been inactive (i.e. not unpaid) for
+Prints a list of accounts that have been inactive (i.e. unpaid) for
 delta-terms.
 '''
   def main(self, args):
