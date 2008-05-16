@@ -1,3 +1,12 @@
+ceo (0.4.9) stable testing; urgency=low
+
+  * Move mathsoc regex and exception userid's into config
+  * Import sys
+  * Fix help text
+  * Use refquota instead of quota
+
+ -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Thu, 15 May 2008 22:14:50 -0400
+
 ceo (0.4.8) stable testing; urgency=low
 
   * No point in recommending quota anymore
