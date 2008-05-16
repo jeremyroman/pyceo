@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
         char *chmod_bin = "/usr/bin/chmod";
         char *dataset = homedir + 1;
         char *create_argv[] = { "zfs", "create", dataset, NULL };
-        char *quota_argv[] = { "zfs", "set", "quota=3G", dataset, NULL };
+        char *quota_argv[] = { "zfs", "set", "refquota=3G", dataset, NULL };
         char *mode_argv[] = { "chmod", mode, homedir, NULL };
         char *acl_argv[] = { "chmod", acl, homedir, NULL };
         DIR *skel;
