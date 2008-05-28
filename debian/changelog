@@ -1,3 +1,14 @@
+ceo (0.4.10) stable testing; urgency=low
+
+  [ David Bartley ]
+  * Always call deauth
+  * Add configurable refquota support
+
+  [ Michael Spang ]
+  * Auth as ceo/admin for zfsaddhomedir
+
+ -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Wed, 28 May 2008 02:01:53 -0400
+
 ceo (0.4.9) stable testing; urgency=low
 
   * Move mathsoc regex and exception userid's into config
