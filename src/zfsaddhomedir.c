@@ -9,31 +9,33 @@
 #include "util.h"
 
 int main(int argc, char *argv[]) {
-    if(argc < 6) {
-        fprintf(stderr, "Usage: zfsaddhomedir homedir skeldir uid gid mode acl\n");
+    if(argc < 7) {
+        fprintf(stderr, "Usage: zfsaddhomedir homedir refquota skeldir uid gid mode acl\n");
         return 1;
     }
 
     // TODO: check return of spawnv
     {
         char *homedir = argv[1];
-        char *skeldir = argv[2];
-        char *mode = argv[5];
-        char *acl = (argc >= 7) ? argv[6] : NULL;
+        char *skeldir = argv[3];
+        char refquota[32];
+        char *mode = argv[6];
+        char *acl = (argc >= 8) ? argv[7] : NULL;
         uid_t uid, gid;
         char *zfs_bin = "/usr/sbin/zfs";
         char *chmod_bin = "/usr/bin/chmod";
         char *dataset = homedir + 1;
         char *create_argv[] = { "zfs", "create", dataset, NULL };
-        char *quota_argv[] = { "zfs", "set", "refquota=3G", dataset, NULL };
+        char *quota_argv[] = { "zfs", "set", refquota, dataset, NULL };
         char *mode_argv[] = { "chmod", mode, homedir, NULL };
         char *acl_argv[] = { "chmod", acl, homedir, NULL };
         DIR *skel;
         struct dirent *skelent;
 
         assert(homedir[0]);
-        uid = atol(argv[3]);
-        gid = atol(argv[4]);
+        uid = atol(argv[4]);
+        gid = atol(argv[5]);
+        snprintf(refquota, sizeof(refquota), "refquota=%s", argv[2]);
 
         if(spawnv(zfs_bin, create_argv))
             return 1;

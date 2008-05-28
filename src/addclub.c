@@ -84,7 +84,7 @@ int addclub() {
     if (!sudo_ok)
         logmsg("successfully added group sudo entry for %s", userid);
 
-    home_ok = user_ok || ceo_create_home(homedir, id, id, homedir_mode, acl_s);
+    home_ok = user_ok || ceo_create_home(homedir, refquota, id, id, homedir_mode, acl_s);
     if (!home_ok)
         logmsg("successfully created home directory for %s", userid);
 

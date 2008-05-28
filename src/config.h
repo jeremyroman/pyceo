@@ -1,11 +1,14 @@
 #define CONFIG_FILE "/etc/csc/accounts.cf"
 
 extern char *server_url;
+
 extern char *users_base;
 extern char *groups_base;
 extern char *sudo_base;
 
 extern char *skeleton_dir;
+extern char *homedir_mode;
+extern char *refquota;
 
 extern char *member_shell;
 extern long member_min_id;
@@ -22,8 +25,6 @@ extern char *club_home_acl;
 extern char *club_home_dacl;
 
 extern char *notify_hook;
-
-extern char *homedir_mode;
 
 extern char *realm;
 

@@ -13,10 +13,10 @@
 #include "config.h"
 #include "krb5.h"
 
-int ceo_create_home(char *homedir, uid_t uid, gid_t gid, char *mode, char *acl) {
+int ceo_create_home(char *homedir, char *refquota, uid_t uid, gid_t gid, char *mode, char *acl) {
     char uid_str[16], gid_str[16];
     char *zfs_argv[] = { "ssh", "ceo@ginseng", "/usr/sbin/zfsaddhomedir", \
-        homedir, skeleton_dir, uid_str, gid_str, mode, acl, NULL };
+        homedir, refquota, skeleton_dir, uid_str, gid_str, mode, acl, NULL };
     int ret = 0;
 
     assert(homedir[0]);
