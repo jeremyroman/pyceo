@@ -11,6 +11,12 @@ import re
 
 LIBRARY_DB = "./csc_library.db"
 
+def format_maybe(v):
+    if v is None:
+        return "unknown"
+    else:
+        return str(v)
+
 class Book:
     def __init__(self, author, title, year):
         """Any of these may be None to indicate 'unknown'."""
@@ -30,6 +36,13 @@ class Book:
             raise Exception("Book was not signed out, no need to sign it in")
     
     def __str__(self):
+        author = self.author
+        book = "%s [%s]\nBy: %s" % (format_maybe(self.title), format_maybe(self.year), format_maybe(self.author))
+        if self.signout:
+            book += "\n Signed out by %s on %s" %  (self.signout.name, time.ctime(self.signout.date))
+        return book
+    
+    def __repr__(self):
         return "Book(author=%r, title=%r, year=%r, signout=%r)" % (self.author, self.title, self.year, self.signout)
 
 class Signout:
@@ -53,12 +66,12 @@ def reset():
 
 
 def add(author, title, year):
-    db = shelve.open(LIBRARY_DB,'w') #use w here (not c) to ensure a crash if the DB file got erased (is this a good idea?)
+    db = shelve.open(LIBRARY_DB,'c') #use w here (not c) to ensure a crash if the DB file got erased (is this a good idea?)
     i = len(db)
     db[str(i)] = Book(author, title, year)
     db.close()
 
-def search(author=None, title=None, year=None):
+def search(author=None, title=None, year=None, signedout=None):
     """search for a title
     author and title are regular expressions
     year is a single number or a list of numbers (so use range() to search the DB)
@@ -67,17 +80,22 @@ def search(author=None, title=None, year=None):
     this is extraordinarily inefficient, but whatever (I don't think that without having an indexer run inthe background we can improve this any?)
     returns: a list of Book objects
     """
-    db = shelve.open(LIBRARY_DB, 'w', writeback=True) #open it for writing so that changes to books get saved
+    db = shelve.open(LIBRARY_DB, 'c', writeback=True) #open it for writing so that changes to books get saved
     all = db.values() #this should pull out the ID numbers somehow too.. bah
     if author is not None:
-       all = [book for book in all if book.author and re.match(author, book.author)] #should factor this out 
+       all = [book for book in all if book.author and re.search(author, book.author)] #should factor this out 
     if title is not None:
-       all = [book for book in all if book.title and re.match(title, book.title)] #should factor this out 
+       all = [book for book in all if book.title and re.search(title, book.title)] #should factor this out 
     if year is not None:
         if type(year) == int:
             year = [year]
         #now assume year is a list
         all = [book for book in all if book.year and book.year in year]
+    if signedout is not None:
+        if signedout:
+            all = [book for book in all if book.signout is not None]
+        else:
+            all = [book for book in all if book.signout is None] #aaah copypaste
     db.close()
     return all
 
