@@ -9,9 +9,11 @@ import shelve
 import time
 import re
 
-LIBRARY_DB = "./csc_library.db"
+#LIBRARY_DB = "/users/ceo/library/books.db"
+LIBRARY_DB = "./csc_library.db" #testing location
 
 def format_maybe(v):
+    """little hack to make printing things that may come out as None nicer"""
     if v is None:
         return "unknown"
     else:
@@ -78,26 +80,40 @@ def search(author=None, title=None, year=None, signedout=None):
     whichever ones passed in that aren't None are the restrictions used in the search
     possibly-useful side effect of this design is that search() just gets the list of everything
     this is extraordinarily inefficient, but whatever (I don't think that without having an indexer run inthe background we can improve this any?)
-    returns: a list of Book objects
+    returns: a sequence of Book objects
     """
     db = shelve.open(LIBRARY_DB, 'c', writeback=True) #open it for writing so that changes to books get saved
-    all = db.values() #this should pull out the ID numbers somehow too.. bah
-    if author is not None:
-       all = [book for book in all if book.author and re.search(author, book.author)] #should factor this out 
-    if title is not None:
-       all = [book for book in all if book.title and re.search(title, book.title)] #should factor this out 
-    if year is not None:
-        if type(year) == int:
-            year = [year]
-        #now assume year is a list
-        all = [book for book in all if book.year and book.year in year]
-    if signedout is not None:
-        if signedout:
-            all = [book for book in all if book.signout is not None]
-        else:
-            all = [book for book in all if book.signout is None] #aaah copypaste
+    if type(year) == int:
+        year = [year]
+    def filter(book):
+        """filter by the given params, but only apply those that are non-None"""
+        #this code is SOOO bad, someone who has a clear head please fix this
+        #we need to apply:
+        b_auth = b_title = b_year = b_signedout = True #default to true (in case of None i.e. this doesn't apply) 
+        if author is not None:
+            if re.search(author, book.author):
+                b_auth = True
+            else:
+                b_auth = False
+        if title is not None:
+            if re.search(title, book.title): #should factor this out 
+                b_title = True
+            else:
+                b_title = False
+        if year is not None: #assume year is a list
+            if book.year in year:
+                b_year = True
+            else:
+                b_year = False
+        if signedout is not None:
+            b_signedout = signedout == (book.signout is not None)
+        return b_auth and b_title and b_year and b_signedout
+    
+    for i in db:
+        book = db[i]
+        if(filter(book)):
+            yield i,book
     db.close()
-    return all
 
 
 #def delete(....):
