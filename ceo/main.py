@@ -6,7 +6,9 @@ from ceo import ldapi, members
 
 def start():
     try:
+        print "Connecting to LDAP...",
         members.connect(AuthCallback())
+        print "connected"
 
         if len(sys.argv) == 1:
           ceo.urwid.main.start()
