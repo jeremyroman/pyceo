@@ -13,9 +13,31 @@ Future plans: keep a whole stack of people who have checked it out (the last few
 import shelve
 import time
 import re
+from ceo import conf
 
-#LIBRARY_DB = "/users/office/library/books.db"
-LIBRARY_DB = "./csc_library.db" #testing location
+### Configuration ###
+
+CONFIG_FILE = '/etc/csc/library.cf'
+
+cfg = {}
+
+def configure():
+    """Load Members Configuration"""
+
+    string_fields = [ 'library_db_path' ]
+    numeric_fields = [ ]
+
+    # read configuration file
+    cfg_tmp = conf.read(CONFIG_FILE)
+
+    # verify configuration
+    conf.check_string_fields(CONFIG_FILE, string_fields, cfg_tmp)
+    conf.check_integer_fields(CONFIG_FILE, numeric_fields, cfg_tmp)
+
+    # update the current configuration with the loaded values
+    cfg.update(cfg_tmp)
+
+
 
 def format_maybe(v):
     """little hack to make printing things that may come out as None nicer"""
@@ -71,11 +93,11 @@ class Signout:
 
 def reset():
     """make a fresh database"""
-    shelve.open(LIBRARY_DB,'n').close()
+    shelve.open(cfg['library_db_path'],'n').close()
 
 
 def add(author, title, year):
-    db = shelve.open(LIBRARY_DB,'c') #use w here (not c) to ensure a crash if the DB file got erased (is this a good idea?)
+    db = shelve.open(cfg['library_db_path'],'c') #use w here (not c) to ensure a crash if the DB file got erased (is this a good idea?)
     isbn = str(len(db)) #not true, but works for now
     db[isbn] = Book(author, title, year, isbn)
     db.close()
@@ -89,7 +111,7 @@ def search(author=None, title=None, year=None, ISBN=None, description=None, sign
     this is extraordinarily inefficient, but whatever (I don't think that without having an indexer run inthe background we can improve this any?)
     returns: a sequence of Book objects
     """
-    db = shelve.open(LIBRARY_DB, 'c', writeback=True) #open it for writing so that changes to books get saved
+    db = shelve.open(cfg['library_db_path'], 'c', writeback=True) #open it for writing so that changes to books get saved
     if type(year) == int:
         year = [year]
     def filter(book):
@@ -134,13 +156,13 @@ def search(author=None, title=None, year=None, ISBN=None, description=None, sign
 
 
 def save(book):
-    db = shelve.open(LIBRARY_DB, "w")
+    db = shelve.open(cfg['library_db_path'], "w")
     assert book.ISBN is not None, "We should really handle this case better, like making an ISBN or something"
     db[book.ISBN] = book
     db.close()
 
 def delete(book):
-    db = shelve.open(LIBRARY_DB, "w")
+    db = shelve.open(cfg['library_db_path'], "w")
     del db[book.ISBN]
     
 

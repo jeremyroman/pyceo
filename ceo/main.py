@@ -2,11 +2,12 @@ import sys, ldap
 from getpass import getpass
 import ceo.urwid.main
 import ceo.console.main
-from ceo import ldapi, members
+from ceo import ldapi, members, library
 
 def start():
     try:
         print "Connecting to LDAP...",
+        library.configure()
         members.connect(AuthCallback())
         print "connected"
 
