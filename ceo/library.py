@@ -3,13 +3,18 @@
 This uses shelve which is pretty simplistic, but which should be sufficient for our (extremely minimal) use of the library.
 
 There is a booklist (book=(Author, Title, Year, Signout)) where signout is None for "Checked In" or a (userid, date) to give who and when that book was signed out.
+
+We key books by their ISBN number (this is currently only hoboily implemented; we don't use real ISBNs yet)
+
+Future plans: use barcode scanners, index by ISBN, cross reference to library of congress
+Future plans: keep a whole stack of people who have checked it out (the last few at least)
 """
 
 import shelve
 import time
 import re
 
-#LIBRARY_DB = "/users/ceo/library/books.db"
+#LIBRARY_DB = "/users/office/library/books.db"
 LIBRARY_DB = "./csc_library.db" #testing location
 
 def format_maybe(v):
@@ -20,17 +25,19 @@ def format_maybe(v):
         return str(v)
 
 class Book:
-    def __init__(self, author, title, year):
+    def __init__(self, author, title, year, ISBN=None, description=""):
         """Any of these may be None to indicate 'unknown'."""
-        self.author =author
+        self.author = author
         self.title = title
         self.year = year
+        self.ISBN = ISBN
+        self.description = description
         self.signout = None
     def sign_out(self, username):
         if self.signout is None:
             self.signout = Signout(username)
         else:
-            raise Exception("Book already signed out to %s" % self.signout.name, b)
+            raise Exception("Book already signed out to %s" % self.signout.name, self)
     def sign_in(self): 
         if self.signout is not None:
             self.signout = None
@@ -69,11 +76,11 @@ def reset():
 
 def add(author, title, year):
     db = shelve.open(LIBRARY_DB,'c') #use w here (not c) to ensure a crash if the DB file got erased (is this a good idea?)
-    i = len(db)
-    db[str(i)] = Book(author, title, year)
+    isbn = str(len(db)) #not true, but works for now
+    db[isbn] = Book(author, title, year, isbn)
     db.close()
 
-def search(author=None, title=None, year=None, signedout=None):
+def search(author=None, title=None, year=None, ISBN=None, description=None, signedout=None):
     """search for a title
     author and title are regular expressions
     year is a single number or a list of numbers (so use range() to search the DB)
@@ -89,7 +96,7 @@ def search(author=None, title=None, year=None, signedout=None):
         """filter by the given params, but only apply those that are non-None"""
         #this code is SOOO bad, someone who has a clear head please fix this
         #we need to apply:
-        b_auth = b_title = b_year = b_signedout = True #default to true (in case of None i.e. this doesn't apply) 
+        b_auth = b_title = b_year = b_ISBN = b_description = b_signedout = True #default to true (in case of None i.e. this doesn't apply) 
         if author is not None:
             if re.search(author, book.author):
                 b_auth = True
@@ -105,16 +112,37 @@ def search(author=None, title=None, year=None, signedout=None):
                 b_year = True
             else:
                 b_year = False
+        if ISBN is not None:
+            if re.search(ISBN, book.ISBN):
+                b_ISBN = True
+            else:
+                b_ISBN = False
+        if description is not None:
+            if re.search(description, book.description):
+                b_description = True
+            else:
+                b_description = False
         if signedout is not None:
             b_signedout = signedout == (book.signout is not None)
-        return b_auth and b_title and b_year and b_signedout
+        return b_auth and b_title and b_year and b_ISBN and b_description and b_signedout
     
     for i in db:
         book = db[i]
         if(filter(book)):
-            yield i,book
+            yield book
     db.close()
 
+
+def save(book):
+    db = shelve.open(LIBRARY_DB, "w")
+    assert book.ISBN is not None, "We should really handle this case better, like making an ISBN or something"
+    db[book.ISBN] = book
+    db.close()
+
+def delete(book):
+    db = shelve.open(LIBRARY_DB, "w")
+    del db[book.ISBN]
+    
 
 #def delete(....):
 #    """must think about how to do this one; it'll have to be tied to the DB ID somehow"""
@@ -130,4 +158,4 @@ if __name__ == '__main__':
     print "Listing database"
     for b in search():
         #b.sign_out("nguenthe")
-        print b   
+        print b 

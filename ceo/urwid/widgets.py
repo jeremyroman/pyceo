@@ -2,6 +2,8 @@ import urwid, ldap
 from ceo.urwid.window import raise_back, push_window
 import ceo.ldapi as ldapi
 
+#Todo: kill ButtonText because no one uses it except one place and we can probably do that better anyway
+
 csclub_uri = "ldap://ldap1.csclub.uwaterloo.ca/ ldap://ldap2.csclub.uwaterloo.ca"
 csclub_base = "dc=csclub,dc=uwaterloo,dc=ca"
 
@@ -32,6 +34,15 @@ class ButtonText(urwid.Text):
             self.callback(self.data)
         else:
             return key
+
+#DONTUSE
+class CaptionedText(urwid.Text):
+    def __init__(self, caption, *args, **kwargs):
+        self.caption = caption
+        urwid.Text.__init__(self, *args, **kwargs)
+    def render(self, *args, **kwargs):
+        self.set_text(self.caption + self.get_text()[0])
+        urwid.Text.render(*args, **kwargs)
 
 class SingleEdit(urwid.Edit):
     def keypress(self, size, key):
