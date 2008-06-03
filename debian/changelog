@@ -1,3 +1,20 @@
+ceo (0.4.11) stable testing; urgency=low
+
+  [ David Bartley ]
+  * Add library path to config
+
+  [ Nick Guenther ]
+  * library backend, initial version
+  * Library GUI is coming, but awkwardsadface
+  * CEO notifies of it's connect attempt (since if LDAP is being sad
+    then CEO hangs without any indication of why)
+  * Search works whoooo
+  * We've gone from not having a library, to having a basic library that
+    almost works! There's kinks and the code could be cleaner in places,
+    but it's a really decent start for only a day's work. yayyyy python
+
+ -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Mon, 02 Jun 2008 23:49:09 -0400
+
 ceo (0.4.10) stable testing; urgency=low
 
   [ David Bartley ]
