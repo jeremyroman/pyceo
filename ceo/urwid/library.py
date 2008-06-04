@@ -213,30 +213,25 @@ def do_delete(book):
     if Confirm("Do you wish to delete %r?" % book):
         lib.delete(book)
 
-class BookPage(urwid.WidgetWrap):
-    def __init__(self, book):
-        self._book = book
+class BookPageBase(urwid.WidgetWrap):
+    def __init__(self):
         self.author = SingleEdit("Author: ")
         self.title = SingleEdit("Title: ")
         self.year = SingleIntEdit("Year: ")
         self.ISBN = urwid.Text("ISBN: ")
         self.description = urwid.Edit("Description: ", multiline=True)
-        self.checkout_label = urwid.Text("")
-         
-        save = urwid.Button("Save", self.save)
-        self.checkout_button = urwid.Button("", self.checkout)
-        back = urwid.Button("Back", raise_back)
-        remove = urwid.Button("Delete", self.delete)
-       
-        buttons = urwid.GridFlow([back, self.checkout_button, save, remove], 13, 2, 1, 'center') 
-        display = urwid.Pile([self.author, self.title, self.year, self.ISBN,
-                                self.description,
-                                urwid.Divider(), buttons])
+
+        buttons = urwid.GridFlow(self._init_buttons(), 13, 2, 1, 'center') 
+        display = urwid.Pile([self.author, self.title, self.year, self.ISBN, self.description,] +
+                                self._init_widgets() +
+                                [urwid.Divider(), buttons])
         urwid.WidgetWrap.__init__(self, display)
-        
         self.refresh()
 
-    #all these *senders are to allow these to be used as event handlers or just on their own
+    def _init_widgets(self):
+        return []
+    def _init_buttons(self):
+        return []
     def refresh(self, *sender):
         """update the widgets from the data model"""
         self.author.set_edit_text(self._book.author)
@@ -244,6 +239,25 @@ class BookPage(urwid.WidgetWrap):
         self.year.set_edit_text(str(self._book.year))
         self.ISBN.set_text("ISBN: " + self._book.ISBN)
         self.description.set_edit_text(self._book.description)
+
+
+class BookPage(BookPageBase):
+    def __init__(self, book):
+        self._book = book
+        BookPageBase.__init__(self)
+    def _init_widgets(self):
+        self.checkout_label = urwid.Text("") 
+        return [self.checkout_label]
+    def _init_buttons(self):
+        save = urwid.Button("Save", self.save)
+        self.checkout_button = urwid.Button("", self.checkout)
+        back = urwid.Button("Back", raise_back)
+        remove = urwid.Button("Delete", self.delete)
+        return [back, self.checkout_button, save, remove]
+        
+    #all these *senders are to allow these to be used as event handlers or just on their own
+    def refresh(self, *sender):
+        BookPageBase.refresh(self, *sender)
         if self._book.signout is None:
             self.checkout_label.set_text("Checked In")
             self.checkout_button.set_label("Check Out")
