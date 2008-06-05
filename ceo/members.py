@@ -87,7 +87,6 @@ ld = None
 def connect(auth_callback):
     """Connect to LDAP."""
 
-    configure()
 
     global ld
     password = None
