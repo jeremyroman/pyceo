@@ -55,6 +55,8 @@ int addmember() {
 
     if (setreuid(0, 0))
         fatalpe("setreuid");
+    if (setregid(0, 0))
+        fatalpe("setregid");
 
     if (!force && getpwnam(userid) != NULL)
         deny("user %s already exists", userid);
