@@ -2,7 +2,7 @@ import sys, random, urwid.curses_display
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 from ceo.urwid import newmember, renew, info, search, positions, groups, \
-    shell, library
+    shell, library, databases
 
 ui = urwid.curses_display.Screen()
 
@@ -154,6 +154,7 @@ def run():
         ("Manage Office Staff", groups.group_members, office_data),
         ("Manage Systems Committee", groups.group_members, syscom_data),
         ("Library", library.library, None),
+        ("Databases", databases.databases, None),
         ("Exit", raise_abort, None),
     ])
     push_window( menu, program_name() )
