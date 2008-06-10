@@ -6,10 +6,15 @@ from ceo import ldapi, members, library
 
 def start():
     try:
+        print "Reading config file...",
+        #XXX this should really all be done through one big config file
+        members.configure()
+        library.configure() 
+        print "read."
+        
         print "Connecting to LDAP...",
-        library.configure()
         members.connect(AuthCallback())
-        print "connected"
+        print "connected."
 
         if len(sys.argv) == 1:
           ceo.urwid.main.start()
