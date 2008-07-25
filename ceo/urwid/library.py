@@ -262,7 +262,7 @@ class BookPage(BookPageBase):
             self.checkout_label.set_text("Checked In")
             self.checkout_button.set_label("Check Out")
         else:
-            self.checkout_label.set_text(self._book.signout)
+            self.checkout_label.set_text(self._book.signout._repr_())
             self.checkout_button.set_label("Check In")
         
     def save(self, *sender):
