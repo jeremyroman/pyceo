@@ -1,6 +1,7 @@
 import urwid
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
+from ceo import terms
 
 class InfoPage(WizardPanel):
     def init_widgets(self):
@@ -28,15 +29,18 @@ class InfoPage(WizardPanel):
         userid  = self.state['userid']
         program = member.get('program', [''])[0]
         shell   = member.get('loginShell', [''])[0]
-        terms   = member.get('term', [])
+        mterms  = member.get('term', [])
         nmterms = member.get('nonMemberTerm', [])
+
+        mterms.sort(terms.compare)
+        nmterms.sort(terms.compare)
 
         self.name.set_text("Name: %s" % name)
         self.userid.set_text("User: %s" % userid)
         self.program.set_text("Program: %s" % program)
         self.program.set_text("Shell: %s" % shell)
         if terms:
-            self.terms.set_text("Terms: %s" % ", ".join(terms))
+            self.terms.set_text("Terms: %s" % ", ".join(mterms))
         if nmterms:
             self.nmterms.set_text("Rep Terms: %s" % ", ".join(nmterms))
     def check(self):
