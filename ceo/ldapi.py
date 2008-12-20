@@ -10,12 +10,19 @@ from subprocess import Popen, PIPE
 
 def connect_sasl(uri, mech, realm, password):
 
-    # open the connection
-    ld = ldap.initialize(uri)
+    try:
+        # open the connection
+        ld = ldap.initialize(uri)
+        
+        # authenticate
+        sasl = Sasl(mech, realm, password)
+        ld.sasl_interactive_bind_s('', sasl)
 
-    # authenticate
-    sasl = Sasl(mech, realm, password)
-    ld.sasl_interactive_bind_s('', sasl)
+    except ldap.LOCAL_ERROR, e:
+        raise e
+
+    except:
+        print "Shit, something went wrong!"
 
     return ld
 
