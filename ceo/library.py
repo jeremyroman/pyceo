@@ -4,7 +4,7 @@ from ceo import conf
 import time
 from datetime import datetime, timedelta
 
-CONFIG_FILE = "etc/library.cf"
+CONFIG_FILE = "/etc/csc/library.cf"
 
 cfg = {}
 
