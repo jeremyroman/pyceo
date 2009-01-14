@@ -11,6 +11,9 @@ import ceo.library as lib
 
 
 def library(data):
+    """
+    Create the main menu for the library system.
+    """
     menu = make_menu([
         ("Checkout Book", checkout_book, None),
         ("Return Book", return_book, None),
@@ -21,22 +24,40 @@ def library(data):
     push_window(menu, "Library")
 
 def search_books(data):
+    """
+    Define menus for searching books.
+    """
     menu = make_menu([
         ("Overdue Books", overdue_books, None),
     ])
     push_window(menu, "Book Search")
 
 def overdue_books(data):
+    """
+    Display a list of all books that are overdue.
+    """
     None
 
 def checkout_book(data):
+    """
+    Display the book checkout wizard.
+    """
     push_wizard("Checkout", [CheckoutPage, BookSearchPage, ConfirmPage])
 
 def return_book(data):
+    """
+    Display the book return wizard.
+    """
     push_wizard("Checkout", [CheckinPage, ConfirmPage])
 
 class BookSearchPage(WizardPanel):
+    """
+    The page used when searching for books.
+    """
     def init_widgets(self):
+        """
+        Initialize the widgets and state variables.
+        """
         self.search = None
         self.state["book"] = None
         self.isbn = SingleEdit("ISBN: ")
@@ -51,6 +72,9 @@ class BookSearchPage(WizardPanel):
         ]
 
     def check(self):
+        """
+        Validate input and update state.
+        """
         if self.state["book"] is None:
             push_window(SearchPage(self.isbn.get_edit_text(),
                                    self.title.get_edit_text(),
@@ -62,7 +86,16 @@ class BookSearchPage(WizardPanel):
         
 
 class CheckoutPage(WizardPanel):
+    """
+    The initial page when checking out a book.
+    """
     def init_widgets(self):
+        """
+        Initialize widgets and set up state.
+
+        user -> the username to sign the book to
+        task -> used for the confirmation dialog
+        """
         self.state["user"] = "ERROR"
         self.state["task"] = "sign_out"
         self.user = SingleEdit("Username: ")
@@ -77,7 +110,16 @@ class CheckoutPage(WizardPanel):
         self.state['user'] = self.user.get_edit_text()
 
 class ConfirmPage(WizardPanel):
+    """
+    The confirmation screen when checking-in and checking-out
+    a book.
+    """
     def init_widgets(self):
+        """
+        Initialize widgets and state.
+
+        task -> used to deterimine the action
+        """
         self.user = urwid.Text("Username: ")
         self.book = urwid.Text("Book: ")
 
@@ -95,11 +137,18 @@ class ConfirmPage(WizardPanel):
         ]
 
     def activate(self):
+        """
+        Ensures that correct data is displayed.
+        """
         self.user.set_text("Username: " + self.state["user"])
         if self.state["book"]:
             self.book.set_text("Book: " + self.state["book"].title)
 
     def check(self):
+        """
+        Generally used for validation, but in this case it does
+        the actual book check-out.
+        """
         #TODO: Validate user at some point (preferrably user entry screen)
         if self.state["task"] and self.state["task"]=="sign_in":
             self.state["book"].sign_in(self.state["user"])
@@ -109,7 +158,20 @@ class ConfirmPage(WizardPanel):
 
         
 class SearchPage(urwid.WidgetWrap):
+    """
+    Displays search results.  Can search on isbn,
+    title, or username (for books that are currently
+    out).
+    """
     def __init__(self, isbn, title, user, state):
+        """
+        This does the actual search, and sets up the screen
+        when it's done.
+
+        title -> search by (partial) title
+        isbn -> search by (partial) isbn
+        user -> search by username (for checked-out books)
+        """
         self.state = state
         books = []
         widgets = []
@@ -130,11 +192,25 @@ class SearchPage(urwid.WidgetWrap):
         urwid.WidgetWrap.__init__(self, urwid.ListBox(widgets))
 
     def select(self, book):
+        """
+        Marks a book for check-in or check-out.
+        """
         self.state["book"] = book
         pop_window()
 
 class CheckinPage(WizardPanel):
+    """
+    The initial page to start the check-in widget.
+    """
     def init_widgets(self):
+        """
+        Throw some widgets on the screen and set up
+        some state.
+
+        book -> The book to check out.
+        user -> Stupid people like books.
+        task -> What are we doing?  (For confirm screen.)
+        """
         self.state["book"] = None
         self.state["user"] = "ERROR"
         self.state["task"] = "sign_in"
@@ -147,6 +223,11 @@ class CheckinPage(WizardPanel):
         ]
 
     def check(self):
+        """
+        Pushes the search window.
+
+        Should validate usernames.
+        """
         if self.state["book"] is None:
             push_window(SearchPage(None,
                                    None,
