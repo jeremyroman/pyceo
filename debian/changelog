@@ -1,3 +1,9 @@
+ceo (0.4.12) stable testing; urgency=low
+	[ Michael Gregson ]
+	* Rewrite library system.
+	* Support for book checkout and return on sqlobject backends
+	* We dont die when not having LDAP to connect to.
+
 ceo (0.4.11) stable testing; urgency=low
 
   [ David Bartley ]
