@@ -5,6 +5,8 @@ ceo (0.4.13) stable testing; urgency=low
   * Add search function to library
   * Can search for overdue books.
 
+ -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Thurs, 15 Jan 2009 17:00 -500
+
 ceo (0.4.12) stable testing; urgency=low
 
   [ Michael Gregson ]
