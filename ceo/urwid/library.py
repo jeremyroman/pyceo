@@ -48,7 +48,7 @@ def overdue_books(data):
                                       None, 'selected'))
         widgets.append(urwid.Divider())
         
-    urwid.WidgetWrap.__init__(self, urwid.ListBox(widgets))
+    push_window(urwid.ListBox(widgets))
 
     None
 
