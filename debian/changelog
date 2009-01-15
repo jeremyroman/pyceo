@@ -1,4 +1,5 @@
 ceo (0.4.12) stable testing; urgency=low
+
 	[ Michael Gregson ]
 	* Rewrite library system.
 	* Support for book checkout and return on sqlobject backends
