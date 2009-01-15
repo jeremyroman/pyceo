@@ -1,3 +1,10 @@
+ceo (0.4.13) stable testing; urgency=low
+  
+  [ Michael Gregson ]
+  * Add user validation to library system
+  * Add search function to library
+  * Can search for overdue books.
+
 ceo (0.4.12) stable testing; urgency=low
 
   [ Michael Gregson ]
