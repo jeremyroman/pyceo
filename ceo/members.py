@@ -493,7 +493,10 @@ def registered(userid, term):
     """
 
     member = get(userid)
-    return 'term' in member and term in member['term']
+    if not member is None:
+        return 'term' in member and term in member['term']
+    else:
+        return False
 
 
 def group_members(group):

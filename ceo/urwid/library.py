@@ -39,7 +39,7 @@ def overdue_books(data):
     Display a list of all books that are overdue.
     """
     oldest = datetime.today() - timedelta(weeks=2)
-    overdue = Signout.select(Signout.q.outdate<oldest)
+    overdue = lib.Signout.select(lib.Signout.q.outdate<oldest)
 
     widgets = []
 
@@ -122,7 +122,7 @@ class CheckoutPage(WizardPanel):
 
     def check(self):
         self.state['user'] = self.user.get_edit_text()
-        if not members.registered(self.state['user'], terms.current()):
+        if not members.registered(self.state['user'], [terms.current()]):
             set_status("User not registered for this term!")
             return True
         return False
