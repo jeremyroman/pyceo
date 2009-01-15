@@ -4,7 +4,9 @@ from ceo.urwid import search
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 from sqlobject.sqlbuilder import *
-from datetime import datetime
+from datetime import datetime, timedelta
+
+from ceo import terms
 
 import ceo.library as lib
 
@@ -17,7 +19,7 @@ def library(data):
     menu = make_menu([
         ("Checkout Book", checkout_book, None),
         ("Return Book", return_book, None),
-#        ("Search Books", search_books, None),
+        ("Search Books", search_books, None),
 #        ("Add Book", add_book, None),
         ("Back", raise_back, None),
     ])
@@ -36,6 +38,18 @@ def overdue_books(data):
     """
     Display a list of all books that are overdue.
     """
+    oldest = datetime.today() - timedelta(weeks=2)
+    overdue = Signout.select(Signout.q.outdate<oldest)
+
+    widgets = []
+
+    for s in overdue:
+        widgets.append(urwid.AttrWrap(ButtonText(None, s.book, str(s.book)),
+                                      None, 'selected'))
+        widgets.append(urwid.Divider())
+        
+    urwid.WidgetWrap.__init__(self, urwid.ListBox(widgets))
+
     None
 
 def checkout_book(data):
@@ -108,6 +122,10 @@ class CheckoutPage(WizardPanel):
 
     def check(self):
         self.state['user'] = self.user.get_edit_text()
+        if not members.registered(self.state['user'], terms.current()):
+            set_status("User not registered for this term!")
+            return True
+        return False
 
 class ConfirmPage(WizardPanel):
     """

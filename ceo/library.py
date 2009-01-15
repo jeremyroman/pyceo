@@ -1,6 +1,8 @@
 from sqlobject import *
 from sqlobject.sqlbuilder import *
 from ceo import conf
+from ceo import members
+from ceo import terms
 import time
 from datetime import datetime, timedelta
 
@@ -37,8 +39,9 @@ class Book(SQLObject):
         Call this with a username to sign out
         a book.
         """
-        s = Signout(username=u, book=self,
-                    outdate=datetime.today(), indate=None)
+        if members.registered(u,terms.currrent()):
+            s = Signout(username=u, book=self,
+                        outdate=datetime.today(), indate=None)
 
     def sign_in(self, u):
         """
