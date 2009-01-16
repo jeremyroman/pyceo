@@ -1,3 +1,10 @@
+ceo (0.4.15) stable testing; urgency=low
+
+  [ Michael Gregson ]
+  * Fixed incorrect usage of members.registered in library
+
+ -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Thu, 15 Jan 2009 19:10:00 -0500
+
 ceo (0.4.14) stable testing; urgency=low
   
   [ Michael Gregson ]
