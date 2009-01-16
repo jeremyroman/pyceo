@@ -52,7 +52,7 @@ class Book(SQLObject):
         """
         s = self.signouts.filter(AND(Signout.q.indate==None, Signout.q.username==u))
         if s.count() > 0:
-            s.orderBy(Signout.q.outdate).limit(1).getOne(None).sign_in()
+            list(s.orderBy(Signout.q.outdate).limit(1))[0].sign_in()
             return True
         else:
             raise Exception("PEBKAC:  Book not signed out!")
