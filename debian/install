@@ -1,2 +1,2 @@
-etc/accounts.cf etc/kerberos.cf etc/ldap.cf etc/csc
+etc/accounts.cf.example etc/kerberos.cf.example etc/ldap.cf.example etc/csc
 etc/csc.schema etc/ldap/schema
