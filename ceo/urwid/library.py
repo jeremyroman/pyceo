@@ -122,7 +122,7 @@ class CheckoutPage(WizardPanel):
 
     def check(self):
         self.state['user'] = self.user.get_edit_text()
-        if not members.registered(self.state['user'], [terms.current()]):
+        if not members.registered(self.state['user'], terms.current()):
             set_status("User not registered for this term!")
             return True
         return False
