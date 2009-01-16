@@ -1,3 +1,10 @@
+ceo (0.4.16) stable testing; urgency=low
+
+  [ Michael Gregson ]
+  * Fixed error in calling of members.current
+
+ -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Thu, 15 Jan 2009 22:40:00 -0500
+
 ceo (0.4.15) stable testing; urgency=low
 
   [ Michael Gregson ]
