@@ -1,3 +1,10 @@
+ceo (0.4.17) stable testing; urgency=low
+
+  [ Michael Gregson ]
+  * Books can now be returned!!!  Yay!
+
+ -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Thu, 15 Jan 2009 23:42:00 -0500
+
 ceo (0.4.16) stable testing; urgency=low
 
   [ Michael Gregson ]
