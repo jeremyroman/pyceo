@@ -39,7 +39,7 @@ class Book(SQLObject):
         Call this with a username to sign out
         a book.
         """
-        if members.registered(u,terms.currrent()):
+        if members.registered(u, terms.current()):
             s = Signout(username=u, book=self,
                         outdate=datetime.today(), indate=None)
 

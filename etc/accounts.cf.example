@@ -9,6 +9,9 @@ member_min_id = 20001
 member_max_id = 29999
 member_shell = "/bin/bash"
 member_home = "/users"
+#member_home_acl = "u::rwx,g::rx,o::rx"
+#member_home_dacl =
+member_home_acl =
 
 ### Club Account Options ###
 
@@ -16,6 +19,7 @@ club_min_id = 30001
 club_max_id = 39999
 club_shell = "/bin/bash"
 club_home = "/users"
+club_home_acl = "A+group:%s:rwpRAxaWdDcCs:fd:allow"
 
 ### Administrative Account Options
 
@@ -26,9 +30,9 @@ admin_home = "/users"
 
 ### Home Directory Options ###
 
-skeleton_dir = "/etc/skel"
-homedir_mode = 0755
-quota_prototype = "ctdalek"
+skeleton_dir = "/users/skel"
+homedir_mode = "0755"
+refquota = "4G"
 
 ### Validation Tuning ###
 
@@ -36,4 +40,7 @@ username_regex = "^[a-z][-a-z0-9]*$"
 min_password_length = 4
 shells_file = "/etc/shells"
 privileged_group = "staff"
-notify_hook = "/etc/csc/thingie"
+notify_hook = "/etc/csc/notify-hook"
+expired_account_email = "/etc/csc/expired-account"
+mathsoc_regex = ".*(mat/|vpa/se|computer science|math).*"
+mathsoc_dont_count = "cpdohert dlgawley dtbartle mbiggs saforres tmyklebu"
