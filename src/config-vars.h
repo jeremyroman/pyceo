@@ -13,14 +13,12 @@ CONFIG_INT(member_min_id)
 CONFIG_INT(member_max_id)
 CONFIG_STR(member_home)
 CONFIG_STR(member_home_acl)
-CONFIG_STR(member_home_dacl)
 
 CONFIG_STR(club_shell)
 CONFIG_INT(club_min_id)
 CONFIG_INT(club_max_id)
 CONFIG_STR(club_home)
 CONFIG_STR(club_home_acl)
-CONFIG_STR(club_home_dacl)
 
 CONFIG_STR(notify_hook)
 
