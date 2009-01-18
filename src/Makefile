@@ -24,6 +24,8 @@ zfsaddhomedir: util.o zfsaddhomedir.o
 config-test: config-test.o parser.o util.o
 	$(CC) $(LDFLAGS) $^ -o $@
 
+config.o: config.h config-vars.h
+
 install: addmember addclub
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install addmember addclub $(DESTDIR)$(PREFIX)/bin
