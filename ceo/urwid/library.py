@@ -138,7 +138,7 @@ class ConfirmPage(WizardPanel):
 
         task -> used to deterimine the action
         """
-        self.user = LdapWordEdit(csclub_uri, csclub_base, 'uid', "Username: ")
+        self.user = urwid.Text("Username: ")
         self.book = urwid.Text("Book: ")
 
         title = ""
