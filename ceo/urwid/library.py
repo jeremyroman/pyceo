@@ -131,7 +131,7 @@ class CheckoutPage(WizardPanel):
         """
         self.state["user"] = "ERROR"
         self.state["task"] = "sign_out"
-        self.user = SingleEdit("Username: ")
+        self.user = LdapWordEdit(csclub_uri, csclub_base, 'uid', "Username: ")
         
         self.widgets = [
             urwid.Text("Book Checkout"),
@@ -251,7 +251,7 @@ class CheckinPage(WizardPanel):
         self.state["book"] = None
         self.state["user"] = "ERROR"
         self.state["task"] = "sign_in"
-        self.user = SingleEdit("Username: ")
+        self.user = LdapWordEdit(csclub_uri, csclub_base, 'uid', "Username: ")
         
         self.widgets = [
             urwid.Text("Book Checkin"),

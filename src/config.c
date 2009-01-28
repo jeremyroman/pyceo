@@ -6,76 +6,45 @@
 #include "util.h"
 
 #define DEF_STR NULL
-#define DEF_LONG LONG_MIN
+#define DEF_INT LONG_MIN
 
-char *server_url = DEF_STR;
+#define CONFIG_STR(x) char *x = DEF_STR;
+#define CONFIG_INT(x) long  x = DEF_INT;
+#include "config-vars.h"
+#undef CONFIG_STR
+#undef CONFIG_INT
 
-char *users_base = DEF_STR;
-char *groups_base = DEF_STR;
-char *sudo_base = DEF_STR;
+struct config_var {
+    const char *name;
+    void *p;
+    enum { CONFIG_TYPE_STR, CONFIG_TYPE_INT } type;
+};
 
-char *skeleton_dir = DEF_STR;
-char *homedir_mode = DEF_STR;
-char *refquota = DEF_STR;
-
-char *member_shell = DEF_STR;
-long member_min_id = DEF_LONG;
-long member_max_id = DEF_LONG;
-char *member_home = DEF_STR;
-char *member_home_acl = DEF_STR;
-
-char *club_shell = DEF_STR;
-long club_min_id = DEF_LONG;
-long club_max_id = DEF_LONG;
-char *club_home = DEF_STR;
-char *club_home_acl = DEF_STR;
-
-char *notify_hook = DEF_STR;
-
-char *realm = DEF_STR;
-
-char *admin_principal = DEF_STR;
-char *admin_keytab = DEF_STR;
-
-char *admin_bind_userid = DEF_STR;
-char *admin_bind_keytab = DEF_STR;
-
-char *sasl_realm = DEF_STR;
-char *sasl_mech = DEF_STR;
-
-char *privileged_group = DEF_STR;
-
-static char *strvarnames[] = { "server_url", "users_base", "admin_principal",
-    "admin_keytab", "skeleton_dir", "homedir_mode", "refquota", "member_home",
-    "member_shell", "club_home", "club_shell", "realm", "admin_bind_userid",
-    "admin_bind_keytab", "groups_base", "privileged_group", "notify_hook",
-    "sasl_realm", "sasl_mech", "sudo_base", "member_home_acl",
-    "club_home_acl" };
-static char **strvars[] = { &server_url, &users_base, &admin_principal,
-    &admin_keytab, &skeleton_dir, &homedir_mode, &refquota, &member_home,
-    &member_shell, &club_home, &club_shell, &realm, &admin_bind_userid,
-    &admin_bind_keytab, &groups_base, &privileged_group, &notify_hook,
-    &sasl_realm, &sasl_mech, &sudo_base, &member_home_acl, &club_home_acl };
-
-static char *longvarnames[] = { "member_min_id", "member_max_id",
-    "club_min_id", "club_max_id" };
-static long *longvars[] = { &member_min_id, &member_max_id,
-    &club_min_id, &club_max_id };
+#define CONFIG_STR(x) {#x, &x, CONFIG_TYPE_STR },
+#define CONFIG_INT(x) {#x, &x, CONFIG_TYPE_INT },
+static struct config_var config_vars[] = {
+#include "config-vars.h"
+};
+#undef CONFIG_STR
+#undef CONFIG_INT
 
 void config_var(char *var, char *val) {
     int i;
 
-    for (i = 0; i < sizeof(strvars)/sizeof(*strvars); i++) {
-        if (!strcmp(var, strvarnames[i])) {
-            if (!strvars[i])
-                free(strvars[i]);
-            *strvars[i] = xstrdup(val);
-        }
-    }
-
-    for (i = 0; i < sizeof(longvars)/sizeof(*longvars); i++) {
-        if (!strcmp(var, longvarnames[i])) {
-            *longvars[i] = config_long(var, val);
+    for (i = 0; i < sizeof(config_vars)/sizeof(*config_vars); i++) {
+        if (!strcmp(var, config_vars[i].name)) {
+            switch (config_vars[i].type) {
+                case CONFIG_TYPE_STR:
+                    if (*(char **)config_vars[i].p)
+                        free(*(char **)config_vars[i].p);
+                    *(char **)config_vars[i].p = xstrdup(val);
+                    break;
+                case CONFIG_TYPE_INT:
+                    *(long *)config_vars[i].p = config_long(var, val);
+                    break;
+                default:
+                    fatal("unknown config var type %d", config_vars[i].type);
+            }
         }
     }
 }
@@ -85,13 +54,18 @@ void configure() {
 
     config_parse(CONFIG_FILE);
 
-    for (i = 0; i < sizeof(strvars)/sizeof(*strvars); i++) {
-        if (*strvars[i] == DEF_STR)
-            badconf("undefined string variable: %s", strvarnames[i]);
-    }
-
-    for (i = 0; i < sizeof(longvars)/sizeof(*longvars); i++) {
-        if (*longvars[i] == DEF_LONG)
-            badconf("undefined long variable: %s", longvarnames[i]);
+    for (i = 0; i < sizeof(config_vars)/sizeof(*config_vars); i++) {
+        switch (config_vars[i].type) {
+            case CONFIG_TYPE_STR:
+                if (*(char **)config_vars[i].p == DEF_STR)
+                    badconf("undefined string variable: %s", config_vars[i].name);
+                break;
+            case CONFIG_TYPE_INT:
+                if (*(long *)config_vars[i].p == DEF_INT)
+                    badconf("undefined integer variable: %s", config_vars[i].name);
+                break;
+            default:
+                fatal("unknown config var type %d", config_vars[i].type);
+        }
     }
 }
