@@ -31,6 +31,7 @@ def search_books(data):
     """
     menu = make_menu([
         ("Overdue Books", overdue_books, None),
+        ("Signed Out Books", outbooks_search, None),
     ])
     push_window(menu, "Book Search")
 
@@ -51,6 +52,24 @@ def overdue_books(data):
     push_window(urwid.ListBox(widgets))
 
     None
+
+def outbooks_search(data):
+    """
+    Display a list of all books that are signed out.
+    """
+    overdue = lib.Signout.select(lib.Signout.q.indate==None)
+
+    widgets = []
+
+    for s in overdue:
+        widgets.append(urwid.AttrWrap(ButtonText(None, s.book, str(s.book)),
+                                      None, 'selected'))
+        widgets.append(urwid.Divider())
+        
+    push_window(urwid.ListBox(widgets))
+
+    None
+
 
 def checkout_book(data):
     """
