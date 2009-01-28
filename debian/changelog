@@ -1,3 +1,10 @@
+ceo (0.4.18) stable testing; urgency=low
+
+  [ Michael Gregson ]
+  * Added new search function, and books now display due dates.
+
+ -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Wed, 29 Jan 2009 01:04:00 -0500
+
 ceo (0.4.17) stable testing; urgency=low
 
   [ Michael Gregson ]
