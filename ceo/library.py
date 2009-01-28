@@ -77,7 +77,7 @@ class Book(SQLObject):
         if signouts.count() > 0:
             book += "\nSigned Out: "
             for s in signouts:
-                book += s.username + " (" + s.due_date + "), "
+                book += s.username + " (" + str(s.due_date) + "), "
 
         book = book.strip(", ")
         
