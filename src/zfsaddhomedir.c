@@ -14,7 +14,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // TODO: check return of spawnv
     {
         char *homedir = argv[1];
         char *skeldir = argv[3];
@@ -24,11 +23,13 @@ int main(int argc, char *argv[]) {
         uid_t uid, gid;
         char *zfs_bin = "/usr/sbin/zfs";
         char *chmod_bin = "/usr/bin/chmod";
+        char *rsync_bin = "/usr/bin/rsync";
         char *dataset = homedir + 1;
         char *create_argv[] = { "zfs", "create", dataset, NULL };
         char *quota_argv[] = { "zfs", "set", refquota, dataset, NULL };
         char *mode_argv[] = { "chmod", mode, homedir, NULL };
         char *acl_argv[] = { "chmod", acl, homedir, NULL };
+        char *rsync_argv[] = { "rsync", "-avH", skeldir, homedir, NULL };
         DIR *skel;
         struct dirent *skelent;
 
@@ -46,96 +47,15 @@ int main(int argc, char *argv[]) {
         if(acl && spawnv(chmod_bin, acl_argv))
             return 1;
 
-        skel = opendir(skeldir);
-        if (!skel) {
-            errorpe("failed to open %s", skeldir);
-            return -1;
-        }
-
-        while ((skelent = readdir(skel))) {
-            struct stat sb;
-            char src[PATH_MAX], dest[PATH_MAX];
-
-            if (!strcmp(skelent->d_name, ".") || !strcmp(skelent->d_name, ".."))
-                continue;
-
-            snprintf(src, sizeof(src), "%s/%s", skeldir, skelent->d_name);
-            snprintf(dest, sizeof(dest), "/%s/%s", homedir, skelent->d_name);
-            lstat(src, &sb);
-
-            if (sb.st_uid || sb.st_gid) {
-                warn("not creating %s due to ownership", dest);
-                continue;
-            }
-
-            if (S_ISREG(sb.st_mode)) {
-                int bytes;
-                char buf[4096];
-
-                int srcfd = open(src, O_RDONLY);
-                if (srcfd == -1) {
-                    warnpe("open: %s", src);
-                    continue;
-                }
-
-                int destfd = open(dest, O_WRONLY|O_CREAT|O_EXCL, sb.st_mode & 0777);
-                if (destfd == -1) {
-                    warnpe("open: %s", dest);
-                    close(srcfd);
-                    continue;
-                }
-
-                for (;;) {
-                    bytes = read(srcfd, buf, sizeof(buf));
-                    if (!bytes)
-                        break;
-                    if (bytes < 0) {
-                        warnpe("read");
-                        break;
-                    }
-                    if (write(destfd, buf, bytes) < 0) {
-                        warnpe("write");
-                        break;
-                    }
-                }
-                if (fchown(destfd, uid, gid))
-                    errorpe("chown: %s", dest);
-
-                close(srcfd);
-                close(destfd);
-            } else if (S_ISDIR(sb.st_mode)) {
-                if (mkdir(dest, sb.st_mode & 0777)) {
-                    warnpe("mkdir: %s", dest);
-                    continue;
-                }
-                if (chown(dest, uid, gid))
-                    errorpe("chown: %s", dest);
-            } else if (S_ISLNK(sb.st_mode)) {
-                char lnkdest[PATH_MAX];
-                int bytes;
-                bytes = readlink(src, lnkdest, sizeof(lnkdest));
-                lnkdest[bytes] = '\0';
-                if (bytes == -1) {
-                    warnpe("readlink: %s", src);
-                    continue;
-                }
-                if (symlink(lnkdest, dest)) {
-                    warnpe("symlink: %s", dest);
-                    continue;
-                }
-                if (lchown(dest, uid, gid))
-                    errorpe("lchown: %s", dest);
-            } else {
-                warn("not creating %s", dest);
-            }
-        }
-
-        closedir(skel);
-
         if (chown(homedir, uid, gid)) {
             errorpe("failed to chown %s", homedir);
             return -1;
         }
+
+        if(seteuid(uid) != 0 || setegid(gid) != 0)
+            return 1;
+        if(spawnv(rsync_bin, rsync_argv))
+            return 1;
     }
 
     return 0;
