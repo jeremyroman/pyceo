@@ -30,8 +30,6 @@ int main(int argc, char *argv[]) {
         char *mode_argv[] = { "chmod", mode, homedir, NULL };
         char *acl_argv[] = { "chmod", acl, homedir, NULL };
         char *rsync_argv[] = { "rsync", "-avH", skeldir, homedir, NULL };
-        DIR *skel;
-        struct dirent *skelent;
 
         assert(homedir[0]);
         uid = atol(argv[4]);
