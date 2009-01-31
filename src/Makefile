@@ -49,7 +49,7 @@ config.o: config.h config-vars.h
 install:
 	install -d $(DESTDIR)$(PREFIX)/sbin $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib/ceod
 	install ceod $(DESTDIR)$(PREFIX)/sbin
-	install op-adduser addmember addclub $(DESTDIR)$(PREFIX)/bin
+	install addmember addclub $(DESTDIR)$(PREFIX)/bin
 	install ceoc op-adduser $(DESTDIR)$(PREFIX)/lib/ceod
 
 $(NET_PROGS):    LDFLAGS += $(NET_LDFLAGS)
