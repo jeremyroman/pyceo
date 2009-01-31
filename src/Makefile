@@ -32,7 +32,7 @@ UTIL_PROGS     := config-test zfsaddhomedir $(CONFIG_PROGS)
 all: $(BIN_PROGS) $(LIB_PROGS) $(EXT_PROGS)
 
 clean:
-	rm -f $(ALL_PROGS) $(EXT_PROGS) *.o ceo.pb-c.c ceo.pb-c.h
+	rm -f $(BIN_PROGS) $(LIB_PROGS) $(EXT_PROGS) *.o ceo.pb-c.c ceo.pb-c.h
 
 op-adduser.o addmember.o addclub.o: ceo.pb-c.h
 
