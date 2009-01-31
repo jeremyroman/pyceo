@@ -12,12 +12,10 @@
 #include <syslog.h>
 
 #include "util.h"
-#include "common.h"
 #include "config.h"
 #include "ldap.h"
 #include "krb5.h"
 #include "kadm.h"
-#include "addhomedir.h"
 #include "ceo.pb-c.h"
 
 char *prog = NULL;
