@@ -9,3 +9,4 @@ void ceo_ldap_init();
 void ceo_ldap_cleanup();
 
 int ceo_user_exists(char *);
+int ceo_group_exists(char *);

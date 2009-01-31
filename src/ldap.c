@@ -310,6 +310,28 @@ int ceo_user_exists(char *uid) {
     return count > 0;
 }
 
+int ceo_group_exists(char *cn) {
+    char *attrs[] = { LDAP_NO_ATTRS, NULL };
+    LDAPMessage *msg = NULL;
+    char filter[128];
+    int count;
+
+    if (!cn)
+        fatal("null cd");
+
+    snprintf(filter, sizeof(filter), "cn=%s", cn);
+
+    if (ldap_search_s(ld, groups_base, LDAP_SCOPE_SUBTREE, filter, attrs, 0, &msg) != LDAP_SUCCESS) {
+        ldap_err("group_exists");
+        return -1;
+    }
+
+    count = ldap_count_entries(ld, msg);
+    ldap_msgfree(msg);
+
+    return count > 0;
+}
+
 static int ldap_sasl_interact(LDAP *ld, unsigned flags, void *defaults, void *in) {
     sasl_interact_t *interact = in;
 
