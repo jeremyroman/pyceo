@@ -16,6 +16,7 @@
 #endif
 
 int spawnv(const char *, char *[]);
+void init_log(const char *ident, int option, int facility);
 
 NORETURN void fatal(const char *, ...);
 NORETURN void fatalpe(const char *, ...);

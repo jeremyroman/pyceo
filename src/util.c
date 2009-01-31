@@ -10,6 +10,13 @@
 
 static char message[4096];
 
+static int log_stderr = 1;
+
+void init_log(const char *ident, int option, int facility) {
+    openlog(ident, option, facility);
+    log_stderr = isatty(STDERR_FILENO);
+}
+
 static void errmsg(int prio, const char *prefix, const char *fmt, va_list args) {
     char *msgp = message;
 
@@ -25,7 +32,8 @@ static void errmsg(int prio, const char *prefix, const char *fmt, va_list args) 
     *msgp++ = '\0';
 
     syslog(prio, "%s", message);
-    fputs(message, stderr);
+    if (log_stderr)
+        fputs(message, stderr);
 }
 
 static void errmsgpe(int prio, const char *prefix, const char *fmt, va_list args) {
@@ -47,7 +55,8 @@ static void errmsgpe(int prio, const char *prefix, const char *fmt, va_list args
     *msgp++ = '\0';
 
     syslog(prio, "%s", message);
-    fputs(message, stderr);
+    if (log_stderr)
+        fputs(message, stderr);
 }
 
 NORETURN static void die(int prio, const char *prefix, const char *msg, va_list args) {

@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
     int opt;
 
     prog = basename(argv[0]);
-    openlog(prog, 0, LOG_AUTHPRIV);
+    init_log(prog, LOG_PID, LOG_AUTHPRIV);
 
     configure();
 
