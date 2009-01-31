@@ -18,33 +18,43 @@ extern char *prog;
 LDAP *ld;
 
 static void ldap_fatal(char *msg) {
-    int errnum;
-    char *errstr, *detail;
+    int errnum = 0;
+    char *errstr = NULL;
+    char *detail = NULL;
 
-    ldap_get_option(ld, LDAP_OPT_ERROR_NUMBER, &errnum);
-    ldap_get_option(ld, LDAP_OPT_ERROR_STRING, &detail);
+    if (ldap_get_option(ld, LDAP_OPT_ERROR_NUMBER, &errnum) != LDAP_SUCCESS)
+        warn("ldap_get_option(LDAP_OPT_ERROR_NUMBER) failed");
+    if (ldap_get_option(ld, LDAP_OPT_ERROR_STRING, &detail) != LDAP_SUCCESS)
+        warn("ldap_get_option(LDAP_OPT_ERROR_STRING) failed");
 
     errstr = ldap_err2string(errnum);
 
-    if (detail && *detail)
+    if (detail)
         fatal("%s: %s (%d): %s", msg, errstr, errnum, detail);
-    else
+    else if (errnum)
         fatal("%s: %s (%d)", msg, errstr, errnum);
+    else
+        fatal("%s", msg);
 }
 
 static void ldap_err(char *msg) {
-    int errnum;
-    char *errstr, *detail;
+    int errnum = 0;
+    char *errstr = NULL;
+    char *detail = NULL;
 
-    ldap_get_option(ld, LDAP_OPT_ERROR_NUMBER, &errnum);
-    ldap_get_option(ld, LDAP_OPT_ERROR_STRING, &detail);
+    if (ldap_get_option(ld, LDAP_OPT_ERROR_NUMBER, &errnum) != LDAP_SUCCESS)
+        warn("ldap_get_option(LDAP_OPT_ERROR_NUMBER) failed");
+    if (ldap_get_option(ld, LDAP_OPT_ERROR_STRING, &detail) != LDAP_SUCCESS)
+        warn("ldap_get_option(LDAP_OPT_ERROR_STRING) failed");
 
     errstr = ldap_err2string(errnum);
 
-    if (detail && *detail)
+    if (detail)
         error("%s: %s (%d): %s", msg, errstr, errnum, detail);
-    else
+    else if (errnum)
         error("%s: %s (%d)", msg, errstr, errnum);
+    else
+        error("%s", msg);
 }
 
 int ceo_add_group(char *cn, char *basedn, int no) {
@@ -85,9 +95,8 @@ int ceo_add_group(char *cn, char *basedn, int no) {
         ret = -1;
     }
 
-    i = 0;
-    while (mods[i])
-        free(mods[i++]);
+    for (i = 0; mods[i]; i++)
+        free(mods[i]);
 
     return ret;
 }
@@ -155,9 +164,8 @@ int ceo_add_group_sudo(char *group, char *basedn) {
         ret = -1;
     }
 
-    i = 0;
-    while (mods[i])
-        free(mods[i++]);
+    for (i = 0; mods[i]; i++)
+        free(mods[i]);
 
     return ret;
 }
@@ -247,9 +255,8 @@ int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, 
         ret = -1;
     }
 
-    i = 0;
-    while (mods[i])
-        free(mods[i++]);
+    for (i = 0; mods[i]; i++)
+        free(mods[i]);
 
     return ret;
 }
@@ -353,6 +360,10 @@ static int ldap_sasl_interact(LDAP *ld, unsigned flags, void *defaults, void *in
 
 void ceo_ldap_init() {
     int proto = LDAP_DEFAULT_PROTOCOL;
+    const char *sasl_mech = "GSSAPI";
+
+    if (!admin_bind_userid || !admin_bind_keytab)
+        fatal("not configured");
 
     if (ldap_initialize(&ld, server_url) != LDAP_SUCCESS)
         ldap_fatal("ldap_initialize");
