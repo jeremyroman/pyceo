@@ -1,8 +1,11 @@
 #!/usr/bin/make -f
 
+CFLAGS  := -g -O2 -fstack-protector-all -fPIE
+LDFLAGS := -pie
+
 build:
 	python setup.py -q build
-	cd src && make
+	cd src && make CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 clean:
 	dh_testdir

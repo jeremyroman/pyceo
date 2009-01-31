@@ -1,5 +1,7 @@
-CFLAGS ?= -ggdb -Wall -O2
-CFLAGS += -I../include
+CFLAGS   := -g3 -O2 -Wall -Werror -DDEBUG
+INCLUDES := -I../include $(shell krb5-config --cflags)
+override LDFLAGS += -std=gnu99 $(INCLUDES)
+override CFLAGS  += -std=gnu99 $(INCLUDES)
 
 LIBCEO_OBJECTS := util.o common.o config.o parser.o ldap.o krb5.o kadm.o addhomedir.o
 LIBCEO_LDFLAGS := -lldap $(shell krb5-config --libs krb5 kadm-client)
