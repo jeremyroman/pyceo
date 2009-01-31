@@ -29,6 +29,8 @@ static void errmsg(int prio, const char *prefix, const char *fmt, va_list args) 
     syslog(prio, "%s", msg.buf);
     if (log_stderr)
         fputs(msg.buf, stderr);
+
+    strbuf_release(&msg);
 }
 
 static void errmsgpe(int prio, const char *prefix, const char *fmt, va_list args) {
@@ -41,6 +43,8 @@ static void errmsgpe(int prio, const char *prefix, const char *fmt, va_list args
     syslog(prio, "%s", msg.buf);
     if (log_stderr)
         fputs(msg.buf, stderr);
+
+    strbuf_release(&msg);
 }
 
 NORETURN static void die(int prio, const char *prefix, const char *msg, va_list args) {
