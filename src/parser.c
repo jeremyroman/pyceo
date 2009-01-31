@@ -210,5 +210,6 @@ long config_long(char *var, char *val) {
 }
 
 void config_parse(char *filename) {
+    debug("loading configuration from %s", filename);
     parse_config_file(filename, NULL);
 }
