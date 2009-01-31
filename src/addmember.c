@@ -76,7 +76,7 @@ int addmember() {
         deny("group %s already exists in LDAP", userid);
 
     if ((id = ceo_new_uid(member_min_id, member_max_id)) <= 0)
-        fatal("no available uids in range [%d, %d]", member_min_id, member_max_id);
+        fatal("no available uids in range [%zd, %zd]", member_min_id, member_max_id);
 
     if (*member_home_acl) {
         snprintf(acl_s, sizeof(acl_s), member_home_acl, userid);

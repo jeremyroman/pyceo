@@ -67,7 +67,7 @@ int addclub() {
         deny("group %s already exists in LDAP", userid);
 
     if ((id = ceo_new_uid(club_min_id, club_max_id)) <= 0)
-        fatal("no available uids in range [%d, %d]", club_min_id, club_max_id);
+        fatal("no available uids in range [%zd, %zd]", club_min_id, club_max_id);
 
     snprintf(acl_s, sizeof(acl_s), club_home_acl, userid);
 
