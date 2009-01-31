@@ -22,6 +22,7 @@ typedef struct sockaddr sa;
 
 extern struct strbuf fqdn;
 extern void setup_fqdn(void);
+extern void free_fqdn(void);
 
 struct sctp_meta {
     struct sockaddr_storage from;

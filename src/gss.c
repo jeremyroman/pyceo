@@ -12,12 +12,42 @@ static gss_cred_id_t my_creds = GSS_C_NO_CREDENTIAL;
 static gss_ctx_id_t context_handle = GSS_C_NO_CONTEXT;
 static gss_name_t peer_name = GSS_C_NO_NAME;
 static gss_name_t imported_service = GSS_C_NO_NAME;
-static gss_OID mech_type = GSS_C_NO_OID;
-static gss_buffer_desc peer_principal;
+static char *peer_principal;
 static char *peer_username;
 static OM_uint32 ret_flags;
 static int complete;
 char service_name[128];
+
+void free_gss(void) {
+    OM_uint32 maj_stat, min_stat;
+
+    if (peer_name) {
+        maj_stat = gss_release_name(&min_stat, &peer_name);
+        if (maj_stat != GSS_S_COMPLETE)
+            gss_fatal("gss_release_name", maj_stat, min_stat);
+    }
+
+    if (imported_service) {
+        maj_stat = gss_release_name(&min_stat, &imported_service);
+        if (maj_stat != GSS_S_COMPLETE)
+            gss_fatal("gss_release_name", maj_stat, min_stat);
+    }
+
+    if (context_handle) {
+        maj_stat = gss_delete_sec_context(&min_stat, &context_handle, GSS_C_NO_BUFFER);
+        if (maj_stat != GSS_S_COMPLETE)
+            gss_fatal("gss_delete_sec_context", maj_stat, min_stat);
+    }
+
+    if (my_creds) {
+        maj_stat = gss_release_cred(&min_stat, &my_creds);
+        if (maj_stat != GSS_S_COMPLETE)
+            gss_fatal("gss_release_creds", maj_stat, min_stat);
+    }
+
+    free(peer_principal);
+    free(peer_username);
+}
 
 static void display_status(char *prefix, OM_uint32 code, int type) {
     OM_uint32 maj_stat, min_stat;
@@ -101,28 +131,44 @@ void client_acquire_creds(const char *service, const char *hostname) {
     import_service(service, hostname);
 }
 
+static char *princ_to_username(char *princ) {
+    char *ret = xstrdup(princ);
+    char *c = strchr(ret, '@');
+    if (c)
+        *c = '\0';
+    return ret;
+}
+
 int process_server_token(gss_buffer_t incoming_tok, gss_buffer_t outgoing_tok) {
     OM_uint32 maj_stat, min_stat;
     OM_uint32 time_rec;
     gss_OID name_type;
+    gss_buffer_desc peer_princ;
 
     if (complete)
         fatal("unexpected %zd-byte token from peer", incoming_tok->length);
 
     maj_stat = gss_accept_sec_context(&min_stat, &context_handle, my_creds,
-            incoming_tok, GSS_C_NO_CHANNEL_BINDINGS, &peer_name, &mech_type,
+            incoming_tok, GSS_C_NO_CHANNEL_BINDINGS, &peer_name, NULL,
             outgoing_tok, &ret_flags, &time_rec, NULL);
     if (maj_stat == GSS_S_COMPLETE) {
         check_services(ret_flags);
 
         complete = 1;
 
-        maj_stat = gss_display_name(&min_stat, peer_name, &peer_principal, &name_type);
+        maj_stat = gss_display_name(&min_stat, peer_name, &peer_princ, &name_type);
         if (maj_stat != GSS_S_COMPLETE)
             gss_fatal("gss_display_name", maj_stat, min_stat);
 
-        notice("client authenticated as %s", (char *)peer_principal.value);
-        debug("context expires in %d seconds",time_rec);
+        peer_principal = xstrdup((char *)peer_princ.value);
+        peer_username = princ_to_username((char *)peer_princ.value);
+
+        notice("client authenticated as %s", peer_principal);
+        debug("context expires in %d seconds", time_rec);
+
+        maj_stat = gss_release_buffer(&min_stat, &peer_princ);
+        if (maj_stat != GSS_S_COMPLETE)
+            gss_fatal("gss_release_buffer", maj_stat, min_stat);
 
     } else if (maj_stat != GSS_S_CONTINUE_NEEDED) {
         gss_fatal("gss_accept_sec_context", maj_stat, min_stat);
@@ -165,19 +211,10 @@ int initial_client_token(gss_buffer_t outgoing_tok) {
 }
 
 char *client_principal(void) {
-    return complete ? (char *)peer_principal.value : NULL;
+    return peer_principal;
 }
 
 char *client_username(void) {
-    if (!peer_username) {
-        char *princ = client_principal();
-        if (princ) {
-            peer_username = xstrdup(princ);
-            char *c = strchr(peer_username, '@');
-            if (c)
-                *c = '\0';
-        }
-    }
     return peer_username;
 }
 

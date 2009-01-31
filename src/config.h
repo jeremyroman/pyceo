@@ -4,6 +4,7 @@
 #undef CONFIG_STR
 #undef CONFIG_INT
 
-void configure();
+void configure(void);
+void free_config(void);
 
 extern const char *config_dir;

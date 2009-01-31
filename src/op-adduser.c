@@ -261,7 +261,7 @@ void cmd_adduser(void) {
 }
 
 int main(int argc, char *argv[]) {
-    prog = basename(argv[0]);
+    prog = xstrdup(basename(argv[0]));
     init_log(prog, LOG_PID, LOG_AUTHPRIV);
 
     configure();
@@ -278,6 +278,9 @@ int main(int argc, char *argv[]) {
     ceo_kadm_cleanup();
     ceo_ldap_cleanup();
     ceo_krb5_cleanup();
+
+    free_config();
+    free(prog);
 
     return 0;
 }

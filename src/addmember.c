@@ -79,13 +79,18 @@ int addmember(void) {
             notice("%s", ret->messages[i]->message);
     }
 
+    ceo__add_user_response__free_unpacked(ret, &protobuf_c_default_allocator);
+    strbuf_release(&preq);
+    strbuf_release(&pret);
+
     return 0;
 }
 
 int main(int argc, char *argv[]) {
     int opt;
+    int ret;
 
-    prog = basename(argv[0]);
+    prog = xstrdup(basename(argv[0]));
     init_log(prog, 0, LOG_AUTHPRIV);
 
     configure();
@@ -114,5 +119,10 @@ int main(int argc, char *argv[]) {
 
     lib_dir = getenv("CEO_LIB_DIR") ?: default_lib_dir;
 
-    return addmember();
+    ret = addmember();
+
+    free_config();
+    free(prog);
+
+    return ret;
 }

@@ -136,13 +136,15 @@ int client_main(char *op_name) {
 
 int main(int argc, char *argv[]) {
     int opt;
+    int ret;
     char *op;
 
-    prog = basename(argv[0]);
+    prog = xstrdup(basename(argv[0]));
     init_log(prog, 0, LOG_USER);
 
     configure();
     setup_ops();
+    setup_fqdn();
 
     while ((opt = getopt_long(argc, argv, "", opts, NULL)) != -1) {
         switch (opt) {
@@ -159,5 +161,13 @@ int main(int argc, char *argv[]) {
 
     op = argv[optind++];
 
-    return client_main(op);
+    ret = client_main(op);
+
+    free_gss();
+    free_fqdn();
+    free_config();
+    free_ops();
+    free(prog);
+
+    return ret;
 }

@@ -102,9 +102,20 @@ void setup_ops(void) {
 
             strbuf_list_free(words);
         }
+        fclose(fp);
     }
 
     closedir(dp);
     strbuf_release(&line);
 }
 
+void free_ops(void) {
+    while (ops) {
+        struct op *next = ops->next;
+        free(ops->name);
+        free(ops->hostname);
+        free(ops->path);
+        free(ops);
+        ops = next;
+    }
+}

@@ -142,5 +142,12 @@ void slave_main(int sock, struct sockaddr *addr) {
     notice("connection closed by peer %s", addrstr);
 
     strbuf_release(&msg);
+
+    /* stuff allocated by dmaster */
+    free_gss();
+    free_config();
+    free_fqdn();
+    free_ops();
+    free(prog);
 }
 

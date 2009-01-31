@@ -142,13 +142,18 @@ static int master_main(void) {
     while (!terminate)
         accept_one_client(sock);
 
+    free_gss();
+    free_fqdn();
+    free_ops();
+
     return 0;
 }
 
 int main(int argc, char *argv[]) {
     int opt;
+    int ret;
 
-    prog = basename(argv[0]);
+    prog = xstrdup(basename(argv[0]));
     init_log(prog, LOG_PID, LOG_DAEMON);
 
     configure();
@@ -169,5 +174,10 @@ int main(int argc, char *argv[]) {
     if (argc != optind)
         usage();
 
-    return master_main();
+    ret = master_main();
+
+    free_config();
+    free(prog);
+
+    return ret;
 }

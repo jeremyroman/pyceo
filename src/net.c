@@ -26,6 +26,10 @@ void setup_fqdn(void) {
     strbuf_addstr(&fqdn, lo->h_name);
 }
 
+void free_fqdn(void) {
+    strbuf_release(&fqdn);
+}
+
 static size_t recv_one_message(int sock, struct sctp_meta *msg_meta, struct strbuf *msg, int *notification) {
     size_t len = 0;
     int flags;
