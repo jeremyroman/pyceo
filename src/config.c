@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <limits.h>
 
 #include "config.h"
@@ -28,6 +29,10 @@ static struct config_var config_vars[] = {
 #undef CONFIG_STR
 #undef CONFIG_INT
 
+const char *default_config_dir = "/etc/csc";
+const char *config_filename = "accounts.cf";
+const char *config_dir;
+
 void config_var(char *var, char *val) {
     int i;
 
@@ -51,8 +56,14 @@ void config_var(char *var, char *val) {
 
 void configure() {
     int i;
+    char conffile[1024];
 
-    config_parse(CONFIG_FILE);
+    config_dir = getenv("CEO_CONFIG_DIR") ?: default_config_dir;
+
+    if (snprintf(conffile, sizeof(conffile), "%s/%s", config_dir, config_filename) >= sizeof(conffile))
+        fatal("huge config path");
+
+    config_parse(conffile);
 
     for (i = 0; i < sizeof(config_vars)/sizeof(*config_vars); i++) {
         switch (config_vars[i].type) {
