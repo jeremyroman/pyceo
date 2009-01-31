@@ -28,7 +28,7 @@ UTIL_PROGS     := config-test zfsaddhomedir $(CONFIG_PROGS)
 all: $(BIN_PROGS) $(LIB_PROGS) $(EXT_PROGS)
 
 clean:
-	rm -f $(ALL_PROGS) $(EXT_PROGS) *.o
+	rm -f $(BIN_PROGS) $(EXT_PROGS) *.o
 
 config-test: config-test.o parser.o
 
