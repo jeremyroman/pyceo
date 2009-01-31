@@ -24,9 +24,10 @@ NORETURN void badconf(const char *, ...);
 NORETURN void deny(const char *, ...);
 void error(const char *, ...);
 void warn(const char *, ...);
-void logmsg(const char *, ...);
+void notice(const char *, ...);
 void errorpe(const char *, ...);
 void warnpe(const char *, ...);
+void logmsg(int, const char *, ...);
 
 static inline void *xmalloc(size_t size) {
     void *alloc = malloc(size);

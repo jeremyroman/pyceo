@@ -90,10 +90,30 @@ void warn(const char *msg, ...) {
     va_end(args);
 }
 
-void logmsg(const char *msg, ...) {
+void notice(const char *msg, ...) {
     va_list args;
     va_start(args, msg);
-    vsyslog(LOG_ERR, msg, args);
+    errmsg(LOG_NOTICE, "notice", msg, args);
+    va_end(args);
+}
+
+void debug(const char *msg, ...) {
+    va_list args;
+    va_start(args, msg);
+    errmsg(LOG_DEBUG, "debug", msg, args);
+    va_end(args);
+}
+
+void logmsg(int priority, const char *msg, ...) {
+    va_list args;
+    va_start(args, msg);
+    vsyslog(priority, msg, args);
+    va_end(args);
+    va_start(args, msg);
+    if (log_stderr) {
+        vfprintf(stderr, msg, args);
+        fputc('\n', stderr);
+    }
     va_end(args);
 }
 

@@ -25,8 +25,8 @@ static void com_err_hk(const char *whoami, long code, const char *fmt, va_list a
     *msgp++ = '\n';
     *msgp++ = '\0';
 
-    syslog(LOG_ERR, "%s", message);
-    fprintf(stderr, "%s: %s", whoami, message);
+    logmsg(LOG_ERR, "fatal: %s", message);
+    exit(1);
 }
 
 void ceo_krb5_init() {
@@ -35,16 +35,12 @@ void ceo_krb5_init() {
     set_com_err_hook(com_err_hk);
 
     retval = krb5_init_context(&context);
-    if (retval) {
+    if (retval)
         com_err(prog, retval, "while initializing krb5");
-        exit(1);
-    }
 
     retval = krb5_set_default_realm(context, realm);
-    if (retval) {
+    if (retval)
         com_err(prog, retval, "while setting default realm");
-        exit(1);
-    }
 }
 
 void ceo_krb5_auth(char *principal, char *ktname) {
@@ -58,35 +54,23 @@ void ceo_krb5_auth(char *principal, char *ktname) {
     krb5_get_init_creds_opt_init(&options);
     memset(&creds, 0, sizeof(creds));
 
-    if ((retval = krb5_parse_name(context, principal, &princ))) {
+    if ((retval = krb5_parse_name(context, principal, &princ)))
         com_err(prog, retval, "while resolving user %s", admin_bind_userid);
-        exit(1);
-    }
 
-    if ((retval = krb5_cc_default(context, &cache))) {
+    if ((retval = krb5_cc_default(context, &cache)))
         com_err(prog, retval, "while resolving credentials cache");
-        exit(1);
-    }
 
-    if ((retval = krb5_kt_resolve(context, ktname, &keytab))) {
+    if ((retval = krb5_kt_resolve(context, ktname, &keytab)))
         com_err(prog, retval, "while resolving keytab %s", admin_bind_keytab);
-        exit(1);
-    }
 
-    if ((retval = krb5_get_init_creds_keytab(context, &creds, princ, keytab, 0, NULL, &options))) {
+    if ((retval = krb5_get_init_creds_keytab(context, &creds, princ, keytab, 0, NULL, &options)))
         com_err(prog, retval, "while getting initial credentials");
-        exit(1);
-    }
 
-    if ((retval = krb5_cc_initialize(context, cache, princ))) {
+    if ((retval = krb5_cc_initialize(context, cache, princ)))
         com_err(prog, retval, "while initializing credentials cache");
-        exit(1);
-    }
 
-    if ((retval = krb5_cc_store_cred(context, cache, &creds))) {
+    if ((retval = krb5_cc_store_cred(context, cache, &creds)))
         com_err(prog, retval, "while storing credentials");
-        exit(1);
-    }
 
     krb5_free_cred_contents(context, &creds);
     krb5_kt_close(context, keytab);
@@ -98,15 +82,11 @@ void ceo_krb5_deauth() {
     krb5_error_code retval;
     krb5_ccache cache;
 
-    if ((retval = krb5_cc_default(context, &cache))) {
+    if ((retval = krb5_cc_default(context, &cache)))
         com_err(prog, retval, "while resolving credentials cache");
-        exit(1);
-    }
 
-    if ((retval = krb5_cc_destroy(context, cache))) {
+    if ((retval = krb5_cc_destroy(context, cache)))
         com_err(prog, retval, "while destroying credentials cache");
-        exit(1);
-    }
 }
 
 void ceo_krb5_cleanup() {

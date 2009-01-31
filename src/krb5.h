@@ -1,4 +1,7 @@
 #include <krb5.h>
+#include <com_err.h>
+
+extern char *prog;
 
 extern krb5_context context;
 

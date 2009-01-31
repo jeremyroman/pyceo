@@ -46,7 +46,7 @@ int addclub() {
     char homedir[1024];
     char acl_s[1024] = {0};
 
-    logmsg("adding uid=%s cn=%s by %s", userid, name, user);
+    notice("adding uid=%s cn=%s by %s", userid, name, user);
 
     if (setreuid(0, 0))
         fatalpe("setreuid");
@@ -73,26 +73,26 @@ int addclub() {
 
     krb_ok = ceo_del_princ(userid);
     if (!krb_ok)
-        logmsg("successfully cleared principal for %s", userid);
+        notice("successfully cleared principal for %s", userid);
 
     user_ok = krb_ok || ceo_add_user(userid, users_base, "club", name, homedir,
             club_shell, id, NULL);
     if (!user_ok)
-        logmsg("successfully created account for %s", userid);
+        notice("successfully created account for %s", userid);
 
     group_ok = user_ok || ceo_add_group(userid, groups_base, id);
     if (!group_ok)
-        logmsg("successfully created group for %s", userid);
+        notice("successfully created group for %s", userid);
 
     sudo_ok = user_ok || ceo_add_group_sudo(userid, sudo_base);
     if (!sudo_ok)
-        logmsg("successfully added group sudo entry for %s", userid);
+        notice("successfully added group sudo entry for %s", userid);
 
     home_ok = user_ok || ceo_create_home(homedir, refquota, id, id, homedir_mode, acl_s);
     if (!home_ok)
-        logmsg("successfully created home directory for %s", userid);
+        notice("successfully created home directory for %s", userid);
 
-    logmsg("done uid=%s", userid);
+    notice("done uid=%s", userid);
 
     if (!no_notify && !user_ok) {
         int pid;
@@ -130,9 +130,9 @@ int addclub() {
         waitpid(pid, &status, 0);
 
         if (WIFEXITED(status) && WEXITSTATUS(status))
-            logmsg("hook %s exited with status %d", notify_hook, WEXITSTATUS(status));
+            notice("hook %s exited with status %d", notify_hook, WEXITSTATUS(status));
         else if (WIFSIGNALED(status))
-            logmsg("hook %s killed by signal %d", notify_hook, WTERMSIG(status));
+            notice("hook %s killed by signal %d", notify_hook, WTERMSIG(status));
     }
 
     ceo_kadm_cleanup();
