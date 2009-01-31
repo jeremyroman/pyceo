@@ -2,8 +2,14 @@
 #define CEO_UTIL_H
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <syslog.h>
+#include <sys/types.h>
+#include <dirent.h>
+
+#include "strbuf.h"
 
 #ifdef __GNUC__
 #define NORETURN __attribute__((__noreturn__))
@@ -17,8 +23,18 @@
 #define LOG_AUTHPRIV LOG_AUTH
 #endif
 
+extern char **environ;
+
 int spawnv(const char *path, char *const *argv);
+int spawnv_msg(const char *path, char *const *argv, const struct strbuf *output);
+int spawnvem(const char *path, char *const *argv, char *const *envp, const struct strbuf *output, struct strbuf *input, int cap_stderr);
+void full_write(int fd, const void *buf, size_t count);
+ssize_t full_read(int fd, void *buf, size_t len);
+FILE *fopenat(DIR *d, const char *path, int flags);
+void make_env(char **envp, ...);
+void free_env(char **envp);
 void init_log(const char *ident, int option, int facility);
+int check_group(char *username, char *group);
 
 PRINTF_LIKE(0) NORETURN void fatal(const char *, ...);
 PRINTF_LIKE(0) NORETURN void fatalpe(const char *, ...);
@@ -58,7 +74,6 @@ static inline void *xcalloc(size_t nmemb, size_t size) {
 
     return alloc;
 }
-
 
 static inline char *xstrdup(const char *s) {
     char *dup = strdup(s);
