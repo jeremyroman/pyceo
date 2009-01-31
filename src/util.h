@@ -38,6 +38,25 @@ static inline void *xmalloc(size_t size) {
     return alloc;
 }
 
+static inline void *xrealloc(void *ptr, size_t size) {
+    void *alloc = realloc(ptr, size);
+
+    if (alloc == NULL)
+        fatal("out of memory");
+
+    return alloc;
+}
+
+static inline void *xcalloc(size_t nmemb, size_t size) {
+    void *alloc = calloc(nmemb, size);
+
+    if (alloc == NULL)
+        fatal("out of memory");
+
+    return alloc;
+}
+
+
 static inline char *xstrdup(const char *s) {
     char *dup = strdup(s);
 

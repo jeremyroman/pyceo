@@ -312,6 +312,29 @@ void strbuf_addf(struct strbuf *sb, const char *fmt, ...)
 	strbuf_setlen(sb, sb->len + len);
 }
 
+void strbuf_vaddf(struct strbuf *sb, const char *fmt, va_list args)
+{
+	int len;
+	va_list ap;
+
+        va_copy(ap, args);
+	if (!strbuf_avail(sb))
+		strbuf_grow(sb, 64);
+	len = vsnprintf(sb->buf + sb->len, sb->alloc - sb->len, fmt, ap);
+
+        va_copy(ap, args);
+	if (len < 0)
+		die("your vsnprintf is broken");
+	if (len > strbuf_avail(sb)) {
+		strbuf_grow(sb, len);
+		len = vsnprintf(sb->buf + sb->len, sb->alloc - sb->len, fmt, ap);
+		if (len > strbuf_avail(sb)) {
+			die("this should not happen, your snprintf is broken");
+		}
+	}
+	strbuf_setlen(sb, sb->len + len);
+}
+
 void strbuf_expand(struct strbuf *sb, const char *format, expand_fn_t fn,
 		   void *context)
 {

@@ -22,7 +22,7 @@ KRB5_PROGS     := addmember addclub
 CONFIG_OBJECTS := config.o parser.o
 CONFIG_LDFLAGS :=
 CONFIG_PROGS   := $(OLDCEO_PROGS) $(LDAP_PROGS) $(KRB5_PROGS) $(NET_PROGS)
-UTIL_OBJECTS   := util.o
+UTIL_OBJECTS   := util.o strbuf.o
 UTIL_PROGS     := config-test zfsaddhomedir $(CONFIG_PROGS)
 
 all: $(BIN_PROGS) $(LIB_PROGS) $(EXT_PROGS)

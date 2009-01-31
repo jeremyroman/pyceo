@@ -7,8 +7,7 @@
 #include <errno.h>
 
 #include "util.h"
-
-static char message[4096];
+#include "strbuf.h"
 
 static int log_stderr = 1;
 
@@ -18,45 +17,27 @@ void init_log(const char *ident, int option, int facility) {
 }
 
 static void errmsg(int prio, const char *prefix, const char *fmt, va_list args) {
-    char *msgp = message;
+    struct strbuf msg = STRBUF_INIT;
 
-    msgp +=  snprintf(msgp, sizeof(message) - 2 - (msgp - message), "%s: ", prefix);
-    if (msgp - message > sizeof(message) - 2)
-        fatal("error message overflowed");
+    strbuf_addf(&msg, "%s: ", prefix);
+    strbuf_vaddf(&msg, fmt, args);
+    strbuf_addch(&msg, '\n');
 
-    msgp += vsnprintf(msgp, sizeof(message) - 2 - (msgp - message), fmt, args);
-    if (msgp - message > sizeof(message) - 2)
-        fatal("error message overflowed");
-
-    *msgp++ = '\n';
-    *msgp++ = '\0';
-
-    syslog(prio, "%s", message);
+    syslog(prio, "%s", msg.buf);
     if (log_stderr)
-        fputs(message, stderr);
+        fputs(msg.buf, stderr);
 }
 
 static void errmsgpe(int prio, const char *prefix, const char *fmt, va_list args) {
-    char *msgp = message;
+    struct strbuf msg = STRBUF_INIT;
 
-    msgp += snprintf(msgp, sizeof(message) - 2 - (msgp - message), "%s: ", prefix);
-    if (msgp - message > sizeof(message) - 2)
-        fatal("error message overflowed");
+    strbuf_addf(&msg, "%s: ", prefix);
+    strbuf_vaddf(&msg, fmt, args);
+    strbuf_addf(&msg, ": %s\n", strerror(errno));
 
-    msgp += vsnprintf(msgp, sizeof(message) - 2 - (msgp - message), fmt, args);
-    if (msgp - message > sizeof(message) - 2)
-        fatal("error message overflowed");
-
-    msgp += snprintf(msgp, sizeof(message) - 2 - (msgp - message), ": %s", strerror(errno));
-    if (msgp - message > sizeof(message) - 2)
-        fatal("error message overflowed");
-
-    *msgp++ = '\n';
-    *msgp++ = '\0';
-
-    syslog(prio, "%s", message);
+    syslog(prio, "%s", msg.buf);
     if (log_stderr)
-        fputs(message, stderr);
+        fputs(msg.buf, stderr);
 }
 
 NORETURN static void die(int prio, const char *prefix, const char *msg, va_list args) {
