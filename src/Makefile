@@ -11,9 +11,6 @@ BIN_PROGS := addmember addclub zfsaddhomedir ceod
 LIB_PROGS := ceoc op-adduser
 EXT_PROGS := config-test
 
-LIBCEO_OBJECTS := common.o addhomedir.o
-LIBCEO_LDFLAGS :=
-LIBCEO_PROGS   := addmember addclub
 LDAP_OBJECTS   := ldap.o
 LDAP_LDFLAGS   := -lldap
 LDAP_PROGS     := addmember addclub op-adduser
@@ -25,10 +22,10 @@ NET_LDFLAGS    := -lsctp $(shell krb5-config --libs gssapi)
 NET_PROGS      := ceod ceoc
 PROTO_OBJECTS  := ceo.pb-c.o
 PROTO_LDFLAGS  := -lprotobuf-c
-PROTO_PROGS    := op-adduser
+PROTO_PROGS    := op-adduser addmember addclub
 CONFIG_OBJECTS := config.o parser.o
 CONFIG_LDFLAGS :=
-CONFIG_PROGS   := $(OLDCEO_PROGS) $(LDAP_PROGS) $(KRB5_PROGS) $(NET_PROGS)
+CONFIG_PROGS   := $(LDAP_PROGS) $(KRB5_PROGS) $(NET_PROGS)
 UTIL_OBJECTS   := util.o strbuf.o
 UTIL_PROGS     := config-test zfsaddhomedir $(CONFIG_PROGS)
 
@@ -50,13 +47,13 @@ config-test: config-test.o parser.o
 config.o: config.h config-vars.h
 
 install:
-	install -d $(DESTDIR)$(PREFIX)/bin
-	install addmember addclub $(DESTDIR)$(PREFIX)/bin
+	install -d $(DESTDIR)$(PREFIX)/sbin $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib/ceod
+	install ceod $(DESTDIR)$(PREFIX)/sbin
+	install op-adduser addmember addclub $(DESTDIR)$(PREFIX)/bin
+	install ceoc op-adduser $(DESTDIR)$(PREFIX)/lib/ceod
 
 $(NET_PROGS):    LDFLAGS += $(NET_LDFLAGS)
 $(NET_PROGS):    $(NET_OBJECTS)
-$(LIBCEO_PROGS): LDFLAGS += $(LIBCEO_LDFLAGS)
-$(LIBCEO_PROGS): $(LIBCEO_OBJECTS)
 $(LDAP_PROGS):   LDFLAGS += $(LDAP_LDFLAGS)
 $(LDAP_PROGS):   $(LDAP_OBJECTS)
 $(KRB5_PROGS):   LDFLAGS += $(KRB5_LDFLAGS)
@@ -69,4 +66,4 @@ $(UTIL_PROGS):   LDFLAGS += $(UTIL_LDFLAGS)
 $(UTIL_PROGS):   $(UTIL_OBJECTS)
 
 .PHONY: clean all
-.SECONDARY: zfsaddhomedir.o addmember.o addclub.o
+.SECONDARY: ceoc.o zfsaddhomedir.o addmember.o addclub.o
