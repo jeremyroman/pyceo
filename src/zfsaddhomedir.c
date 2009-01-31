@@ -1,6 +1,10 @@
 #include <stdio.h>
-#include <sys/types.h>
 #include <unistd.h>
+#include <dirent.h>
+#include <limits.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
 #include <assert.h>
 #include "util.h"
 
