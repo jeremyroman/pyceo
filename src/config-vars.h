@@ -30,7 +30,4 @@ CONFIG_STR(admin_keytab)
 CONFIG_STR(admin_bind_userid)
 CONFIG_STR(admin_bind_keytab)
 
-CONFIG_STR(sasl_realm)
-CONFIG_STR(sasl_mech)
-
 CONFIG_STR(privileged_group)
