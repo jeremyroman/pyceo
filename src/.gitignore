@@ -1,4 +1,6 @@
 *.o
+.*.swp
+.nfs*
 /addmember
 /addclub
 /zfsaddhomedir
