@@ -133,10 +133,14 @@ void warnpe(const char *msg, ...) {
     va_end(args);
 }
 
-int spawnv(const char *path, char *argv[]) {
+int spawnv(const char *path, char *const argv[]) {
     int pid, status;
+
+    fflush(stdout);
+    fflush(stderr);
+
     pid = fork();
-    if (pid == -1)
+    if (pid < 0)
         fatalpe("fork");
     else if (pid)
         waitpid(pid, &status, 0);

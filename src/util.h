@@ -15,7 +15,7 @@
 #define LOG_AUTHPRIV LOG_AUTH
 #endif
 
-int spawnv(const char *, char *[]);
+int spawnv(const char *path, char *const *argv);
 void init_log(const char *ident, int option, int facility);
 
 NORETURN void fatal(const char *, ...);
