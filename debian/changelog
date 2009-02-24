@@ -1,3 +1,9 @@
+ceo (0.4.20) stable testing; urgency=low
+
+  * Update kadmin headers
+
+ -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Tue, 24 Feb 2009 16:08:12 -0500
+
 ceo (0.4.19) stable testing; urgency=low
 
   * Rebuild for lenny.
