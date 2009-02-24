@@ -8,7 +8,7 @@
  *   require a specific license from the United States Government.
  *   It is the responsibility of any person or organization contemplating
  *   export to obtain such a license before exporting.
- *
+ * 
  * WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
  * distribute this software and its documentation for any purpose and
  * without fee is hereby granted, provided that the above copyright
@@ -22,7 +22,7 @@
  * M.I.T. makes no representations about the suitability of
  * this software for any purpose.  It is provided "as is" without express
  * or implied warranty.
- *
+ * 
  */
 /*
  * Copyright 1993 OpenVision Technologies, Inc., All Rights Reserved
@@ -36,14 +36,13 @@
 #if !defined(USE_KADM5_API_VERSION)
 #define USE_KADM5_API_VERSION 2
 #endif
-
+     
 #include	<sys/types.h>
 #include	<gssrpc/rpc.h>
 #include	<krb5.h>
 #include	<kdb.h>
 #include	<com_err.h>
 #include	<kadm5/kadm_err.h>
-#include	<kadm5/adb_err.h>
 #include	<kadm5/chpass_util_strings.h>
 
 #define KADM5_ADMIN_SERVICE	"kadmin/admin"
@@ -89,8 +88,15 @@ typedef long		kadm5_ret_t;
 #define KADM5_FAIL_AUTH_COUNT	0x010000
 #define KADM5_KEY_DATA		0x020000
 #define KADM5_TL_DATA		0x040000
+#ifdef notyet /* Novell */
+#define KADM5_CPW_FUNCTION      0x080000
+#define KADM5_RANDKEY_USED      0x100000
+#endif
+#define KADM5_LOAD		0x200000
+
 /* all but KEY_DATA and TL_DATA */
 #define KADM5_PRINCIPAL_NORMAL_MASK 0x01ffff
+
 
 /* kadm5_policy_ent_t */
 #define KADM5_PW_MAX_LIFE	0x004000
@@ -113,7 +119,7 @@ typedef long		kadm5_ret_t;
 #define KADM5_CONFIG_ENCTYPE		0x000200
 #define KADM5_CONFIG_ADBNAME		0x000400
 #define KADM5_CONFIG_ADB_LOCKFILE	0x000800
-#define KADM5_CONFIG_PROFILE		0x001000
+/*#define KADM5_CONFIG_PROFILE		0x001000*/
 #define KADM5_CONFIG_ACL_FILE		0x002000
 #define KADM5_CONFIG_KADMIND_PORT	0x004000
 #define KADM5_CONFIG_ENCTYPES		0x008000
@@ -124,7 +130,9 @@ typedef long		kadm5_ret_t;
 #define KADM5_CONFIG_OLD_AUTH_GSSAPI	0x100000
 #define KADM5_CONFIG_NO_AUTH		0x200000
 #define KADM5_CONFIG_AUTH_NOFALLBACK	0x400000
-
+#ifdef notyet /* Novell */
+#define KADM5_CONFIG_KPASSWD_SERVER     0x800000
+#endif
 /*
  * permission bits
  */
@@ -204,22 +212,19 @@ typedef struct _kadm5_policy_ent_t {
 	long		policy_refcnt;
 } kadm5_policy_ent_rec, *kadm5_policy_ent_t;
 
-typedef struct __krb5_key_salt_tuple {
-     krb5_enctype	ks_enctype;
-     krb5_int32		ks_salttype;
-} krb5_key_salt_tuple;
-
 /*
  * Data structure returned by kadm5_get_config_params()
  */
 typedef struct _kadm5_config_params {
      long		mask;
      char *		realm;
-     char *		profile;
      int		kadmind_port;
      int		kpasswd_port;
 
      char *		admin_server;
+#ifdef notyet /* Novell */ /* ABI change? */
+     char *		kpasswd_server;
+#endif
 
      char *		dbname;
      char *		admin_dbname;
@@ -281,11 +286,11 @@ typedef struct __krb5_realm_params {
 
 #if USE_KADM5_API_VERSION > 1
 krb5_error_code kadm5_get_config_params(krb5_context context,
-					char *kdcprofile, char *kdcenv,
+					int use_kdc_config,
 					kadm5_config_params *params_in,
 					kadm5_config_params *params_out);
 
-krb5_error_code kadm5_free_config_params(krb5_context context,
+krb5_error_code kadm5_free_config_params(krb5_context context, 
 					 kadm5_config_params *params);
 
 krb5_error_code kadm5_free_realm_params(krb5_context kcontext,
@@ -304,9 +309,10 @@ kadm5_ret_t    kadm5_init(char *client_name, char *pass,
 #endif
 			  krb5_ui_4 struct_version,
 			  krb5_ui_4 api_version,
+			  char **db_args,
 			  void **server_handle);
 kadm5_ret_t    kadm5_init_with_password(char *client_name,
-					char *pass,
+					char *pass, 
 					char *service_name,
 #if USE_KADM5_API_VERSION == 1
 					char *realm,
@@ -315,6 +321,7 @@ kadm5_ret_t    kadm5_init_with_password(char *client_name,
 #endif
 					krb5_ui_4 struct_version,
 					krb5_ui_4 api_version,
+					char **db_args,
 					void **server_handle);
 kadm5_ret_t    kadm5_init_with_skey(char *client_name,
 				    char *keytab,
@@ -326,6 +333,7 @@ kadm5_ret_t    kadm5_init_with_skey(char *client_name,
 #endif
 				    krb5_ui_4 struct_version,
 				    krb5_ui_4 api_version,
+				    char **db_args,
 				    void **server_handle);
 #if USE_KADM5_API_VERSION > 1
 kadm5_ret_t    kadm5_init_with_creds(char *client_name,
@@ -334,6 +342,7 @@ kadm5_ret_t    kadm5_init_with_creds(char *client_name,
 				     kadm5_config_params *params,
 				     krb5_ui_4 struct_version,
 				     krb5_ui_4 api_version,
+				     char **db_args,
 				     void **server_handle);
 #endif
 kadm5_ret_t    kadm5_lock(void *server_handle);
@@ -455,7 +464,7 @@ kadm5_ret_t    kadm5_get_privs(void *server_handle,
 
 kadm5_ret_t    kadm5_chpass_principal_util(void *server_handle,
 					   krb5_principal princ,
-					   char *new_pw,
+					   char *new_pw, 
 					   char **ret_pw,
 					   char *msg_ret,
 					   unsigned int msg_len);
@@ -480,8 +489,10 @@ kadm5_ret_t    kadm5_free_key_data(void *server_handle,
 				   krb5_key_data *key_data);
 #endif
 
-kadm5_ret_t    kadm5_free_name_list(void *server_handle, char **names,
+kadm5_ret_t    kadm5_free_name_list(void *server_handle, char **names, 
 				    int count);
+
+krb5_error_code kadm5_init_krb5_context (krb5_context *);
 
 #if USE_KADM5_API_VERSION == 1
 /*
@@ -515,7 +526,7 @@ enum	ovsec_kadm_saltmod  { OVSEC_KADM_MOD_KEEP, OVSEC_KADM_MOD_V4, OVSEC_KADM_MO
  * Successful return code
  */
 #define OVSEC_KADM_OK	0
-
+ 
 /*
  * Create/Modify masks
  */
@@ -594,13 +605,15 @@ ovsec_kadm_ret_t    ovsec_kadm_init(char *client_name, char *pass,
 				    char *service_name, char *realm,
 				    krb5_ui_4 struct_version,
 				    krb5_ui_4 api_version,
+				    char **db_args,
 				    void **server_handle);
 ovsec_kadm_ret_t    ovsec_kadm_init_with_password(char *client_name,
-						  char *pass,
+						  char *pass, 
 						  char *service_name,
-						  char *realm,
+						  char *realm, 
 						  krb5_ui_4 struct_version,
 						  krb5_ui_4 api_version,
+						  char ** db_args,
 						  void **server_handle);
 ovsec_kadm_ret_t    ovsec_kadm_init_with_skey(char *client_name,
 					      char *keytab,
@@ -608,6 +621,7 @@ ovsec_kadm_ret_t    ovsec_kadm_init_with_skey(char *client_name,
 					      char *realm,
 					      krb5_ui_4 struct_version,
 					      krb5_ui_4 api_version,
+					      char **db_args,
 					      void **server_handle);
 ovsec_kadm_ret_t    ovsec_kadm_flush(void *server_handle);
 ovsec_kadm_ret_t    ovsec_kadm_destroy(void *server_handle);
@@ -664,7 +678,7 @@ ovsec_kadm_ret_t    ovsec_kadm_get_privs(void *server_handle,
 
 ovsec_kadm_ret_t    ovsec_kadm_chpass_principal_util(void *server_handle,
 						     krb5_principal princ,
-						     char *new_pw,
+						     char *new_pw, 
 						     char **ret_pw,
 						     char *msg_ret);
 

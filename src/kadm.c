@@ -16,7 +16,7 @@ void ceo_kadm_init() {
 
     retval = kadm5_init_with_skey(admin_principal, admin_keytab,
                 KADM5_ADMIN_SERVICE, &params, KADM5_STRUCT_VERSION,
-                KADM5_API_VERSION_2, &handle);
+                KADM5_API_VERSION_2, NULL, &handle);
     if (retval) {
         com_err(prog, retval, "while initializing kadm5");
         exit(1);
