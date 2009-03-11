@@ -1,3 +1,9 @@
+ceo (0.4.22) stable testing; urgency=low
+
+  * CEO now closes window when it should.  (Sorry)
+
+ -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Wed, 11 Mar 2009 02:25:01 -0500
+
 ceo (0.4.21) stable testing; urgency=low
 
   * CEO Library can now add boox.
