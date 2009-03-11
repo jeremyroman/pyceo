@@ -5,7 +5,7 @@ from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 from sqlobject.sqlbuilder import *
 from datetime import datetime, timedelta
-from pymazon import PyMazon
+from ceo.pymazon import PyMazon
 
 from ceo import terms
 
