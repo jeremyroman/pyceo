@@ -60,7 +60,7 @@ def overdue_books(data):
     Display a list of all books that are overdue.
     """
     oldest = datetime.today() - timedelta(weeks=2)
-    overdue = lib.Signout.select(lib.Signout.q.outdate<oldest)
+    overdue = lib.Signout.select(AND(lib.Signout.q.outdate<oldest, lib.Signout.q.indate==None))
 
     widgets = []
 
