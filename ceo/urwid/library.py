@@ -135,12 +135,11 @@ class BookAddPage(WizardPanel):
                 lib.Book(isbn=isbn, title=book.title,
                          year=book.year, publisher=book.publisher)
             else:
-                sys.stderr.write("Fuck you.\n")
                 set_status("Book already exists, fucker.")
                 
         except PyMazonError, e:
-            sys.stderr.write("Book not added: " + e.message + "\n")
             set_status("Amazon thinks this is not a book.  Take it up with them.")
+        return False
         
 
 class BookSearchPage(WizardPanel):
