@@ -134,9 +134,9 @@ class BookAddPage(WizardPanel):
             if currents.count() == 0:
                 lib.Book(isbn=isbn, title=book.title,
                          year=book.year, publisher=book.publisher)
+                pop_window()
             else:
                 set_status("Book already exists, fucker.")
-                
         except PyMazonError, e:
             set_status("Amazon thinks this is not a book.  Take it up with them.")
         return False
