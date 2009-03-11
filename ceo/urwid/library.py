@@ -131,7 +131,7 @@ class BookAddPage(WizardPanel):
             book = pymazon.lookup(isbn)
 
             currents = lib.Book.select(lib.Book.q.isbn==isbn)
-            if len(currents) == 0:
+            if currents.count() == 0:
                 lib.Book(isbn=isbn, title=book.title,
                          year=book.year, publisher=book.publisher)
             else:
