@@ -6,6 +6,7 @@ from ceo.urwid.window import *
 from sqlobject.sqlbuilder import *
 from datetime import datetime, timedelta
 from ceo.pymazon import PyMazon
+from ceo.pymazon import PyMazonError
 
 from ceo import terms
 
