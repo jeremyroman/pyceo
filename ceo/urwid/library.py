@@ -32,7 +32,7 @@ def library(data):
         ("Checkout Book", checkout_book, None),
         ("Return Book", return_book, None),
         ("Search Books", search_books, None),
-#        ("Add Book", add_book, None),
+        ("Add Book", add_book, None),
         ("Back", raise_back, None),
     ])
     push_window(menu, "Library")
