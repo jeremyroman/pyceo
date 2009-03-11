@@ -1,0 +1,5 @@
+# /etc/csc/library.cf: Library Config
+
+library_db_path = /users/office/library.db
+library_connect_string = "sqlite:///home/mgregson/csc/pyceo/test.db"
+aws_account_key = "1TNCT5S0RNDV13CJJCG2"

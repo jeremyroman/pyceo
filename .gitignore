@@ -1,3 +1,4 @@
 /build-stamp
 /build
 *.pyc
+*.cf

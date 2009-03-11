@@ -5,12 +5,24 @@ from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 from sqlobject.sqlbuilder import *
 from datetime import datetime, timedelta
+from pymazon import PyMazon
 
 from ceo import terms
 
 import ceo.library as lib
 
+CONFIG_FILE = "/etc/csc/library.cf"
 
+cfg = {}
+
+def configure():
+    """
+    Load configuration
+    """
+    cfg_fields = [ "aws_account_key" ]
+    temp_cfg = conf.read(CONFIG_FILE)
+    conf.check_string_fields(CONFIG_FILE, cfg_fields, temp_cfg)
+    cfg.update(temp_cfg)
 
 def library(data):
     """
@@ -34,6 +46,12 @@ def search_books(data):
         ("Signed Out Books", outbooks_search, None),
     ])
     push_window(menu, "Book Search")
+
+def add_book(data):
+    """
+    Add book to library.  Also stab Sapphyre.
+    """
+    push_wizard("Add Book", [BookAddPage])
 
 def overdue_books(data):
     """
@@ -82,6 +100,45 @@ def return_book(data):
     Display the book return wizard.
     """
     push_wizard("Checkout", [CheckinPage, ConfirmPage])
+
+class BookAddPage(WizardPanel):
+    """
+    Thingy for going on screen to add books.
+    """
+    def init_widgets(self):
+        """
+        Make some widgets.
+        """
+        self.isbn = SingleEdit("ISBN: ")
+        
+        self.widgets = [
+            urwid.Text("Adding New Book"),
+            urwid.Divider(),
+            self.isbn
+        ]
+
+    def check(self):
+        """
+        Do black magic.
+        """
+        isbn = self.isbn.get_edit_text()
+
+        try:
+            pymazon = PyMazon(cfg["aws_account_key"])
+            book = pymazon.lookup(isbn)
+
+            currents = lib.Book.select(lib.Book.q.isbn==isbn)
+            if len(currents) == 0:
+                lib.Book(isbn=isbn, title=book.title,
+                         year=book.year, publisher=book.publisher)
+            else:
+                sys.stderr.write("Fuck you.\n")
+                set_status("Book already exists, fucker.")
+                
+        except PyMazonError, e:
+            sys.stderr.write("Book not added: " + e.message + "\n")
+            set_status("Amazon thinks this is not a book.  Take it up with them.")
+        
 
 class BookSearchPage(WizardPanel):
     """
