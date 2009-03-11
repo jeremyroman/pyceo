@@ -122,6 +122,7 @@ class BookAddPage(WizardPanel):
         """
         Do black magic.
         """
+        configure()
         isbn = self.isbn.get_edit_text()
 
         try:
