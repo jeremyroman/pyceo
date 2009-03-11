@@ -275,8 +275,12 @@ class SearchPage(urwid.WidgetWrap):
             books = lib.Book.select(LIKE(lib.Book.q.title, "%" + title + "%"))
         elif not isbn is None and not isbn=="":
             books = lib.Book.select(lib.Book.q.isbn==isbn)
-        elif not user is None and not user=="":
+        elif (not (user is None)) and (not (user=="")):
             st = lib.Signout.select(AND(lib.Signout.q.username==user, lib.Signout.q.indate==None))
+            for s in st:
+                books.append(s.book)
+        else:
+            st = lib.Signout.select(lib.Signout.q.indate==None)
             for s in st:
                 books.append(s.book)
 
