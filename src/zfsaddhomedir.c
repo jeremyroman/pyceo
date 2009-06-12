@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
         }
 
         if(seteuid(uid) != 0 || setegid(gid) != 0)
-            errorpe("failed to seteuid(%d) or setegid(%d)", uid, gid);
+            errorpe("failed to seteuid(%d) or setegid(%d)", (int)uid, (int)gid);
             return 1;
         if(spawnv(rsync_bin, rsync_argv))
             return 1;
