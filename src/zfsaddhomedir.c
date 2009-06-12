@@ -43,10 +43,11 @@ int main(int argc, char *argv[]) {
 
         if (chown(homedir, uid, gid)) {
             errorpe("failed to chown %s", homedir);
-            return -1;
+            return 1;
         }
 
         if(seteuid(uid) != 0 || setegid(gid) != 0)
+            errorpe("failed to seteuid(%d) or setegid(%d)", uid, gid);
             return 1;
         if(spawnv(rsync_bin, rsync_argv))
             return 1;
