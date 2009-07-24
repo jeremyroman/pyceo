@@ -2,8 +2,8 @@ Source: ceo
 Section: admin
 Priority: optional
 Maintainer: Systems Committee <syscom@csclub.uwaterloo.ca>
-Build-Depends: debhelper (>= 5.0.0), python-dev (>= 2.4), python-support (>= 0.3), libkrb5-dev, libldap2-dev, libsasl2-dev, libsctp-dev
-Standards-Version: 3.7.2
+Build-Depends: debhelper (>= 5.0.0), python-dev (>= 2.4), python-support (>= 0.3), libkrb5-dev, libldap2-dev, libsasl2-dev, libsctp-dev, libprotobuf-c0-dev
+Standards-Version: 3.8.2
 
 Package: ceo
 Architecture: any
