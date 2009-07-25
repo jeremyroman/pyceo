@@ -371,13 +371,9 @@ void ceo_ldap_init() {
     if (ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, &proto) != LDAP_OPT_SUCCESS)
         ldap_fatal("ldap_set_option");
 
-    ceo_krb5_auth(admin_bind_userid);
-
     if (ldap_sasl_interactive_bind_s(ld, NULL, sasl_mech, NULL, NULL,
                 LDAP_SASL_QUIET, &ldap_sasl_interact, NULL) != LDAP_SUCCESS)
         ldap_fatal("Bind failed");
-
-    ceo_krb5_deauth();
 }
 
 void ceo_ldap_cleanup() {

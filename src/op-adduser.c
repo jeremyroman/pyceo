@@ -270,6 +270,7 @@ int main(int argc, char *argv[]) {
         fatalpe("setenv");
 
     ceo_krb5_init();
+    ceo_krb5_auth(admin_bind_userid);
     ceo_ldap_init();
     ceo_kadm_init();
 
@@ -277,6 +278,7 @@ int main(int argc, char *argv[]) {
 
     ceo_kadm_cleanup();
     ceo_ldap_cleanup();
+    ceo_krb5_deauth();
     ceo_krb5_cleanup();
 
     free_config();
