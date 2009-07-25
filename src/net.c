@@ -2,6 +2,7 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <netdb.h>
+#include <errno.h>
 
 #include "util.h"
 #include "net.h"
@@ -32,7 +33,7 @@ void free_fqdn(void) {
 
 static size_t recv_one_message(int sock, struct sctp_meta *msg_meta, struct strbuf *msg, int *notification) {
     size_t len = 0;
-    int flags;
+    int flags = 0;
     int bytes;
 
     strbuf_reset(msg);
@@ -43,8 +44,11 @@ static size_t recv_one_message(int sock, struct sctp_meta *msg_meta, struct strb
         bytes = sctp_recvmsg(sock, msg->buf + len, strbuf_avail(msg) - len,
                              (sa *)&msg_meta->from, &msg_meta->fromlen, &msg_meta->sinfo, &flags);
 
-        if (bytes < 0)
+        if (bytes < 0) {
+            if (errno == EAGAIN)
+                continue;
             fatalpe("sctp_recvmsg");
+        }
         if (!bytes)
             break;
         len += bytes;
@@ -60,8 +64,15 @@ static size_t recv_one_message(int sock, struct sctp_meta *msg_meta, struct strb
         fatalpe("EOF in the middle of a message");
 
     *notification = flags & MSG_NOTIFICATION;
-    if (*notification)
+    if (*notification) {
         notification_dbg(msg->buf);
+        union sctp_notification *sn = (union sctp_notification *) msg->buf;
+        switch (sn->sn_header.sn_type) {
+            case SCTP_SHUTDOWN_EVENT:
+                fatal("connection shut down");
+                break;
+        }
+    }
 
     strbuf_setlen(msg, len);
     return len;
