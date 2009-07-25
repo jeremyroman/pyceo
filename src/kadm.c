@@ -16,10 +16,10 @@ void ceo_kadm_init() {
 
     debug("kadmin: initializing using keytab for %s", admin_principal);
 
-    retval = kadm5_init_with_skey(admin_principal, NULL /*admin_keytab */,
+    retval = kadm5_init_with_skey(admin_principal, NULL,
                 KADM5_ADMIN_SERVICE, &params, KADM5_STRUCT_VERSION,
-                KADM5_API_VERSION_2, &handle);
-    if (retval) {
+                KADM5_API_VERSION_2, NULL, &handle);
+    if (retval || !handle) {
         com_err(prog, retval, "while initializing kadm5");
         exit(1);
     }
