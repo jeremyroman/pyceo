@@ -89,6 +89,10 @@ static void handle_op_message(uint32_t in_type, struct strbuf *in, struct strbuf
     if (!op->name)
         fatal("operation %x does not exist", in_type);
 
+    /* TEMPORARY */
+    if (!client_username())
+        fatal("unathenticated");
+
     make_env(envp, "LANG", "C", "CEO_USER", client_username(),
                    "CEO_CONFIG_DIR", config_dir, NULL);
     char *argv[] = { op->path, NULL, };
