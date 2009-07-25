@@ -25,9 +25,6 @@ CONFIG_STR(notify_hook)
 CONFIG_STR(realm)
 
 CONFIG_STR(admin_principal)
-CONFIG_STR(admin_keytab)
-
 CONFIG_STR(admin_bind_userid)
-CONFIG_STR(admin_bind_keytab)
 
 CONFIG_STR(privileged_group)

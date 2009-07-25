@@ -1,4 +1,5 @@
 #include <stdio.h>
+
 #include <krb5.h>
 #include <syslog.h>
 
@@ -43,11 +44,10 @@ void ceo_krb5_init() {
         com_err(prog, retval, "while setting default realm");
 }
 
-void ceo_krb5_auth(char *principal, char *ktname) {
+void ceo_krb5_auth(char *principal) {
     krb5_error_code retval;
     krb5_creds creds;
     krb5_principal princ;
-    krb5_keytab keytab;
     krb5_ccache cache;
     krb5_get_init_creds_opt options;
 
@@ -60,10 +60,7 @@ void ceo_krb5_auth(char *principal, char *ktname) {
     if ((retval = krb5_cc_default(context, &cache)))
         com_err(prog, retval, "while resolving credentials cache");
 
-    if ((retval = krb5_kt_resolve(context, ktname, &keytab)))
-        com_err(prog, retval, "while resolving keytab %s", admin_bind_keytab);
-
-    if ((retval = krb5_get_init_creds_keytab(context, &creds, princ, keytab, 0, NULL, &options)))
+    if ((retval = krb5_get_init_creds_keytab(context, &creds, princ, NULL, 0, NULL, &options)))
         com_err(prog, retval, "while getting initial credentials");
 
     if ((retval = krb5_cc_initialize(context, cache, princ)))
@@ -73,7 +70,6 @@ void ceo_krb5_auth(char *principal, char *ktname) {
         com_err(prog, retval, "while storing credentials");
 
     krb5_free_cred_contents(context, &creds);
-    krb5_kt_close(context, keytab);
     krb5_free_principal(context, princ);
     krb5_cc_close(context, cache);
 }

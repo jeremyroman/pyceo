@@ -14,7 +14,7 @@ void ceo_kadm_init() {
     kadm5_config_params params;
     memset((void *) &params, 0, sizeof(params));
 
-    retval = kadm5_init_with_skey(admin_principal, admin_keytab,
+    retval = kadm5_init_with_skey(admin_principal, NULL /*admin_keytab */,
                 KADM5_ADMIN_SERVICE, &params, KADM5_STRUCT_VERSION,
                 KADM5_API_VERSION_2, &handle);
     if (retval) {
