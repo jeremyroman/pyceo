@@ -7,7 +7,7 @@ Standards-Version: 3.8.2
 
 Package: ceo
 Architecture: any
-Depends: python-ldap, python-urwid, python-sqlobject, ${python:Depends}, ${shlibs:Depends}
+Depends: python-ldap, python-urwid, python-sqlobject, python-psycopg2, ${python:Depends}, ${shlibs:Depends}
 Description: Computer Science Club Administrative Utilities
  This package contains the CSC Electronic Office
  and other Computer Science Club administrative
