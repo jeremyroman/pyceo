@@ -15,7 +15,7 @@
 
 int ceo_create_home(char *homedir, char *refquota, uid_t uid, gid_t gid, char *mode, char *acl) {
     char uid_str[16], gid_str[16];
-    char *zfs_argv[] = { "ssh", "ceo@ginseng", "/usr/sbin/zfsaddhomedir", \
+    char *zfs_argv[] = { "ssh", "ceo@ginseng", "/usr/sbin/simpleaddhomedir", \
         homedir, refquota, skeleton_dir, uid_str, gid_str, mode, acl, NULL };
     int ret = 0;
 
@@ -26,7 +26,7 @@ int ceo_create_home(char *homedir, char *refquota, uid_t uid, gid_t gid, char *m
 
     ceo_krb5_auth(admin_bind_userid, admin_bind_keytab);
     if(spawnv("/usr/bin/ssh", zfs_argv)) {
-        errorpe("failed calling zfsaddhomedir for %s", homedir);
+        errorpe("failed calling simpleaddhomedir for %s", homedir);
         ret = -1;
     }
     ceo_krb5_deauth();
