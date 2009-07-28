@@ -9,7 +9,7 @@
 #include "util.h"
 
 int main(int argc, char *argv[]) {
-    if(argc < 7) {
+    if(argc < 6) {
         fprintf(stderr, "Usage: simpleaddhomedir homedir skeldir uid gid mode\n");
         return 1;
     }
@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     char *zfs_bin = "/usr/sbin/zfs";
     char *mkdir_bin = "/bin/mkdir";
     char *chmod_bin = "/bin/chmod";
-    char *dataset = homedir + 1;
+    char *dataset = homedir;
     char *create_argv[] = { "mkdir", dataset, NULL };
     char *mode_argv[] = { "chmod", mode, homedir, NULL };
     DIR *skel;
