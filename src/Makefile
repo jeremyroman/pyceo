@@ -7,7 +7,7 @@ override CFLAGS  += -std=gnu99 $(INCLUDES)
 DESTDIR :=
 PREFIX  := /usr/local
 
-BIN_PROGS := addmember addclub zfsaddhomedir
+BIN_PROGS := addmember addclub zfsaddhomedir simpleaddhomedir
 EXT_PROGS := config-test
 
 LIBCEO_OBJECTS := common.o addhomedir.o
@@ -23,7 +23,7 @@ CONFIG_OBJECTS := config.o parser.o
 CONFIG_LDFLAGS :=
 CONFIG_PROGS   := $(OLDCEO_PROGS) $(LDAP_PROGS) $(KRB5_PROGS) $(NET_PROGS)
 UTIL_OBJECTS   := util.o strbuf.o
-UTIL_PROGS     := config-test zfsaddhomedir $(CONFIG_PROGS)
+UTIL_PROGS     := config-test zfsaddhomedir simpleaddhomedir $(CONFIG_PROGS)
 
 all: $(BIN_PROGS) $(LIB_PROGS) $(EXT_PROGS)
 
@@ -50,4 +50,4 @@ $(UTIL_PROGS):   LDFLAGS += $(UTIL_LDFLAGS)
 $(UTIL_PROGS):   $(UTIL_OBJECTS)
 
 .PHONY: clean all
-.SECONDARY: zfsaddhomedir.o addmember.o addclub.o
+.SECONDARY: zfsaddhomedir.o addmember.o addclub.o simpleaddhomedir.o
