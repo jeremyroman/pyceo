@@ -1,5 +1,4 @@
 CFLAGS   := -g3 -O2 -Wall -Werror -DDEBUG
-LDFLAGS  := -L/opt/csw/lib -Wl,-R/opt/csw/lib -L/usr/local/lib -Wl,-R/usr/local/lib
 INCLUDES := $(shell krb5-config --cflags)
 override LDFLAGS += -std=gnu99 $(INCLUDES)
 override CFLAGS  += -std=gnu99 $(INCLUDES)
