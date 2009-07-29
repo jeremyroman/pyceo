@@ -80,7 +80,7 @@ static size_t recv_one_message(int sock, struct sctp_meta *msg_meta, struct strb
                         fatal("shutdown complete");
                         break;
                     case SCTP_CANT_STR_ASSOC:
-                        fatal("cannot start association");
+                        fatal("connection failed (is ceod running?)");
                         break;
                 }
                 break;
