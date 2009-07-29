@@ -71,6 +71,19 @@ static size_t recv_one_message(int sock, struct sctp_meta *msg_meta, struct strb
             case SCTP_SHUTDOWN_EVENT:
                 fatal("connection shut down");
                 break;
+            case SCTP_ASSOC_CHANGE:
+                switch (sn->sn_assoc_change.sac_state) {
+                    case SCTP_COMM_LOST:
+                        fatal("connection lost");
+                        break;
+                    case SCTP_SHUTDOWN_COMP:
+                        fatal("shutdown complete");
+                        break;
+                    case SCTP_CANT_STR_ASSOC:
+                        fatal("cannot start association");
+                        break;
+                }
+                break;
         }
     }
 
