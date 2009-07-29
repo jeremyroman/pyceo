@@ -1,5 +1,9 @@
 /ceo.substvars
-/ceo
+/ceo-common
+/ceo-clients
+/ceo-daemon
+/ceo-gui
 /files
 /*.debhelper
 /*.debhelper.log
+/*.substvars

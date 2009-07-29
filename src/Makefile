@@ -48,11 +48,17 @@ config-test: config-test.o parser.o
 
 config.o: config.h config-vars.h
 
-install:
-	install -d $(DESTDIR)$(PREFIX)/sbin $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib/ceod
-	install ceod $(DESTDIR)$(PREFIX)/sbin
+install_clients:
+	install -d $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib/ceod
 	install addmember addclub $(DESTDIR)$(PREFIX)/bin
-	install ceoc op-adduser $(DESTDIR)$(PREFIX)/lib/ceod
+	install ceoc $(DESTDIR)$(PREFIX)/lib/ceod
+
+install_daemon:
+	install -d $(DESTDIR)$(PREFIX)/sbin $(DESTDIR)$(PREFIX)/lib/ceod
+	install ceod $(DESTDIR)$(PREFIX)/sbin
+	install op-adduser $(DESTDIR)$(PREFIX)/lib/ceod
+
+install: install_clients install_daemon
 
 $(NET_PROGS):    LDLIBS += $(NET_LIBS)
 $(NET_PROGS):    $(NET_OBJECTS)
