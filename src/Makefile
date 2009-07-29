@@ -1,7 +1,6 @@
 CFLAGS   := -g3 -O2 -Wall -Werror -DDEBUG
 LDFLAGS  := -Wl,--as-needed
 INCLUDES := $(shell krb5-config --cflags)
-override LDFLAGS += -std=gnu99 $(INCLUDES)
 override CFLAGS  += -std=gnu99 $(INCLUDES)
 
 DESTDIR :=
@@ -43,7 +42,7 @@ ceo.pb-c.c ceo.pb-c.h: ceo.proto
 	protoc-c --c_out=. ceo.proto
 
 ceod: dmaster.o dslave.o
-	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	$(CC) $(LDFLAGS) $^ $(CFLAGS) $(LDLIBS) -o $@
 
 config-test: config-test.o parser.o
 
