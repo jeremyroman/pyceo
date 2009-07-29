@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 CFLAGS  := -g -O2 -fstack-protector-all -fPIE
-LDFLAGS := -pie
+LDFLAGS := -pie -Wl,--as-needed
 
 build:
 	python setup.py -q build

@@ -1,4 +1,5 @@
 CFLAGS   := -g3 -O2 -Wall -Werror -DDEBUG
+LDFLAGS  := -Wl,--as-needed
 INCLUDES := $(shell krb5-config --cflags)
 override LDFLAGS += -std=gnu99 $(INCLUDES)
 override CFLAGS  += -std=gnu99 $(INCLUDES)
@@ -11,22 +12,22 @@ LIB_PROGS := ceoc op-adduser
 EXT_PROGS := config-test
 
 LDAP_OBJECTS   := ldap.o
-LDAP_LDFLAGS   := -lldap
+LDAP_LIBS      := -lldap
 LDAP_PROGS     := addmember addclub op-adduser
 KRB5_OBJECTS   := krb5.o kadm.o
-KRB5_LDFLAGS   := $(shell krb5-config --libs krb5 kadm-client)
+KRB5_LIBS      := $(shell krb5-config --libs krb5 kadm-client)
 KRB5_PROGS     := addmember addclub op-adduser
 HOME_OBJECTS   := homedir.o
-HOME_LDFLAGS   := -lacl
+HOME_LIBS      := -lacl
 HOME_PROGS     := op-adduser
 NET_OBJECTS    := net.o gss.o ops.o
-NET_LDFLAGS    := -lsctp $(shell krb5-config --libs gssapi)
+NET_LIBS       := -lsctp $(shell krb5-config --libs gssapi)
 NET_PROGS      := ceod ceoc
 PROTO_OBJECTS  := ceo.pb-c.o
-PROTO_LDFLAGS  := -lprotobuf-c
+PROTO_LIBS     := -lprotobuf-c
 PROTO_PROGS    := op-adduser addmember addclub
 CONFIG_OBJECTS := config.o parser.o
-CONFIG_LDFLAGS :=
+CONFIG_LIBS    :=
 CONFIG_PROGS   := $(LDAP_PROGS) $(KRB5_PROGS) $(NET_PROGS)
 UTIL_OBJECTS   := util.o strbuf.o
 UTIL_PROGS     := config-test $(CONFIG_PROGS)
@@ -42,7 +43,7 @@ ceo.pb-c.c ceo.pb-c.h: ceo.proto
 	protoc-c --c_out=. ceo.proto
 
 ceod: dmaster.o dslave.o
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 config-test: config-test.o parser.o
 
@@ -54,19 +55,19 @@ install:
 	install addmember addclub $(DESTDIR)$(PREFIX)/bin
 	install ceoc op-adduser $(DESTDIR)$(PREFIX)/lib/ceod
 
-$(NET_PROGS):    LDFLAGS += $(NET_LDFLAGS)
+$(NET_PROGS):    LDLIBS += $(NET_LIBS)
 $(NET_PROGS):    $(NET_OBJECTS)
-$(LDAP_PROGS):   LDFLAGS += $(LDAP_LDFLAGS)
+$(LDAP_PROGS):   LDLIBS += $(LDAP_LIBS)
 $(LDAP_PROGS):   $(LDAP_OBJECTS)
-$(KRB5_PROGS):   LDFLAGS += $(KRB5_LDFLAGS)
+$(KRB5_PROGS):   LDLIBS += $(KRB5_LIBS)
 $(KRB5_PROGS):   $(KRB5_OBJECTS)
-$(HOME_PROGS):   LDFLAGS += $(HOME_LDFLAGS)
+$(HOME_PROGS):   LDLIBS += $(HOME_LIBS)
 $(HOME_PROGS):   $(HOME_OBJECTS)
-$(PROTO_PROGS):  LDFLAGS += $(PROTO_LDFLAGS)
+$(PROTO_PROGS):  LDLIBS += $(PROTO_LIBS)
 $(PROTO_PROGS):  $(PROTO_OBJECTS)
-$(CONFIG_PROGS): LDFLAGS += $(CONFIG_LDFLAGS)
+$(CONFIG_PROGS): LDLIBS += $(CONFIG_LIBS)
 $(CONFIG_PROGS): $(CONFIG_OBJECTS)
-$(UTIL_PROGS):   LDFLAGS += $(UTIL_LDFLAGS)
+$(UTIL_PROGS):   LDLIBS += $(UTIL_LIBS)
 $(UTIL_PROGS):   $(UTIL_OBJECTS)
 
 .PHONY: clean all
