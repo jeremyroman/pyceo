@@ -18,7 +18,6 @@ int main(int argc, char *argv[]) {
     char *skeldir = argv[2];
     char *mode = argv[5];
     uid_t uid, gid;
-    char *zfs_bin = "/usr/sbin/zfs";
     char *mkdir_bin = "/bin/mkdir";
     char *chmod_bin = "/bin/chmod";
     char *dataset = homedir;

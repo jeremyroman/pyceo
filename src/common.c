@@ -23,7 +23,7 @@ int ceo_get_privileged() {
             return 0;
         pgid = privgrp->gr_gid;
 
-        count = getgroups(sizeof(grps), grps);
+        count = getgroups(sizeof(grps)/sizeof(*grps), grps);
         for (i = 0; i < count; i++)
             if (grps[i] == pgid)
                 return 1;
