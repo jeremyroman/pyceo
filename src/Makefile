@@ -16,6 +16,9 @@ LDAP_PROGS     := addmember addclub op-adduser
 KRB5_OBJECTS   := krb5.o kadm.o
 KRB5_LDFLAGS   := $(shell krb5-config --libs krb5 kadm-client)
 KRB5_PROGS     := addmember addclub op-adduser
+HOME_OBJECTS   := homedir.o
+HOME_LDFLAGS   := -lacl
+HOME_PROGS     := op-adduser
 NET_OBJECTS    := net.o gss.o ops.o
 NET_LDFLAGS    := -lsctp $(shell krb5-config --libs gssapi)
 NET_PROGS      := ceod ceoc
@@ -57,6 +60,8 @@ $(LDAP_PROGS):   LDFLAGS += $(LDAP_LDFLAGS)
 $(LDAP_PROGS):   $(LDAP_OBJECTS)
 $(KRB5_PROGS):   LDFLAGS += $(KRB5_LDFLAGS)
 $(KRB5_PROGS):   $(KRB5_OBJECTS)
+$(HOME_PROGS):   LDFLAGS += $(HOME_LDFLAGS)
+$(HOME_PROGS):   $(HOME_OBJECTS)
 $(PROTO_PROGS):  LDFLAGS += $(PROTO_LDFLAGS)
 $(PROTO_PROGS):  $(PROTO_OBJECTS)
 $(CONFIG_PROGS): LDFLAGS += $(CONFIG_LDFLAGS)

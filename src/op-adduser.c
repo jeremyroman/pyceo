@@ -19,6 +19,7 @@
 #include "gss.h"
 #include "krb5.h"
 #include "ldap.h"
+#include "homedir.h"
 #include "kadm.h"
 #include "daemon.h"
 #include "strbuf.h"
@@ -136,7 +137,7 @@ static void adduser_spam(Ceo__AddUser *in, Ceo__AddUserResponse *out, char *clie
 
 static int32_t addmember(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     char homedir[1024];
-    int user_stat, group_stat, krb_stat;
+    int user_stat, group_stat, krb_stat, home_stat;
     int id;
 
     if (snprintf(homedir, sizeof(homedir), "%s/%s",
@@ -165,12 +166,15 @@ static int32_t addmember(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     else
         response_message(out, 0, "successfully created ldap group");
 
-    return krb_stat || user_stat || group_stat;
+    if ((home_stat = ceo_create_home(homedir, id, id)))
+        notice("successfully created home directory for %s", in->username);
+
+    return krb_stat || user_stat || group_stat || home_stat;
 }
 
 static int32_t addclub(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     char homedir[1024];
-    int krb_stat, user_stat, group_stat, sudo_stat;
+    int krb_stat, user_stat, group_stat, sudo_stat, home_stat;
     int id;
 
     if (snprintf(homedir, sizeof(homedir), "%s/%s",
@@ -200,7 +204,10 @@ static int32_t addclub(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     else
         response_message(out, 0, "successfully created ldap sudoers");
 
-    return user_stat || group_stat || sudo_stat;
+    if ((home_stat = ceo_create_home(homedir, id, id)))
+        notice("successfully created home directory for %s", in->username);
+
+    return user_stat || group_stat || sudo_stat || home_stat;
 }
 
 static int32_t adduser(Ceo__AddUser *in, Ceo__AddUserResponse *out, char *client) {
