@@ -22,5 +22,3 @@ CONFIG_STR(realm)
 
 CONFIG_STR(admin_principal)
 CONFIG_STR(admin_bind_userid)
-
-CONFIG_STR(privileged_group)
