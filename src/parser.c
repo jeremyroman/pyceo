@@ -53,7 +53,7 @@ static void parse_name(struct config_file *file, char *name, size_t maxlen) {
             break;
         }
 
-        if (!isalpha(c) && c != '_' && c != '-') {
+        if (!isalpha(c) && !isdigit(c) && c != '_' && c != '-') {
             unparse_char(file, c);
             break;
         }
