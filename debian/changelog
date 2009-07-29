@@ -1,8 +1,8 @@
-ceo (0.4.10) stable testing; urgency=low
+ceo (0.4.19) stable testing; urgency=low
 
   * Bump standards version.
 
- -- Michael Spang <mspang@uwaterloo.ca>  Fri, 24 Jul 2009 18:47:33 -0400
+ -- Michael Spang <mspang@uwaterloo.ca>  Wed, 29 Jul 2009 07:31:24 -0400
 
 ceo (0.4.18) stable testing; urgency=low
 
