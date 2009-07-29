@@ -16,19 +16,21 @@ int main(int argc, char *argv[]) {
 
     char *homedir = argv[1];
     char *skeldir = argv[2];
-    char *mode = argv[5];
     uid_t uid, gid;
     char *mkdir_bin = "/bin/mkdir";
     char *chmod_bin = "/bin/chmod";
     char *dataset = homedir;
     char *create_argv[] = { "mkdir", dataset, NULL };
-    char *mode_argv[] = { "chmod", mode, homedir, NULL };
+    char *mode_argv[] = { "chmod", "0755", homedir, NULL };
     DIR *skel;
     struct dirent *skelent;
 
     assert(homedir[0]);
     uid = atol(argv[3]);
     gid = atol(argv[4]);
+
+    if (setreuid(0, 0))
+        fatalpe("ogawd");
 
     if(spawnv(mkdir_bin, create_argv))
         return 1;
