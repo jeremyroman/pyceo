@@ -32,22 +32,22 @@ void ceo_kadm_cleanup() {
 
 int ceo_add_princ(char *user, char *password) {
     krb5_error_code retval;
-    kadm5_principal_ent_rec princ;
+    krb5_principal princ;
     memset((void *) &princ, 0, sizeof(princ));
 
     debug("kadmin: adding principal %s", user);
 
-    if ((retval = krb5_parse_name(context, user, &princ.principal))) {
+    if ((retval = krb5_parse_name(context, user, &princ))) {
         com_err(prog, retval, "while parsing principal name");
         return retval;
     }
 
-    if ((retval = kadm5_create_principal(handle, &princ, KADM5_PRINCIPAL, password))) {
+    if ((retval = kadm5_chpass_principal(handle, princ, password))) {
         com_err(prog, retval, "while creating principal");
         return retval;
     }
 
-    krb5_free_principal(context, princ.principal);
+    krb5_free_principal(context, princ);
     return 0;
 }
 

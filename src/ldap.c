@@ -170,7 +170,7 @@ int ceo_add_group_sudo(char *group, char *basedn) {
     return ret;
 }
 
-int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, char *shell, int no, ...) {
+int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, char *principal, char *shell, int no, ...) {
     va_list args;
 
     if (!uid || !basedn || !cn || !home || !shell)
@@ -179,13 +179,19 @@ int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, 
     LDAPMod *mods[16];
     int i = -1;
     int ret = 0;
+    int classes = 4;
 
     mods[++i] = xmalloc(sizeof(LDAPMod));
     mods[i]->mod_op = LDAP_MOD_ADD;
     mods[i]->mod_type = "objectClass";
-    char *objectClasses[] = { "top", "account", "posixAccount", "shadowAccount", NULL, NULL };
+    char *objectClasses[] = { "top", "account", "posixAccount", "shadowAccount", NULL, NULL, NULL, NULL };
     if (objclass != NULL)
-        objectClasses[4] = objclass;
+        objectClasses[classes++] = objclass;
+    if (principal) {
+        objectClasses[classes++] = "krbPrincipalAux";
+        objectClasses[classes++] = "krbTicketPolicyAux";
+
+    }
     mods[i]->mod_values = objectClasses;
 
     mods[++i] = xmalloc(sizeof(LDAPMod));
@@ -224,6 +230,14 @@ int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, 
     mods[i]->mod_type = "homeDirectory";
     char *homeDirectory[] = { home, NULL };
     mods[i]->mod_values = homeDirectory;
+
+    if (principal) {
+        mods[++i] = xmalloc(sizeof(LDAPMod));
+        mods[i]->mod_op = LDAP_MOD_ADD;
+        mods[i]->mod_type = "krbPrincipalName";
+        char *krbPrincipalName[] = { principal, NULL };
+        mods[i]->mod_values = krbPrincipalName;
+    }
 
     va_start(args, no);
     char *attr;

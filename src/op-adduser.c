@@ -137,8 +137,13 @@ static void adduser_spam(Ceo__AddUser *in, Ceo__AddUserResponse *out, char *clie
 
 static int32_t addmember(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     char homedir[1024];
+    char principal[1024];
     int user_stat, group_stat, krb_stat, home_stat;
     int id;
+
+    if (snprintf(principal, sizeof(principal), "%s@%s",
+                in->username, krb5_realm) >= sizeof(principal))
+        fatal("principal overflow");
 
     if (snprintf(homedir, sizeof(homedir), "%s/%s",
                  member_home, in->username) >= sizeof(homedir))
@@ -150,16 +155,16 @@ static int32_t addmember(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     if ((krb_stat = ceo_del_princ(in->username)))
         return response_message(out, EEXIST, "unable to overwrite orphaned kerberos principal %s", in->username);
 
-    if ((krb_stat = ceo_add_princ(in->username, in->password)))
-        return response_message(out, EKERB, "unable to create kerberos principal %s", in->username);
-    response_message(out, 0, "successfully created principal");
-
-    if ((user_stat = ceo_add_user(in->username, ldap_users_base, "member", in->realname, homedir,
+    if ((user_stat = ceo_add_user(in->username, ldap_users_base, "member", in->realname, homedir, principal,
             member_shell, id, "program", in->program, NULL)))
         return response_message(out, ELDAP, "unable to create ldap account %s", in->username);
     response_message(out, 0, "successfully created ldap account");
 
     /* errors that occur after this point are not fatal  */
+
+    if ((krb_stat = ceo_add_princ(in->username, in->password)))
+        return response_message(out, EKERB, "unable to create kerberos principal %s", in->username);
+    response_message(out, 0, "successfully created principal");
 
     if ((group_stat = ceo_add_group(in->username, ldap_groups_base, id)))
         response_message(out, ELDAP, "unable to create ldap group %s", in->username);
@@ -191,7 +196,7 @@ static int32_t addclub(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
         return response_message(out, EKERB, "unable to clear principal %s", in->username);
 
     if ((user_stat = ceo_add_user(in->username, ldap_users_base, "club", in->realname, homedir,
-            club_shell, id, NULL)))
+            NULL, club_shell, id, NULL)))
         return response_message(out, ELDAP, "unable to create ldap account %s", in->username);
     response_message(out, 0, "successfully created ldap account");
 
