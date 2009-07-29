@@ -1,8 +1,37 @@
-ceo (0.4.19) stable testing; urgency=low
+ceo (0.4.24) stable testing; urgency=low
 
   * Bump standards version.
 
  -- Michael Spang <mspang@uwaterloo.ca>  Wed, 29 Jul 2009 07:31:24 -0400
+ceo (0.4.23) stable testing; urgency=low
+
+  * CEO library now only finds books that are signed out as being overdue.
+
+ -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Wed, 11 Mar 2009 03:30:01 -0500
+
+ceo (0.4.22) stable testing; urgency=low
+
+  * CEO now closes window when it should.  (Sorry)
+
+ -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Wed, 11 Mar 2009 02:25:01 -0500
+
+ceo (0.4.21) stable testing; urgency=low
+
+  * CEO Library can now add boox.
+
+ -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Wed, 11 Mar 2009 02:09:01 -0500
+
+ceo (0.4.20) stable testing; urgency=low
+
+  * Update kadmin headers
+
+ -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Tue, 24 Feb 2009 16:08:12 -0500
+
+ceo (0.4.19) stable testing; urgency=low
+
+  * Rebuild for lenny.
+
+ -- Michael Spang <mspang@uwaterloo.ca>  Tue, 17 Feb 2009 22:23:30 -0500
 
 ceo (0.4.18) stable testing; urgency=low
 

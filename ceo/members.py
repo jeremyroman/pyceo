@@ -150,6 +150,12 @@ def create_member(username, password, name, program):
         addmember = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = addmember.communicate(password)
         status = addmember.wait()
+
+        # # If the user was created, consider adding them to the mailing list
+        # if not status:
+        #     listadmin_cfg_file = "/path/to/the/listadmin/config/file"
+        #     mail = subprocess.Popen(["/usr/bin/listadmin", "-f", listadmin_cfg_file, "--add-member", username + "@csclub.uwaterloo.ca"])
+        #     status2 = mail.wait() # Fuck if I care about errors!
     except OSError, e:
         raise MemberException(e)
 

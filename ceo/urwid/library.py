@@ -5,12 +5,26 @@ from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 from sqlobject.sqlbuilder import *
 from datetime import datetime, timedelta
+from ceo.pymazon import PyMazon
+from ceo.pymazon import PyMazonError
+from ceo import conf
 
 from ceo import terms
 
 import ceo.library as lib
 
+CONFIG_FILE = "/etc/csc/library.cf"
 
+cfg = {}
+
+def configure():
+    """
+    Load configuration
+    """
+    cfg_fields = [ "aws_account_key" ]
+    temp_cfg = conf.read(CONFIG_FILE)
+    conf.check_string_fields(CONFIG_FILE, cfg_fields, temp_cfg)
+    cfg.update(temp_cfg)
 
 def library(data):
     """
@@ -20,7 +34,7 @@ def library(data):
         ("Checkout Book", checkout_book, None),
         ("Return Book", return_book, None),
         ("Search Books", search_books, None),
-#        ("Add Book", add_book, None),
+        ("Add Book", add_book, None),
         ("Back", raise_back, None),
     ])
     push_window(menu, "Library")
@@ -35,12 +49,18 @@ def search_books(data):
     ])
     push_window(menu, "Book Search")
 
+def add_book(data):
+    """
+    Add book to library.  Also stab Sapphyre.
+    """
+    push_wizard("Add Book", [BookAddPage])
+
 def overdue_books(data):
     """
     Display a list of all books that are overdue.
     """
     oldest = datetime.today() - timedelta(weeks=2)
-    overdue = lib.Signout.select(lib.Signout.q.outdate<oldest)
+    overdue = lib.Signout.select(AND(lib.Signout.q.outdate<oldest, lib.Signout.q.indate==None))
 
     widgets = []
 
@@ -82,6 +102,45 @@ def return_book(data):
     Display the book return wizard.
     """
     push_wizard("Checkout", [CheckinPage, ConfirmPage])
+
+class BookAddPage(WizardPanel):
+    """
+    Thingy for going on screen to add books.
+    """
+    def init_widgets(self):
+        """
+        Make some widgets.
+        """
+        self.isbn = SingleEdit("ISBN: ")
+        
+        self.widgets = [
+            urwid.Text("Adding New Book"),
+            urwid.Divider(),
+            self.isbn
+        ]
+
+    def check(self):
+        """
+        Do black magic.
+        """
+        configure()
+        isbn = self.isbn.get_edit_text()
+
+        try:
+            pymazon = PyMazon(cfg["aws_account_key"])
+            book = pymazon.lookup(isbn)
+
+            currents = lib.Book.select(lib.Book.q.isbn==isbn)
+            if currents.count() == 0:
+                lib.Book(isbn=isbn, title=book.title,
+                         year=book.year, publisher=book.publisher)
+                pop_window()
+            else:
+                set_status("Book already exists, fucker.")
+        except PyMazonError, e:
+            set_status("Amazon thinks this is not a book.  Take it up with them.")
+        return False
+        
 
 class BookSearchPage(WizardPanel):
     """
@@ -216,8 +275,12 @@ class SearchPage(urwid.WidgetWrap):
             books = lib.Book.select(LIKE(lib.Book.q.title, "%" + title + "%"))
         elif not isbn is None and not isbn=="":
             books = lib.Book.select(lib.Book.q.isbn==isbn)
-        elif not user is None and not user=="":
+        elif (not (user is None)) and (not (user=="")):
             st = lib.Signout.select(AND(lib.Signout.q.username==user, lib.Signout.q.indate==None))
+            for s in st:
+                books.append(s.book)
+        else:
+            st = lib.Signout.select(lib.Signout.q.indate==None)
             for s in st:
                 books.append(s.book)
 
