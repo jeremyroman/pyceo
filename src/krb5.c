@@ -41,7 +41,7 @@ void ceo_krb5_init() {
     if (retval)
         com_err(prog, retval, "while initializing krb5");
 
-    retval = krb5_set_default_realm(context, realm);
+    retval = krb5_set_default_realm(context, krb5_realm);
     if (retval)
         com_err(prog, retval, "while setting default realm");
 }
@@ -59,7 +59,7 @@ void ceo_krb5_auth(char *principal) {
     debug("krb5: getting TGT using keytab for %s", principal);
 
     if ((retval = krb5_parse_name(context, principal, &princ)))
-        com_err(prog, retval, "while resolving user %s", admin_bind_userid);
+        com_err(prog, retval, "while resolving user %s", principal);
 
     if ((retval = krb5_cc_default(context, &cache)))
         com_err(prog, retval, "while resolving credentials cache");

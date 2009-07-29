@@ -68,7 +68,7 @@ void setup_ops(void) {
 
     op_dir = getenv("CEO_LIB_DIR") ?: default_op_dir;
 
-    if (snprintf(op_config_dir, sizeof(op_config_dir), "%s/%s", config_dir, "ops.d") >= sizeof(op_config_dir))
+    if (snprintf(op_config_dir, sizeof(op_config_dir), "%s/%s", config_dir, "ops") >= sizeof(op_config_dir))
         fatal("ops dir path too long");
 
     dp = opendir(op_config_dir);

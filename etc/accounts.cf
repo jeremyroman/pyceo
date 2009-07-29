@@ -1,17 +1,13 @@
 # /etc/csc/accounts.cf: CSC Accounts Configuration
 
-include /etc/csc/ldap.cf
-include /etc/csc/kerberos.cf
-
 ### Member Account Options ###
 
 member_min_id = 20001
 member_max_id = 29999
 member_shell = "/bin/bash"
 member_home = "/users"
-#member_home_acl = "u::rwx,g::rx,o::rx"
-#member_home_dacl =
-member_home_acl =
+member_home_acl = "u::rwx,g::rx,o::rx"
+member_home_skel = "/users/skel"
 
 ### Club Account Options ###
 
@@ -20,27 +16,37 @@ club_max_id = 39999
 club_shell = "/bin/bash"
 club_home = "/users"
 club_home_acl = "A+group:%s:rwpRAxaWdDcCs:fd:allow"
+club_home_skel = "/users/skel"
 
-### Administrative Account Options
+### Administrative Account Options ###
 
 admin_min_id = 10001
 admin_max_id = 19999
-admin_shell = "/bin/bash"
-admin_home = "/users"
 
-### Home Directory Options ###
+### LDAP Options ###
 
-skeleton_dir = "/users/skel"
-homedir_mode = "0755"
-refquota = "4G"
+ldap_server_url = "ldaps://ldap-master.csclub.uwaterloo.ca"
+ldap_users_base  = "ou=People,dc=csclub,dc=uwaterloo,dc=ca"
+ldap_groups_base = "ou=Group,dc=csclub,dc=uwaterloo,dc=ca"
+ldap_sudo_base = "ou=SUDOers,dc=csclub,dc=uwaterloo,dc=ca"
+ldap_sasl_mech = "GSSAPI"
+ldap_sasl_realm = "CSCLUB.UWATERLOO.CA"
+ldap_admin_principal = "ceod/admin@CSCLUB.UWATERLOO.CA"
 
-### Validation Tuning ###
+### Kerberos Options ###
+
+krb5_realm = "CSCLUB.UWATERLOO.CA"
+krb5_admin_principal = "ceod/admin@CSCLUB.UWATERLOO.CA"
+
+### Spam ###
+
+notify_hook = "/etc/csc/spam/new-member"
+expire_hook = "/etc/csc/spam/expired-account"
+
+### Miscellaneous ###
 
 username_regex = "^[a-z][-a-z0-9]*$"
 min_password_length = 4
 shells_file = "/etc/shells"
-privileged_group = "staff"
-notify_hook = "/etc/csc/notify-hook"
-expired_account_email = "/etc/csc/expired-account"
 mathsoc_regex = ".*(mat/|vpa/se|computer science|math).*"
-mathsoc_dont_count = "cpdohert dlgawley dtbartle mbiggs saforres tmyklebu"
+mathsoc_dont_count = "cpdohert dlgawley dtbartle mbiggs saforres tmyklebu mgregson rridge dbelange"

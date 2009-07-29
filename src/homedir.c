@@ -11,9 +11,9 @@
 #include "util.h"
 #include "config.h"
 
-int ceo_create_home(char *homedir, uid_t uid, gid_t gid) {
+int ceo_create_home(char *homedir, char *skel, uid_t uid, gid_t gid) {
     int mask;
-    DIR *skel;
+    DIR *skeldir;
     struct dirent *skelent;
 
     mask = umask(0);
@@ -23,20 +23,20 @@ int ceo_create_home(char *homedir, uid_t uid, gid_t gid) {
         return -1;
     }
 
-    skel = opendir(skeleton_dir);
-    if (!skel) {
-        errorpe("failed to open %s", skeleton_dir);
+    skeldir = opendir(skel);
+    if (!skeldir) {
+        errorpe("failed to open %s", skel);
         return -1;
     }
 
-    while ((skelent = readdir(skel))) {
+    while ((skelent = readdir(skeldir))) {
         struct stat sb;
         char src[PATH_MAX], dest[PATH_MAX];
 
         if (!strcmp(skelent->d_name, ".") || !strcmp(skelent->d_name, ".."))
             continue;
 
-        snprintf(src, sizeof(src), "%s/%s", skeleton_dir, skelent->d_name);
+        snprintf(src, sizeof(src), "%s/%s", skel, skelent->d_name);
         snprintf(dest, sizeof(dest), "%s/%s", homedir, skelent->d_name);
         lstat(src, &sb);
 
@@ -108,7 +108,7 @@ int ceo_create_home(char *homedir, uid_t uid, gid_t gid) {
         }
     }
 
-    closedir(skel);
+    closedir(skeldir);
 
     if (chown(homedir, uid, gid)) {
         errorpe("failed to chown %s", homedir);

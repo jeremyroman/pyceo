@@ -14,9 +14,9 @@ void ceo_kadm_init() {
     kadm5_config_params params;
     memset((void *) &params, 0, sizeof(params));
 
-    debug("kadmin: initializing using keytab for %s", admin_principal);
+    debug("kadmin: initializing using keytab for %s", krb5_admin_principal);
 
-    retval = kadm5_init_with_skey(admin_principal, NULL,
+    retval = kadm5_init_with_skey(krb5_admin_principal, NULL,
                 KADM5_ADMIN_SERVICE, &params, KADM5_STRUCT_VERSION,
                 KADM5_API_VERSION_2, NULL, &handle);
     if (retval || !handle) {

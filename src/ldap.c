@@ -277,7 +277,7 @@ int ceo_new_uid(int min, int max) {
             continue;
 
         snprintf(filter, sizeof(filter), "(|(uidNumber=%d)(gidNumber=%d))", i, i);
-        if (ldap_search_s(ld, users_base, LDAP_SCOPE_SUBTREE, filter, attrs, 1, &res) != LDAP_SUCCESS) {
+        if (ldap_search_s(ld, ldap_users_base, LDAP_SCOPE_SUBTREE, filter, attrs, 1, &res) != LDAP_SUCCESS) {
             ldap_err("firstuid");
             return -1;
         }
@@ -306,7 +306,7 @@ int ceo_user_exists(char *uid) {
 
     snprintf(filter, sizeof(filter), "uid=%s", uid);
 
-    if (ldap_search_s(ld, users_base, LDAP_SCOPE_SUBTREE, filter, attrs, 0, &msg) != LDAP_SUCCESS) {
+    if (ldap_search_s(ld, ldap_users_base, LDAP_SCOPE_SUBTREE, filter, attrs, 0, &msg) != LDAP_SUCCESS) {
         ldap_err("user_exists");
         return -1;
     }
@@ -328,7 +328,7 @@ int ceo_group_exists(char *cn) {
 
     snprintf(filter, sizeof(filter), "cn=%s", cn);
 
-    if (ldap_search_s(ld, groups_base, LDAP_SCOPE_SUBTREE, filter, attrs, 0, &msg) != LDAP_SUCCESS) {
+    if (ldap_search_s(ld, ldap_groups_base, LDAP_SCOPE_SUBTREE, filter, attrs, 0, &msg) != LDAP_SUCCESS) {
         ldap_err("group_exists");
         return -1;
     }
@@ -362,10 +362,10 @@ void ceo_ldap_init() {
     int proto = LDAP_DEFAULT_PROTOCOL;
     const char *sasl_mech = "GSSAPI";
 
-    if (!admin_bind_userid)
+    if (!ldap_admin_principal)
         fatal("not configured");
 
-    if (ldap_initialize(&ld, server_url) != LDAP_SUCCESS)
+    if (ldap_initialize(&ld, ldap_server_url) != LDAP_SUCCESS)
         ldap_fatal("ldap_initialize");
 
     if (ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, &proto) != LDAP_OPT_SUCCESS)

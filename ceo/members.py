@@ -23,11 +23,9 @@ cfg = {}
 def configure():
     """Load Members Configuration"""
 
-    string_fields = [ 'username_regex', 'shells_file', 'server_url',
-            'users_base', 'groups_base', 'sasl_mech', 'sasl_realm',
-            'admin_bind_keytab', 'admin_bind_userid', 'realm',
-            'admin_principal', 'expired_account_email',
-            'mathsoc_regex', 'mathsoc_dont_count' ]
+    string_fields = [ 'username_regex', 'shells_file', 'ldap_server_url',
+            'ldap_users_base', 'ldap_groups_base', 'ldap_sasl_mech', 'ldap_sasl_realm',
+            'expire_hook', 'mathsoc_regex', 'mathsoc_dont_count' ]
     numeric_fields = [ 'min_password_length' ]
 
     # read configuration file
@@ -93,8 +91,8 @@ def connect(auth_callback):
     tries = 0
     while ld is None:
         try:
-            ld = ldapi.connect_sasl(cfg['server_url'], cfg['sasl_mech'],
-                cfg['sasl_realm'], password)
+            ld = ldapi.connect_sasl(cfg['ldap_server_url'], cfg['ldap_sasl_mech'],
+                cfg['ldap_sasl_realm'], password)
         except ldap.LOCAL_ERROR, e:
             tries += 1
             if tries > 3:
@@ -172,10 +170,10 @@ def get(userid):
              }
     """
 
-    return ldapi.lookup(ld, 'uid', userid, cfg['users_base'])
+    return ldapi.lookup(ld, 'uid', userid, cfg['ldap_users_base'])
 
 def uid2dn(uid):
-    return 'uid=%s,%s' % (ldapi.escape(uid), cfg['users_base'])
+    return 'uid=%s,%s' % (ldapi.escape(uid), cfg['ldap_users_base'])
 
 
 def list_term(term):
@@ -194,7 +192,7 @@ def list_term(term):
              }
     """
 
-    members = ldapi.search(ld, cfg['users_base'],
+    members = ldapi.search(ld, cfg['ldap_users_base'],
             '(&(objectClass=member)(term=%s))', [ term ])
     return dict([(member[0], member[1]) for member in members])
 
@@ -214,7 +212,7 @@ def list_name(name):
              ]
     """
 
-    members = ldapi.search(ld, cfg['users_base'],
+    members = ldapi.search(ld, cfg['ldap_users_base'],
             '(&(objectClass=member)(cn~=%s))', [ name ])
     return dict([(member[0], member[1]) for member in members])
 
@@ -256,7 +254,7 @@ def list_all():
              ]
     """
 
-    members = ldapi.search(ld, cfg['users_base'], '(objectClass=member)')
+    members = ldapi.search(ld, cfg['ldap_users_base'], '(objectClass=member)')
     return dict([(member[0], member[1]) for member in members])
 
 
@@ -272,7 +270,7 @@ def list_positions():
              ]
     """
 
-    members = ld.search_s(cfg['users_base'], ldap.SCOPE_SUBTREE, '(position=*)')
+    members = ld.search_s(cfg['ldap_users_base'], ldap.SCOPE_SUBTREE, '(position=*)')
     positions = {}
     for (_, member) in members:
         for position in member['position']:
@@ -293,7 +291,7 @@ def set_position(position, members):
     Example: set_position('president', ['dtbartle'])
     """
 
-    res = ld.search_s(cfg['users_base'], ldap.SCOPE_SUBTREE,
+    res = ld.search_s(cfg['ldap_users_base'], ldap.SCOPE_SUBTREE,
         '(&(objectClass=member)(position=%s))' % ldapi.escape(position))
     old = set([ member['uid'][0] for (_, member) in res ])
     new = set(members)
@@ -306,7 +304,7 @@ def set_position(position, members):
 
     for action in ['del', 'add']:
         for userid in mods[action]:
-            dn = 'uid=%s,%s' % (ldapi.escape(userid), cfg['users_base'])
+            dn = 'uid=%s,%s' % (ldapi.escape(userid), cfg['ldap_users_base'])
             entry1 = {'position' : [position]}
             entry2 = {} #{'position' : []}
             entry = ()
@@ -319,8 +317,8 @@ def set_position(position, members):
 
 
 def change_group_member(action, group, userid):
-    user_dn = 'uid=%s,%s' % (ldapi.escape(userid), cfg['users_base'])
-    group_dn = 'cn=%s,%s' % (ldapi.escape(group), cfg['groups_base'])
+    user_dn = 'uid=%s,%s' % (ldapi.escape(userid), cfg['ldap_users_base'])
+    group_dn = 'cn=%s,%s' % (ldapi.escape(group), cfg['ldap_groups_base'])
     entry1 = {'uniqueMember' : []}
     entry2 = {'uniqueMember' : [user_dn]}
     entry = []
@@ -338,7 +336,7 @@ def change_group_member(action, group, userid):
 ### Shells ###
 
 def get_shell(userid):
-    member = ldapi.lookup(ld, 'uid', userid, cfg['users_base'])
+    member = ldapi.lookup(ld, 'uid', userid, cfg['ldap_users_base'])
     if not member:
         raise NoSuchMember(userid)
     if 'loginShell' not in member:
@@ -357,7 +355,7 @@ def get_shells():
 def set_shell(userid, shell):
     if not shell in get_shells():
         raise InvalidArgument("shell", shell, "is not in %s" % cfg['shells_file'])
-    ldapi.modify(ld, 'uid', userid, cfg['users_base'], [ (ldap.MOD_REPLACE, 'loginShell', [ shell ]) ])
+    ldapi.modify(ld, 'uid', userid, cfg['ldap_users_base'], [ (ldap.MOD_REPLACE, 'loginShell', [ shell ]) ])
 
 
 
@@ -414,7 +412,7 @@ def register(userid, term_list):
     Example: register(3349, ["w2007", "s2007"])
     """
 
-    user_dn = 'uid=%s,%s' % (ldapi.escape(userid), cfg['users_base'])
+    user_dn = 'uid=%s,%s' % (ldapi.escape(userid), cfg['ldap_users_base'])
 
     if type(term_list) in (str, unicode):
         term_list = [ term_list ]
@@ -446,7 +444,7 @@ def register(userid, term_list):
 def register_nonmember(userid, term_list):
     """Registers a non-member for one or more terms."""
 
-    user_dn = 'uid=%s,%s' % (ldapi.escape(userid), cfg['users_base'])
+    user_dn = 'uid=%s,%s' % (ldapi.escape(userid), cfg['ldap_users_base'])
 
     if type(term_list) in (str, unicode):
         term_list = [ term_list ]
@@ -505,7 +503,7 @@ def group_members(group):
     Returns a list of group members
     """
 
-    group = ldapi.lookup(ld, 'cn', group, cfg['groups_base'])
+    group = ldapi.lookup(ld, 'cn', group, cfg['ldap_groups_base'])
 
     if group and 'uniqueMember' in group:
         r = re.compile('^uid=([^,]*)')
@@ -513,11 +511,11 @@ def group_members(group):
     return []
 
 def expired_accounts():
-    members = ldapi.search(ld, cfg['users_base'],
+    members = ldapi.search(ld, cfg['ldap_users_base'],
         '(&(objectClass=member)(!(|(term=%s)(nonMemberTerm=%s))))' %
         (terms.current(), terms.current()))
     return dict([(member[0], member[1]) for member in members])
 
 def send_account_expired_email(name, email):
-    args = [ cfg['expired_account_email'], name, email ]
-    os.spawnv(os.P_WAIT, cfg['expired_account_email'], args)
+    args = [ cfg['expire_hook'], name, email ]
+    os.spawnv(os.P_WAIT, cfg['expire_hook'], args)

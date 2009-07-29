@@ -154,19 +154,19 @@ static int32_t addmember(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
         return response_message(out, EKERB, "unable to create kerberos principal %s", in->username);
     response_message(out, 0, "successfully created principal");
 
-    if ((user_stat = ceo_add_user(in->username, users_base, "member", in->realname, homedir,
+    if ((user_stat = ceo_add_user(in->username, ldap_users_base, "member", in->realname, homedir,
             member_shell, id, "program", in->program, NULL)))
         return response_message(out, ELDAP, "unable to create ldap account %s", in->username);
     response_message(out, 0, "successfully created ldap account");
 
     /* errors that occur after this point are not fatal  */
 
-    if ((group_stat = ceo_add_group(in->username, groups_base, id)))
+    if ((group_stat = ceo_add_group(in->username, ldap_groups_base, id)))
         response_message(out, ELDAP, "unable to create ldap group %s", in->username);
     else
         response_message(out, 0, "successfully created ldap group");
 
-    if ((home_stat = ceo_create_home(homedir, id, id)))
+    if ((home_stat = ceo_create_home(homedir, member_home_skel,  id, id)))
         response_message(out, EHOME, "unable to create home directory for %s", in->username);
     else
         response_message(out, 0, "successfully created home directory");
@@ -190,24 +190,24 @@ static int32_t addclub(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     if ((krb_stat = ceo_del_princ(in->username)))
         return response_message(out, EKERB, "unable to clear principal %s", in->username);
 
-    if ((user_stat = ceo_add_user(in->username, users_base, "club", in->realname, homedir,
+    if ((user_stat = ceo_add_user(in->username, ldap_users_base, "club", in->realname, homedir,
             club_shell, id, NULL)))
         return response_message(out, ELDAP, "unable to create ldap account %s", in->username);
     response_message(out, 0, "successfully created ldap account");
 
     /* errors that occur after this point are not fatal  */
 
-    if ((group_stat = ceo_add_group(in->username, groups_base, id)))
+    if ((group_stat = ceo_add_group(in->username, ldap_groups_base, id)))
         response_message(out, ELDAP, "unable to create ldap group %s", in->username);
     else
         response_message(out, 0, "successfully created ldap group");
 
-    if ((sudo_stat = ceo_add_group_sudo(in->username, sudo_base)))
+    if ((sudo_stat = ceo_add_group_sudo(in->username, ldap_sudo_base)))
         response_message(out, ELDAP, "unable to create ldap sudoers %s", in->username);
     else
         response_message(out, 0, "successfully created ldap sudoers");
 
-    if ((home_stat = ceo_create_home(homedir, id, id)))
+    if ((home_stat = ceo_create_home(homedir, club_home_skel, id, id)))
         response_message(out, EHOME, "unable to create home directory for %s", in->username);
     else
         response_message(out, 0, "successfully created home directory");
@@ -282,7 +282,7 @@ int main(int argc, char *argv[]) {
         fatalpe("setenv");
 
     ceo_krb5_init();
-    ceo_krb5_auth(admin_bind_userid);
+    ceo_krb5_auth(ldap_admin_principal);
     ceo_ldap_init();
     ceo_kadm_init();
 
