@@ -167,7 +167,10 @@ static int32_t addmember(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
         response_message(out, 0, "successfully created ldap group");
 
     if ((home_stat = ceo_create_home(homedir, id, id)))
-        notice("successfully created home directory for %s", in->username);
+        response_message(out, EHOME, "unable to create home directory for %s", in->username);
+    else
+        response_message(out, 0, "successfully created home directory");
+
 
     return krb_stat || user_stat || group_stat || home_stat;
 }
@@ -205,7 +208,9 @@ static int32_t addclub(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
         response_message(out, 0, "successfully created ldap sudoers");
 
     if ((home_stat = ceo_create_home(homedir, id, id)))
-        notice("successfully created home directory for %s", in->username);
+        response_message(out, EHOME, "unable to create home directory for %s", in->username);
+    else
+        response_message(out, 0, "successfully created home directory");
 
     return user_stat || group_stat || sudo_stat || home_stat;
 }

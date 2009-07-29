@@ -42,5 +42,6 @@ enum {
 
 #define EKERB -2
 #define ELDAP -3
+#define EHOME -4
 
 int receive_one_message(int sock, struct sctp_meta *msg_meta, struct strbuf *msg);
