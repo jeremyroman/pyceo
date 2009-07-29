@@ -2,3 +2,4 @@
 /ceo
 /files
 /*.debhelper
+/*.debhelper.log
