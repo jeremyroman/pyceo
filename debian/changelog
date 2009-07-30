@@ -1,3 +1,9 @@
+ceo (0.5.0) stable testing; urgency=low
+
+  * Add ceo daemon.
+
+ -- Michael Spang <mspang@uwaterloo.ca>  Thu, 30 Jul 2009 00:19:42 -0400
+
 ceo (0.4.24) stable testing; urgency=low
 
   * Bump standards version.
