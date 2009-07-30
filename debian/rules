@@ -18,7 +18,7 @@ install: build
 	dh_testdir
 	dh_testroot
 	dh_installdirs
-	python setup.py -q install --no-compile -O0 --root=debian/ceo-gui
+	python setup.py -q install --no-compile -O0 --prefix=/usr --root=debian/ceo-gui
 	$(MAKE) -C src DESTDIR=$(CURDIR)/debian/ceo-clients PREFIX=/usr install_clients
 	$(MAKE) -C src DESTDIR=$(CURDIR)/debian/ceo-daemon PREFIX=/usr install_daemon
 
