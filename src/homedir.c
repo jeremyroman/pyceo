@@ -11,7 +11,23 @@
 #include "util.h"
 #include "config.h"
 
-int ceo_create_home(char *homedir, char *skel, uid_t uid, gid_t gid) {
+static int set_acl(char *dir, char *acl_text, acl_type_t type) {
+    acl_t acl = acl_from_text(acl_text);
+    if (acl == (acl_t)NULL) {
+        errorpe("acl_from_text: %s", acl_text);
+        return -1;
+    }
+    if (acl_set_file(dir, type, acl) != 0) {
+        errorpe("acl_set_file: %s %s 0x%X %p", acl_text, dir, (int)type, (void*)acl);
+        acl_free(acl);
+        return -1;
+    }
+    acl_free(acl);
+
+    return 0;
+}
+
+int ceo_create_home(char *homedir, char *skel, uid_t uid, gid_t gid, char *access_acl, char *default_acl) {
     int mask;
     DIR *skeldir;
     struct dirent *skelent;
@@ -22,6 +38,11 @@ int ceo_create_home(char *homedir, char *skel, uid_t uid, gid_t gid) {
         errorpe("failed to create %s", homedir);
         return -1;
     }
+
+    if (access_acl && set_acl(homedir, access_acl, ACL_TYPE_ACCESS) != 0)
+        return -1;
+    if (default_acl && set_acl(homedir, default_acl, ACL_TYPE_DEFAULT) != 0)
+        return -1;
 
     skeldir = opendir(skel);
     if (!skeldir) {

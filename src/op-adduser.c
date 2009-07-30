@@ -171,7 +171,7 @@ static int32_t addmember(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     else
         response_message(out, 0, "successfully created ldap group");
 
-    if ((home_stat = ceo_create_home(homedir, member_home_skel,  id, id)))
+    if ((home_stat = ceo_create_home(homedir, member_home_skel, id, id, NULL, NULL)))
         response_message(out, EHOME, "unable to create home directory for %s", in->username);
     else
         response_message(out, 0, "successfully created home directory");
@@ -182,15 +182,18 @@ static int32_t addmember(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
 
 static int32_t addclub(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     char homedir[1024];
+    char acl[64];
     int krb_stat, user_stat, group_stat, sudo_stat, home_stat;
     int id;
 
-    if (snprintf(homedir, sizeof(homedir), "%s/%s",
-                 club_home, in->username) >= sizeof(homedir))
+    if (snprintf(homedir, sizeof(homedir), "%s/%s", club_home, in->username) >= sizeof(homedir))
         fatal("homedir overflow");
 
     if ((id = ceo_new_uid(club_min_id, club_max_id)) <= 0)
         fatal("no available uids in range [%ld, %ld]", club_min_id, club_max_id);
+
+    if (snprintf(acl, sizeof(acl), CLUB_ACL, id) >= sizeof(acl))
+        fatal("acl overflow");
 
     if ((krb_stat = ceo_del_princ(in->username)))
         return response_message(out, EKERB, "unable to clear principal %s", in->username);
@@ -212,7 +215,7 @@ static int32_t addclub(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     else
         response_message(out, 0, "successfully created ldap sudoers");
 
-    if ((home_stat = ceo_create_home(homedir, club_home_skel, id, id)))
+    if ((home_stat = ceo_create_home(homedir, club_home_skel, id, id, acl, acl)))
         response_message(out, EHOME, "unable to create home directory for %s", in->username);
     else
         response_message(out, 0, "successfully created home directory");

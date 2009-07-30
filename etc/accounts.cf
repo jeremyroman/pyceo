@@ -6,7 +6,6 @@ member_min_id = 20001
 member_max_id = 29999
 member_shell = "/bin/bash"
 member_home = "/users"
-member_home_acl = "u::rwx,g::rx,o::rx"
 member_home_skel = "/users/skel"
 
 ### Club Account Options ###
@@ -15,7 +14,6 @@ club_min_id = 30001
 club_max_id = 39999
 club_shell = "/bin/bash"
 club_home = "/users"
-club_home_acl = "A+group:%s:rwpRAxaWdDcCs:fd:allow"
 club_home_skel = "/users/skel"
 
 ### Administrative Account Options ###
