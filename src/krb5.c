@@ -1,4 +1,5 @@
 #include <stdio.h>
+
 #include <krb5.h>
 #include <syslog.h>
 
@@ -34,36 +35,36 @@ void ceo_krb5_init() {
 
     set_com_err_hook(com_err_hk);
 
+    debug("krb5: initializing context");
+
     retval = krb5_init_context(&context);
     if (retval)
         com_err(prog, retval, "while initializing krb5");
 
-    retval = krb5_set_default_realm(context, realm);
+    retval = krb5_set_default_realm(context, krb5_realm);
     if (retval)
         com_err(prog, retval, "while setting default realm");
 }
 
-void ceo_krb5_auth(char *principal, char *ktname) {
+void ceo_krb5_auth(char *principal) {
     krb5_error_code retval;
     krb5_creds creds;
     krb5_principal princ;
-    krb5_keytab keytab;
     krb5_ccache cache;
     krb5_get_init_creds_opt options;
 
     krb5_get_init_creds_opt_init(&options);
     memset(&creds, 0, sizeof(creds));
 
+    debug("krb5: getting TGT using keytab for %s", principal);
+
     if ((retval = krb5_parse_name(context, principal, &princ)))
-        com_err(prog, retval, "while resolving user %s", admin_bind_userid);
+        com_err(prog, retval, "while resolving user %s", principal);
 
     if ((retval = krb5_cc_default(context, &cache)))
         com_err(prog, retval, "while resolving credentials cache");
 
-    if ((retval = krb5_kt_resolve(context, ktname, &keytab)))
-        com_err(prog, retval, "while resolving keytab %s", admin_bind_keytab);
-
-    if ((retval = krb5_get_init_creds_keytab(context, &creds, princ, keytab, 0, NULL, &options)))
+    if ((retval = krb5_get_init_creds_keytab(context, &creds, princ, NULL, 0, NULL, &options)))
         com_err(prog, retval, "while getting initial credentials");
 
     if ((retval = krb5_cc_initialize(context, cache, princ)))
@@ -73,7 +74,6 @@ void ceo_krb5_auth(char *principal, char *ktname) {
         com_err(prog, retval, "while storing credentials");
 
     krb5_free_cred_contents(context, &creds);
-    krb5_kt_close(context, keytab);
     krb5_free_principal(context, princ);
     krb5_cc_close(context, cache);
 }
@@ -81,6 +81,8 @@ void ceo_krb5_auth(char *principal, char *ktname) {
 void ceo_krb5_deauth() {
     krb5_error_code retval;
     krb5_ccache cache;
+
+    debug("krb5: destroying credentials");
 
     if ((retval = krb5_cc_default(context, &cache)))
         com_err(prog, retval, "while resolving credentials cache");
@@ -90,6 +92,7 @@ void ceo_krb5_deauth() {
 }
 
 void ceo_krb5_cleanup() {
+    debug("krb5: cleaning up");
     krb5_free_context(context);
 }
 

@@ -170,7 +170,7 @@ int ceo_add_group_sudo(char *group, char *basedn) {
     return ret;
 }
 
-int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, char *shell, int no, ...) {
+int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, char *principal, char *shell, int no, ...) {
     va_list args;
 
     if (!uid || !basedn || !cn || !home || !shell)
@@ -179,13 +179,19 @@ int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, 
     LDAPMod *mods[16];
     int i = -1;
     int ret = 0;
+    int classes = 4;
 
     mods[++i] = xmalloc(sizeof(LDAPMod));
     mods[i]->mod_op = LDAP_MOD_ADD;
     mods[i]->mod_type = "objectClass";
-    char *objectClasses[] = { "top", "account", "posixAccount", "shadowAccount", NULL, NULL };
+    char *objectClasses[] = { "top", "account", "posixAccount", "shadowAccount", NULL, NULL, NULL, NULL };
     if (objclass != NULL)
-        objectClasses[4] = objclass;
+        objectClasses[classes++] = objclass;
+    if (principal) {
+        objectClasses[classes++] = "krbPrincipalAux";
+        objectClasses[classes++] = "krbTicketPolicyAux";
+
+    }
     mods[i]->mod_values = objectClasses;
 
     mods[++i] = xmalloc(sizeof(LDAPMod));
@@ -224,6 +230,14 @@ int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, 
     mods[i]->mod_type = "homeDirectory";
     char *homeDirectory[] = { home, NULL };
     mods[i]->mod_values = homeDirectory;
+
+    if (principal) {
+        mods[++i] = xmalloc(sizeof(LDAPMod));
+        mods[i]->mod_op = LDAP_MOD_ADD;
+        mods[i]->mod_type = "krbPrincipalName";
+        char *krbPrincipalName[] = { principal, NULL };
+        mods[i]->mod_values = krbPrincipalName;
+    }
 
     va_start(args, no);
     char *attr;
@@ -277,7 +291,7 @@ int ceo_new_uid(int min, int max) {
             continue;
 
         snprintf(filter, sizeof(filter), "(|(uidNumber=%d)(gidNumber=%d))", i, i);
-        if (ldap_search_s(ld, users_base, LDAP_SCOPE_SUBTREE, filter, attrs, 1, &res) != LDAP_SUCCESS) {
+        if (ldap_search_s(ld, ldap_users_base, LDAP_SCOPE_SUBTREE, filter, attrs, 1, &res) != LDAP_SUCCESS) {
             ldap_err("firstuid");
             return -1;
         }
@@ -306,7 +320,7 @@ int ceo_user_exists(char *uid) {
 
     snprintf(filter, sizeof(filter), "uid=%s", uid);
 
-    if (ldap_search_s(ld, users_base, LDAP_SCOPE_SUBTREE, filter, attrs, 0, &msg) != LDAP_SUCCESS) {
+    if (ldap_search_s(ld, ldap_users_base, LDAP_SCOPE_SUBTREE, filter, attrs, 0, &msg) != LDAP_SUCCESS) {
         ldap_err("user_exists");
         return -1;
     }
@@ -328,7 +342,7 @@ int ceo_group_exists(char *cn) {
 
     snprintf(filter, sizeof(filter), "cn=%s", cn);
 
-    if (ldap_search_s(ld, groups_base, LDAP_SCOPE_SUBTREE, filter, attrs, 0, &msg) != LDAP_SUCCESS) {
+    if (ldap_search_s(ld, ldap_groups_base, LDAP_SCOPE_SUBTREE, filter, attrs, 0, &msg) != LDAP_SUCCESS) {
         ldap_err("group_exists");
         return -1;
     }
@@ -362,22 +376,18 @@ void ceo_ldap_init() {
     int proto = LDAP_DEFAULT_PROTOCOL;
     const char *sasl_mech = "GSSAPI";
 
-    if (!admin_bind_userid || !admin_bind_keytab)
+    if (!ldap_admin_principal)
         fatal("not configured");
 
-    if (ldap_initialize(&ld, server_url) != LDAP_SUCCESS)
+    if (ldap_initialize(&ld, ldap_server_url) != LDAP_SUCCESS)
         ldap_fatal("ldap_initialize");
 
     if (ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, &proto) != LDAP_OPT_SUCCESS)
         ldap_fatal("ldap_set_option");
 
-    ceo_krb5_auth(admin_bind_userid, admin_bind_keytab);
-
     if (ldap_sasl_interactive_bind_s(ld, NULL, sasl_mech, NULL, NULL,
                 LDAP_SASL_QUIET, &ldap_sasl_interact, NULL) != LDAP_SUCCESS)
         ldap_fatal("Bind failed");
-
-    ceo_krb5_deauth();
 }
 
 void ceo_ldap_cleanup() {

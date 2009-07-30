@@ -1,63 +1,43 @@
 #include <stdio.h>
 #include <unistd.h>
-#include <dirent.h>
-#include <limits.h>
-#include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/acl.h>
+#include <dirent.h>
+#include <pwd.h>
 #include <fcntl.h>
-#include <assert.h>
+
+#include "homedir.h"
 #include "util.h"
+#include "config.h"
 
-int main(int argc, char *argv[]) {
-    if(argc < 6) {
-        fprintf(stderr, "Usage: simpleaddhomedir homedir skeldir uid gid mode\n");
-        return 1;
-    }
-
-    char *homedir = argv[1];
-    char *skeldir = argv[2];
-    uid_t uid, gid;
-    char *mkdir_bin = "/bin/mkdir";
-    char *chmod_bin = "/bin/chmod";
-    char *dataset = homedir;
-    char *create_argv[] = { "mkdir", dataset, NULL };
-    char *mode_argv[] = { "chmod", "0755", homedir, NULL };
-    DIR *skel;
+int ceo_create_home(char *homedir, char *skel, uid_t uid, gid_t gid) {
+    int mask;
+    DIR *skeldir;
     struct dirent *skelent;
 
-    assert(homedir[0]);
-    uid = atol(argv[3]);
-    gid = atol(argv[4]);
+    mask = umask(0);
 
-    if (setreuid(0, 0))
-        fatalpe("ogawd");
-
-    if(spawnv(mkdir_bin, create_argv))
-        return 1;
-    //Quotas are ignored now, or so I'm told.
-    /* if(spawnv(zfs_bin, quota_argv)) */
-    /*     return 1; */
-    if(spawnv(chmod_bin, mode_argv))
-        return 1;
-    //Fuck ACLs.  The instructions I got didn't include them.
-    /* if(acl && spawnv(chmod_bin, acl_argv)) */
-    /*     return 1; */
-
-    skel = opendir(skeldir);
-    if (!skel) {
-        errorpe("failed to open %s", skeldir);
+    if (mkdir(homedir, 0755)) {
+        errorpe("failed to create %s", homedir);
         return -1;
     }
 
-    while ((skelent = readdir(skel))) {
+    skeldir = opendir(skel);
+    if (!skeldir) {
+        errorpe("failed to open %s", skel);
+        return -1;
+    }
+
+    while ((skelent = readdir(skeldir))) {
         struct stat sb;
         char src[PATH_MAX], dest[PATH_MAX];
 
         if (!strcmp(skelent->d_name, ".") || !strcmp(skelent->d_name, ".."))
             continue;
 
-        snprintf(src, sizeof(src), "%s/%s", skeldir, skelent->d_name);
-        snprintf(dest, sizeof(dest), "/%s/%s", homedir, skelent->d_name);
+        snprintf(src, sizeof(src), "%s/%s", skel, skelent->d_name);
+        snprintf(dest, sizeof(dest), "%s/%s", homedir, skelent->d_name);
         lstat(src, &sb);
 
         if (sb.st_uid || sb.st_gid) {
@@ -95,6 +75,7 @@ int main(int argc, char *argv[]) {
                     break;
                 }
             }
+
             if (fchown(destfd, uid, gid))
                 errorpe("chown: %s", dest);
 
@@ -127,12 +108,14 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    closedir(skel);
+    closedir(skeldir);
 
     if (chown(homedir, uid, gid)) {
         errorpe("failed to chown %s", homedir);
         return -1;
     }
+
+    umask(mask);
 
     return 0;
 }

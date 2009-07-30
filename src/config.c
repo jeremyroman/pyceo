@@ -54,7 +54,7 @@ void config_var(char *var, char *val) {
     }
 }
 
-void configure() {
+void configure(void) {
     int i;
     char conffile[1024];
 
@@ -77,6 +77,15 @@ void configure() {
                 break;
             default:
                 fatal("unknown config var type %d", config_vars[i].type);
+        }
+    }
+}
+
+void free_config(void) {
+    for (int i = 0; i < sizeof(config_vars)/sizeof(*config_vars); i++) {
+        if (config_vars[i].type == CONFIG_TYPE_STR) {
+            free(*(char **)config_vars[i].p);
+            *(char **)config_vars[i].p = NULL;
         }
     }
 }

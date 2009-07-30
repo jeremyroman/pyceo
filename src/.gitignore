@@ -3,5 +3,11 @@
 .nfs*
 /addmember
 /addclub
+/adduser
+/op-adduser
 /zfsaddhomedir
 /config-test
+/ceod
+/ceoc
+/ceo.pb-c.c
+/ceo.pb-c.h

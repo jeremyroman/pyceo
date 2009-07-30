@@ -12,19 +12,13 @@
 #include <syslog.h>
 
 #include "util.h"
-#include "common.h"
 #include "config.h"
 #include "ldap.h"
 #include "krb5.h"
 #include "kadm.h"
-#include "addhomedir.h"
+#include "ceo.pb-c.h"
 
 char *prog = NULL;
-char *user = NULL;
-int privileged = 0;
-
-static int force = 0;
-static int no_notify = 0;
 
 static int use_stdin = 0;
 
@@ -34,147 +28,77 @@ static char *program = NULL;
 static char password[1024];
 
 static struct option opts[] = {
-    { "force", 0, NULL, 'f' },
-    { "no-notify", 0, NULL, 'q' },
     { "stdin", 0, NULL, 's' },
     { NULL, 0, NULL, '\0' },
 };
+
+const char *default_lib_dir = "/usr/lib/ceod";
+const char *lib_dir;
 
 static void usage() {
     fprintf(stderr, "Usage: %s userid realname [program]\n", prog);
     exit(2);
 }
 
-int addmember() {
-    int krb_ok, user_ok, group_ok, home_ok;
-    int id;
-    char homedir[1024];
-    char acl_s[1024] = {0};
+int addmember(void) {
+    struct strbuf preq = STRBUF_INIT;
+    struct strbuf pret = STRBUF_INIT;
+    char cpath[1024];
+    char *cargv[] = { "ceoc", "adduser", NULL };
 
-    notice("adding uid=%s cn=%s program=%s by %s", userid, name, program, user);
-
-    if (setreuid(0, 0))
-        fatalpe("setreuid");
-    if (setregid(0, 0))
-        fatalpe("setregid");
-
-    if (!force && getpwnam(userid) != NULL)
-        deny("user %s already exists", userid);
-
-    snprintf(homedir, sizeof(homedir), "%s/%s", member_home, userid);
+    if (snprintf(cpath, sizeof(cpath), "%s/ceoc", lib_dir) >= sizeof(cpath))
+        fatal("path too long");
 
     if (ceo_read_password(password, sizeof(password), use_stdin))
         return 1;
 
-    ceo_krb5_init();
-    ceo_ldap_init();
-    ceo_kadm_init();
+    Ceo__AddUser req;
+    ceo__add_user__init(&req);
 
-    if (ceo_user_exists(userid))
-        deny("user %s already exists in LDAP", userid);
-    if (ceo_group_exists(userid))
-        deny("group %s already exists in LDAP", userid);
+    req.username = userid;
+    req.password = password;
+    req.program  = program;
+    req.realname = name;
+    req.type = CEO__ADD_USER__TYPE__MEMBER;
 
-    if ((id = ceo_new_uid(member_min_id, member_max_id)) <= 0)
-        fatal("no available uids in range [%zd, %zd]", member_min_id, member_max_id);
+    strbuf_grow(&preq, ceo__add_user__get_packed_size(&req));
+    strbuf_setlen(&preq, ceo__add_user__pack(&req, (uint8_t *)preq.buf));
 
-    if (*member_home_acl) {
-        snprintf(acl_s, sizeof(acl_s), member_home_acl, userid);
+    if (spawnvem(cpath, cargv, environ, &preq, &pret, 0))
+        return 1;
+
+    Ceo__AddUserResponse *ret = ceo__add_user_response__unpack(&protobuf_c_default_allocator,
+                                                               pret.len, (uint8_t *)pret.buf);
+    if (!ret)
+        fatal("failed to unpack response");
+
+    for (int i = 0; i < ret->n_messages; i++) {
+        if (ret->messages[i]->status)
+            error("%s", ret->messages[i]->message);
+        else
+            notice("%s", ret->messages[i]->message);
     }
 
-    krb_ok = ceo_del_princ(userid);
-    krb_ok = krb_ok || ceo_add_princ(userid, password);
-    if (!krb_ok)
-        notice("successfully created principal for %s", userid);
+    ceo__add_user_response__free_unpacked(ret, &protobuf_c_default_allocator);
+    strbuf_release(&preq);
+    strbuf_release(&pret);
 
-    user_ok = krb_ok || ceo_add_user(userid, users_base, "member", name, homedir,
-            member_shell, id, "program", program, NULL);
-    if (!user_ok)
-        notice("successfully created account for %s", userid);
-
-    group_ok = user_ok || ceo_add_group(userid, groups_base, id);
-    if (!group_ok)
-        notice("successfully created group for %s", userid);
-
-    home_ok = user_ok || ceo_create_home(homedir, refquota, id, id, homedir_mode, acl_s);
-    if (!home_ok)
-        notice("successfully created home directory for %s", userid);
-
-    notice("done uid=%s", userid);
-
-    if (!no_notify && !user_ok) {
-        int pid;
-        int hkp[2];
-        FILE *hkf;
-        int status;
-
-        if (pipe(hkp))
-            errorpe("pipe");
-
-        fflush(stdout);
-        fflush(stderr);
-
-        pid = fork();
-
-        if (!pid) {
-            fclose(stdout);
-            fclose(stderr);
-            close(hkp[1]);
-            dup2(hkp[0], 0);
-            exit(execl(notify_hook, notify_hook, prog, user, userid, name, program, NULL));
-        }
-
-        hkf = fdopen(hkp[1], "w");
-
-        if (group_ok)
-            fprintf(hkf, "failed to create group\n");
-        if (home_ok)
-            fprintf(hkf, "failed to create home directory\n");
-        if (!group_ok && !home_ok)
-            fprintf(hkf, "all failures went undetected\n");
-
-        fclose(hkf);
-
-        waitpid(pid, &status, 0);
-
-        if (WIFEXITED(status) && WEXITSTATUS(status))
-            notice("hook %s exited with status %d", notify_hook, WEXITSTATUS(status));
-        else if (WIFSIGNALED(status))
-            notice("hook %s killed by signal %d", notify_hook, WTERMSIG(status));
-    }
-
-    ceo_kadm_cleanup();
-    ceo_ldap_cleanup();
-    ceo_krb5_cleanup();
-
-    return krb_ok || user_ok || group_ok || home_ok;
+    return 0;
 }
 
 int main(int argc, char *argv[]) {
     int opt;
+    int ret;
 
-    prog = basename(argv[0]);
-    init_log(prog, LOG_PID, LOG_AUTHPRIV);
+    prog = xstrdup(basename(argv[0]));
+    init_log(prog, 0, LOG_AUTHPRIV);
 
     configure();
-
-    user = ceo_get_user();
-    privileged = ceo_get_privileged();
 
     while ((opt = getopt_long(argc, argv, "", opts, NULL)) != -1) {
         switch (opt) {
             case 's':
                 use_stdin = 1;
-                break;
-            case 'f':
-                if (!privileged)
-                    deny("not privileged enough to force");
-                force = 1;
-                break;
-            case 'q':
-                if (!privileged)
-                    deny("not privileged enough to suppress notifications");
-                no_notify = 1;
                 break;
             case '?':
                 usage();
@@ -193,5 +117,12 @@ int main(int argc, char *argv[]) {
     if (argc - optind)
         program = argv[optind++];
 
-    return addmember();
+    lib_dir = getenv("CEO_LIB_DIR") ?: default_lib_dir;
+
+    ret = addmember();
+
+    free_config();
+    free(prog);
+
+    return ret;
 }

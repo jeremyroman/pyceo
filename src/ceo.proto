@@ -1,0 +1,23 @@
+package ceo;
+
+message StatusMessage {
+  required int32 status = 1;
+  required string message = 2;
+}
+
+message AddUser {
+  enum Type {
+    MEMBER = 1;
+    CLUB = 2;
+  }
+
+  required Type type = 1;
+  required string username = 2;
+  optional string password = 3;
+  optional string realname = 4;
+  optional string program = 5;
+}
+
+message AddUserResponse {
+  repeated StatusMessage messages = 1;
+}

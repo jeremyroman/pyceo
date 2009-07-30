@@ -2,13 +2,32 @@ Source: ceo
 Section: admin
 Priority: optional
 Maintainer: Systems Committee <syscom@csclub.uwaterloo.ca>
-Build-Depends: debhelper (>= 5.0.0), python-dev (>= 2.4), python-support (>= 0.3), libkrb5-dev, libldap2-dev, libsasl2-dev
-Standards-Version: 3.8.0
+Build-Depends: debhelper (>= 5.0.0), python-dev (>= 2.4), python-support (>= 0.3), libkrb5-dev, libldap2-dev, libsasl2-dev, libsctp-dev, libprotobuf-c0-dev, libacl1-dev
+Standards-Version: 3.8.2
 
-Package: ceo
-Architecture: any
-Depends: python-sqlobject, python-psycopg, python-ldap, python-urwid, ${python:Depends}, ${shlibs:Depends}
-Description: Computer Science Club Administrative Utilities
+Package: ceo-common
+Architecture: all
+Description: Computer Science Club Common Files
  This package contains the CSC Electronic Office
- and other Computer Science Club administrative
- programs.
+ common files.
+
+Package: ceo-gui
+Architecture: all
+Depends: ceo-clients, python-ldap, python-urwid, python-sqlobject, python-psycopg, ${python:Depends}, ${shlibs:Depends}
+Description: Computer Science Club Administrative GUI
+ This package contains the CSC Electronic Office
+ graphical user interface.
+
+Package: ceo-clients
+Architecture: any
+Depends: ceo-common, ${shlibs:Depends}
+Description: Computer Science Club Administrative Clients
+ This package contains the CSC Electronic Office
+ client programs.
+
+Package: ceo-daemon
+Architecture: any
+Depends: ceo-common, ${shlibs:Depends}
+Description: Computer Science Club Administrative Daemon
+ This package contains the CSC Electronic Office
+ daemon.

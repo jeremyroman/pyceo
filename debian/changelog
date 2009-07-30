@@ -1,3 +1,8 @@
+ceo (0.4.24) stable testing; urgency=low
+
+  * Bump standards version.
+
+ -- Michael Spang <mspang@uwaterloo.ca>  Wed, 29 Jul 2009 07:31:24 -0400
 ceo (0.4.23) stable testing; urgency=low
 
   * CEO library now only finds books that are signed out as being overdue.
