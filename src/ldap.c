@@ -377,7 +377,6 @@ static int ldap_sasl_interact(LDAP *ld, unsigned flags, void *defaults, void *in
 
 void ceo_ldap_init() {
     int proto = LDAP_DEFAULT_PROTOCOL;
-    const char *sasl_mech = "GSSAPI";
 
     if (!ldap_admin_principal)
         fatal("not configured");
@@ -388,7 +387,7 @@ void ceo_ldap_init() {
     if (ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, &proto) != LDAP_OPT_SUCCESS)
         ldap_fatal("ldap_set_option");
 
-    if (ldap_sasl_interactive_bind_s(ld, NULL, sasl_mech, NULL, NULL,
+    if (ldap_sasl_interactive_bind_s(ld, NULL, ldap_sasl_mech, NULL, NULL,
                 LDAP_SASL_QUIET, &ldap_sasl_interact, NULL) != LDAP_SUCCESS)
         ldap_fatal("Bind failed");
 }
