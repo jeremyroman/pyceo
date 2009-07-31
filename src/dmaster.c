@@ -68,9 +68,9 @@ static void setup_signals(void) {
 }
 
 static void setup_daemon(void) {
-    if (chdir("/"))
-        fatalpe("chdir('/')");
     if (detach) {
+        if (chdir("/"))
+            fatalpe("chdir('/')");
         pid_t pid = fork();
         if (pid < 0)
             fatalpe("fork");
