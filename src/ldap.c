@@ -177,6 +177,7 @@ int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, 
         fatal("adduser: Invalid argument");
 
     LDAPMod *mods[16];
+    char *vals[16][2];
     int i = -1;
     int ret = 0;
     int classes = 4;
@@ -235,8 +236,9 @@ int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, 
         mods[++i] = xmalloc(sizeof(LDAPMod));
         mods[i]->mod_op = LDAP_MOD_ADD;
         mods[i]->mod_type = "krbPrincipalName";
-        char *krbPrincipalName[] = { principal, NULL };
-        mods[i]->mod_values = krbPrincipalName;
+        vals[i][0] = principal;
+        vals[i][1] = NULL;
+        mods[i]->mod_values = vals[i];
     }
 
     va_start(args, no);
@@ -255,8 +257,9 @@ int ceo_add_user(char *uid, char *basedn, char *objclass, char *cn, char *home, 
         mods[++i] = xmalloc(sizeof(LDAPMod));
         mods[i]->mod_op = LDAP_MOD_ADD;
         mods[i]->mod_type = attr;
-        char *vals[] = { val, NULL };
-        mods[i]->mod_values = vals;
+        vals[i][0] = val;
+        vals[i][1] = NULL;
+        mods[i]->mod_values = vals[i];
     }
 
     mods[++i] = NULL;
