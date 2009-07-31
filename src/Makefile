@@ -12,7 +12,7 @@ EXT_PROGS := config-test
 
 LDAP_OBJECTS   := ldap.o
 LDAP_LIBS      := -lldap
-LDAP_PROGS     := addmember addclub op-adduser
+LDAP_PROGS     := op-adduser
 KRB5_OBJECTS   := krb5.o kadm.o
 KRB5_LIBS      := $(shell krb5-config --libs krb5 kadm-client)
 KRB5_PROGS     := addmember addclub op-adduser
@@ -41,8 +41,11 @@ op-adduser.o addmember.o addclub.o: ceo.pb-c.h
 ceo.pb-c.c ceo.pb-c.h: ceo.proto
 	protoc-c --c_out=. ceo.proto
 
+%: %.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
 ceod: dmaster.o dslave.o
-	$(CC) $(LDFLAGS) $^ $(CFLAGS) $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 config-test: config-test.o parser.o
 
@@ -75,5 +78,4 @@ $(CONFIG_PROGS): $(CONFIG_OBJECTS)
 $(UTIL_PROGS):   LDLIBS += $(UTIL_LIBS)
 $(UTIL_PROGS):   $(UTIL_OBJECTS)
 
-.PHONY: clean all
-.SECONDARY: ceoc.o addmember.o addclub.o
+.PHONY: clean all install install_clients install_daemon
