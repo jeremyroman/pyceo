@@ -10,7 +10,7 @@ Future changes to the members database that need to be atomic
 must also be moved into this module.
 """
 import os, re, subprocess, ldap
-from ceo import conf, ldapi, terms
+from ceo import conf, ldapi, terms, remote, ceo_pb2
 from ceo.excep import InvalidArgument
 
 
@@ -65,16 +65,6 @@ class NoSuchMember(MemberException):
         self.memberid = memberid
     def __str__(self):
         return "Member not found: %d" % self.memberid
-
-class ChildFailed(MemberException):
-    def __init__(self, program, status, output):
-        MemberException.__init__(self)
-        self.program, self.status, self.output = program, status, output
-    def __str__(self):
-        msg = '%s failed with status %d' % (self.program, self.status)
-        if self.output:
-            msg += ': %s' % self.output
-        return msg
 
 
 ### Connection Management ###
@@ -146,21 +136,30 @@ def create_member(username, password, name, program):
         raise InvalidArgument("password", "<hidden>", "too short (minimum %d characters)" % cfg['min_password_length'])
 
     try:
-        args = [ "/usr/bin/addmember", "--stdin", username, name, program ]
-        addmember = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = addmember.communicate(password)
-        status = addmember.wait()
+        request = ceo_pb2.AddUser()
+        request.type = ceo_pb2.AddUser.MEMBER
+        request.username = username
+        request.password = password
+        request.realname = name
+        request.program = program
+
+        out = remote.run_remote('adduser', request.SerializeToString())
+
+        response = ceo_pb2.AddUserResponse()
+        response.ParseFromString(out)
+
+        if any(message.status != 0 for message in response.messages):
+            raise MemberException('\n'.join(message.message for message in response.messages))
 
         # # If the user was created, consider adding them to the mailing list
         # if not status:
         #     listadmin_cfg_file = "/path/to/the/listadmin/config/file"
         #     mail = subprocess.Popen(["/usr/bin/listadmin", "-f", listadmin_cfg_file, "--add-member", username + "@csclub.uwaterloo.ca"])
         #     status2 = mail.wait() # Fuck if I care about errors!
+    except remote.RemoteException, e:
+        raise MemberException(e)
     except OSError, e:
         raise MemberException(e)
-
-    if status:
-        raise ChildFailed("addmember", status, out+err)
 
 
 def get(userid):
@@ -388,15 +387,21 @@ def create_club(username, name):
         raise InvalidArgument("username", username, "expected format %s" % repr(cfg['username_regex']))
     
     try:
-        args = [ "/usr/bin/addclub", username, name ]
-        addclub = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = addclub.communicate()
-        status = addclub.wait()
+        request = ceo_pb2.AddUser()
+        request.type = ceo_pb2.AddUser.CLUB
+        request.username = username
+        request.realname = name
+        out = remote.run_remote('adduser', request.SerializeToString())
+
+        response = ceo_pb2.AddUserResponse()
+        response.ParseFromString(out)
+
+        if any(message.status != 0 for message in response.messages):
+            raise MemberException('\n'.join(message.message for message in response.messages))
+    except remote.RemoteException, e:
+        raise MemberException(e)
     except OSError, e:
         raise MemberException(e)
-
-    if status:
-        raise ChildFailed("addclub", status, out+err)
 
 
 
