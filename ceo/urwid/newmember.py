@@ -73,6 +73,10 @@ class InfoPage(WizardPanel):
             self.focus_widget( self.name )
             set_status("Name is too short")
             return True
+        elif self.state['userid'] == self.state['name']:
+            self.focus_widget(self.name)
+            set_status("Name matches username")
+            return True
         clear_status()
 
 class ClubInfoPage(WizardPanel):
@@ -96,6 +100,10 @@ class ClubInfoPage(WizardPanel):
         elif len( self.state['name'] ) < 4:
             self.focus_widget( self.name )
             set_status("Name is too short")
+            return True
+        elif self.state['userid'] == self.state['name']:
+            self.focus_widget(self.name)
+            set_status("Name matches username")
             return True
         clear_status()
 
