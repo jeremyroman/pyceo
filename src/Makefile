@@ -31,7 +31,7 @@ CONFIG_PROGS   := $(LDAP_PROGS) $(KRB5_PROGS) $(NET_PROGS)
 UTIL_OBJECTS   := util.o strbuf.o
 UTIL_PROGS     := config-test $(CONFIG_PROGS)
 
-all: $(BIN_PROGS) $(LIB_PROGS) $(EXT_PROGS)
+all: $(BIN_PROGS) $(LIB_PROGS) $(EXT_PROGS) ../ceo/ceo_pb2.py
 
 clean:
 	rm -f $(BIN_PROGS) $(LIB_PROGS) $(EXT_PROGS) *.o ceo.pb-c.c ceo.pb-c.h
@@ -43,6 +43,9 @@ ceo.pb-c.c ceo.pb-c.h: ceo.proto
 
 %: %.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+../ceo/ceo_pb2.py:
+	protoc --python_out=../ceo ceo.proto
 
 ceod: dmaster.o dslave.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
