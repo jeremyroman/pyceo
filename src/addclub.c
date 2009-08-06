@@ -40,6 +40,7 @@ int addclub(void) {
     struct strbuf pret = STRBUF_INIT;
     char cpath[1024];
     char *cargv[] = { "ceoc", "adduser", NULL };
+    int ret = 0;
 
     if (snprintf(cpath, sizeof(cpath), "%s/ceoc", lib_dir) >= sizeof(cpath))
         fatal("path too long");
@@ -57,23 +58,25 @@ int addclub(void) {
     if (spawnvem(cpath, cargv, environ, &preq, &pret, 0))
         return 1;
 
-    Ceo__AddUserResponse *ret = ceo__add_user_response__unpack(&protobuf_c_default_allocator,
+    Ceo__AddUserResponse *resp = ceo__add_user_response__unpack(&protobuf_c_default_allocator,
                                                                pret.len, (uint8_t *)pret.buf);
-    if (!ret)
+    if (!resp)
         fatal("failed to unpack response");
 
-    for (int i = 0; i < ret->n_messages; i++) {
-        if (ret->messages[i]->status)
-            error("%s", ret->messages[i]->message);
-        else
-            notice("%s", ret->messages[i]->message);
+    for (int i = 0; i < resp->n_messages; i++) {
+        if (resp->messages[i]->status) {
+            ret = -1;
+            error("%s", resp->messages[i]->message);
+        } else {
+            notice("%s", resp->messages[i]->message);
+        }
     }
 
-    ceo__add_user_response__free_unpacked(ret, &protobuf_c_default_allocator);
+    ceo__add_user_response__free_unpacked(resp, &protobuf_c_default_allocator);
     strbuf_release(&preq);
     strbuf_release(&pret);
 
-    return 0;
+    return ret;
 }
 
 int main(int argc, char *argv[]) {
