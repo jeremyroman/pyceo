@@ -59,7 +59,7 @@ def new_member(*args, **kwargs):
         newmember.SignPage,
         newmember.PassPage,
         newmember.EndPage,
-    ])
+    ], (60, 15))
 
 def new_club(*args, **kwargs):
     push_wizard("New Club Account", [

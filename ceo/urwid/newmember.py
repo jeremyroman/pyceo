@@ -52,13 +52,17 @@ class InfoPage(WizardPanel):
         self.name = SingleEdit("Full name: ")
         self.program = SingleEdit("Program of Study: ")
         self.userid = LdapFilterWordEdit(uwldap.uri(), uwldap.base(), 'uid',
-            {'cn':self.name, 'ou':self.program}, "UWuserid: ")
+            {'cn':self.name, 'ou':self.program}, "Username: ")
         self.widgets = [
-            urwid.Text( "Member Information - Please Check ID" ),
+            urwid.Text( "Member Information" ),
             urwid.Divider(),
             self.userid,
             self.name,
             self.program,
+            urwid.Divider(),
+            urwid.Text("Notes:"),
+            urwid.Text("- Make sure to check ID (watcard, drivers license)"),
+            urwid.Text("- Make sure to use UW userids for current students\n  (we check uwldap to see if you are a full member)"),
         ]
     def check(self):
         self.state['userid'] = self.userid.get_edit_text()
