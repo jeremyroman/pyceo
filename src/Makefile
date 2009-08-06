@@ -44,7 +44,7 @@ ceo.pb-c.c ceo.pb-c.h: ceo.proto
 %: %.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-../ceo/ceo_pb2.py:
+../ceo/ceo_pb2.py: ceo.proto
 	protoc --python_out=../ceo ceo.proto
 
 ceod: dmaster.o dslave.o
