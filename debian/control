@@ -13,7 +13,7 @@ Description: Computer Science Club Common Files
 
 Package: ceo-gui
 Architecture: all
-Depends: ceo-clients, python-ldap, python-urwid, python-sqlobject, python-psycopg, ${python:Depends}, ${shlibs:Depends}
+Depends: ceo-clients, python-ldap, python-urwid, python-sqlobject, python-protobuf, python-psycopg, ${python:Depends}, ${shlibs:Depends}
 Description: Computer Science Club Administrative GUI
  This package contains the CSC Electronic Office
  graphical user interface.
