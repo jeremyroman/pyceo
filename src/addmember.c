@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
     int ret;
 
     prog = xstrdup(basename(argv[0]));
-    init_log(prog, LOG_PID, LOG_AUTHPRIV);
+    init_log(prog, LOG_PID, LOG_AUTHPRIV, 1);
 
     configure();
 

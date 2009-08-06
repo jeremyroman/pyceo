@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
     int ret;
 
     prog = xstrdup(basename(argv[0]));
-    init_log(prog, LOG_PID, LOG_DAEMON);
+    init_log(prog, LOG_PID, LOG_DAEMON, 0);
 
     configure();
 

@@ -14,9 +14,9 @@
 
 static int log_stderr = 1;
 
-void init_log(const char *ident, int option, int facility) {
+void init_log(const char *ident, int option, int facility, int lstderr) {
     openlog(ident, option, facility);
-    log_stderr = isatty(STDERR_FILENO);
+    log_stderr = lstderr || isatty(STDERR_FILENO);
 }
 
 static void errmsg(int prio, const char *prefix, const char *fmt, va_list args) {

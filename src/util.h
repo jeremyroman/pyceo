@@ -33,7 +33,7 @@ ssize_t full_read(int fd, void *buf, size_t len);
 FILE *fopenat(DIR *d, const char *path, int flags);
 void make_env(char **envp, ...);
 void free_env(char **envp);
-void init_log(const char *ident, int option, int facility);
+void init_log(const char *ident, int option, int facility, int lstderr);
 int check_group(char *username, char *group);
 
 PRINTF_LIKE(0) NORETURN void fatal(const char *, ...);

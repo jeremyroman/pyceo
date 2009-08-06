@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
     char *op;
 
     prog = xstrdup(basename(argv[0]));
-    init_log(prog, LOG_PID, LOG_USER);
+    init_log(prog, LOG_PID, LOG_USER, 1);
 
     configure();
     setup_ops();
