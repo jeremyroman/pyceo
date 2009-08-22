@@ -12,9 +12,8 @@ def start():
         library.configure() 
         print "read."
         
-        print "Connecting to LDAP...",
+        print "Connecting to LDAP..."
         members.connect(AuthCallback())
-        print "connected."
 
         if len(sys.argv) == 1:
           ceo.urwid.main.start()
@@ -30,7 +29,7 @@ def start():
 class AuthCallback:
     def callback(self, error):
         try:
-            sys.stderr.write("Password: ")
+            print "Password: ",
             return getpass("")
         except KeyboardInterrupt:
             print ""
