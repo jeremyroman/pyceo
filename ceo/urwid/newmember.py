@@ -1,4 +1,4 @@
-import ldap, urwid
+import ldap, urwid #, re
 from ceo import members, terms, uwldap
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
@@ -51,7 +51,8 @@ class InfoPage(WizardPanel):
     def init_widgets(self):
         self.name = SingleEdit("Full name: ")
         self.program = SingleEdit("Program of Study: ")
-        self.userid = LdapFilterWordEdit(uwldap.uri(), uwldap.base(), 'uid',
+     	self.email = SingleEdit("Email: ")
+	self.userid = LdapFilterWordEdit(uwldap.uri(), uwldap.base(), 'uid',
             {'cn':self.name, 'ou':self.program}, "Username: ")
         self.widgets = [
             urwid.Text( "Member Information" ),
@@ -59,6 +60,7 @@ class InfoPage(WizardPanel):
             self.userid,
             self.name,
             self.program,
+            self.email,
             urwid.Divider(),
             urwid.Text("Notes:"),
             urwid.Text("- Make sure to check ID (watcard, drivers license)"),
@@ -68,7 +70,7 @@ class InfoPage(WizardPanel):
         self.state['userid'] = self.userid.get_edit_text()
         self.state['name'] = self.name.get_edit_text()
         self.state['program'] = self.program.get_edit_text()
-
+	self.state['email'] = self.email.get_edit_text()
         if len( self.state['userid'] ) < 3:
             self.focus_widget( self.userid )
             set_status("Username is too short")
@@ -173,10 +175,10 @@ class EndPage(WizardPanel):
         problem = None
         try:
             if self.utype == 'member':
-                members.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'] )
+                members.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'], self.state['email'] )
                 members.register( self.state['userid'], terms.current() )
             elif self.utype == 'clubuser':
-                members.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'] )
+                members.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'], self.state['email'] )
                 members.register_nonmember( self.state['userid'], terms.current() )
             elif self.utype == 'club':
                 members.create_club( self.state['userid'], self.state['name'] )

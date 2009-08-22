@@ -16,6 +16,7 @@ message AddUser {
   optional string password = 3;
   optional string realname = 4;
   optional string program = 5;
+  optional string email = 6;
 }
 
 message AddUserResponse {

@@ -109,7 +109,7 @@ def connected():
 
 ### Members ###
 
-def create_member(username, password, name, program):
+def create_member(username, password, name, program, email):
     """
     Creates a UNIX user account with options tailored to CSC members.
 
@@ -118,6 +118,7 @@ def create_member(username, password, name, program):
         password - the desired UNIX password
         name     - the member's real name
         program  - the member's program of study
+	email	 - email to place in .forward
 
     Exceptions:
         InvalidArgument - on bad account attributes provided
@@ -142,6 +143,7 @@ def create_member(username, password, name, program):
         request.password = password
         request.realname = name
         request.program = program
+	request.email = email
 
         out = remote.run_remote('adduser', request.SerializeToString())
 
@@ -391,6 +393,7 @@ def create_club(username, name):
         request.type = ceo_pb2.AddUser.CLUB
         request.username = username
         request.realname = name
+
         out = remote.run_remote('adduser', request.SerializeToString())
 
         response = ceo_pb2.AddUserResponse()
