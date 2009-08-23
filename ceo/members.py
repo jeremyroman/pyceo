@@ -9,7 +9,7 @@ Transactions are used in each method that modifies the database.
 Future changes to the members database that need to be atomic
 must also be moved into this module.
 """
-import os, re, subprocess, ldap
+import os, re, subprocess, ldap, socket
 from ceo import conf, ldapi, terms, remote, ceo_pb2
 from ceo.excep import InvalidArgument
 
@@ -158,6 +158,54 @@ def create_member(username, password, name, program, email):
         #     listadmin_cfg_file = "/path/to/the/listadmin/config/file"
         #     mail = subprocess.Popen(["/usr/bin/listadmin", "-f", listadmin_cfg_file, "--add-member", username + "@csclub.uwaterloo.ca"])
         #     status2 = mail.wait() # Fuck if I care about errors!
+    except remote.RemoteException, e:
+        raise MemberException(e)
+    except OSError, e:
+        raise MemberException(e)
+
+
+def check_email(email):
+    match = re.match('^\S+?@(\S+)$', email)
+    if not match:
+        return 'Invalid email address'
+
+    # some characters are treated specially in .forward
+    for c in email:
+        if c in ('"', "'", ',', '|', '$', '/', '#', ':'):
+            return 'Invalid character in address: %s' % c
+
+    host = match.group(1)
+    try:
+        ip = socket.gethostbyname(host)
+    except:
+        return 'Invalid host: %s' % host
+
+
+def current_email(username):
+    fwdpath = '%s/%s/.forward' % (cfg['member_home'], username)
+    try:
+        fwd = open(fwdpath).read().strip()
+        if not check_email(fwd):
+            return fwd
+    except OSError:
+        pass
+    except IOError:
+        pass
+
+
+def change_email(username, forward):
+    try:
+        request = ceo_pb2.UpdateMail()
+        request.username = username
+        request.forward = forward
+
+        out = remote.run_remote('mail', request.SerializeToString())
+
+        response = ceo_pb2.AddUserResponse()
+        response.ParseFromString(out)
+
+        if any(message.status != 0 for message in response.messages):
+            return '\n'.join(message.message for message in response.messages)
     except remote.RemoteException, e:
         raise MemberException(e)
     except OSError, e:

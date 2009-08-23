@@ -87,15 +87,19 @@ def renew_member(*args, **kwargs):
     push_wizard("Renew Membership", [
         renew.IntroPage,
         renew.UserPage,
+        renew.EmailPage,
+        renew.EmailDonePage,
         renew.TermPage,
         renew.PayPage,
         renew.EndPage,
-    ])
+    ], (60, 15))
 
 def renew_club_user(*args, **kwargs):
     push_wizard("Renew Club Rep Account", [
         renew.ClubUserIntroPage,
         renew.UserPage,
+        renew.EmailPage,
+        renew.EmailDonePage,
         (renew.TermPage, "clubuser"),
         (renew.EndPage, "clubuser"),
     ], (60, 15))

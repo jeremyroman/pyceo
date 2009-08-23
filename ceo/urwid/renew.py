@@ -49,6 +49,84 @@ class UserPage(WizardPanel):
             self.focus_widget(self.userid)
             return True
 
+class EmailPage(WizardPanel):
+    def init_widgets(self):
+        self.email = SingleEdit("Email: ")
+
+        self.widgets = [
+            urwid.Text( "Mail Forwarding" ),
+            urwid.Divider(),
+            urwid.Text("Please ensure the forwarding address for "
+                       "your CSC email is up to date."),
+            urwid.Divider(),
+            urwid.Text("Warning: Changing this overwrites ~/.forward"),
+            urwid.Divider(),
+            self.email,
+        ]
+    def activate(self):
+        cfwd = members.current_email(self.state['userid'])
+        self.state['old_forward'] = cfwd if cfwd else ''
+        self.email.set_edit_text(self.state['old_forward'])
+    def check(self):
+        fwd = self.email.get_edit_text().strip().lower()
+        if fwd:
+            msg = members.check_email(fwd)
+            if msg:
+                set_status(msg)
+                return True
+            if fwd == '%s@csclub.uwaterloo.ca' % self.state['userid']:
+                set_status('You cannot forward your address to itself. Leave it blank to disable forwarding.')
+                return True
+        self.state['new_forward'] = fwd
+
+class EmailDonePage(WizardPanel):
+    def init_widgets(self):
+        self.status = urwid.Text("")
+        self.widgets = [
+            urwid.Text("Mail Forwarding"),
+            urwid.Divider(),
+            self.status,
+        ]
+    def focusable(self):
+        return False
+    def activate(self):
+        if self.state['old_forward'] == self.state['new_forward']:
+            if self.state['old_forward']:
+                self.status.set_text(
+                    'You have chosen to leave your forwarding address '
+                    'as %s. Make sure to check this email for updates '
+                    'from the CSC.' % self.state['old_forward'])
+            else:
+                self.status.set_text(
+                    'You have chosen not to set a forwarding address. '
+                    'Please check your CSC email regularly (via IMAP, POP, or locally) '
+                    'for updates from the CSC.'
+                    '\n\n'
+                    'Note: If you do have a ~/.forward, we were not able to read it or '
+                    'it was not a single email address. Do not worry, we have left it '
+                    'as is.')
+        else:
+            try:
+                msg = members.change_email(self.state['userid'], self.state['new_forward'])
+                if msg:
+                    self.status.set_text("Errors occured updating your forwarding address:"
+                                         "\n\n%s" % msg)
+                else:
+                    if self.state['new_forward']:
+                        self.status.set_text(
+                            'Your email forwarding address has been successfully set '
+                            'to %s. Test it out by emailing %s@csclub.uwaterloo.ca and '
+                            'making sure you receive it at your forwarding address.'
+                            % (self.state['new_forward'], self.state['userid']))
+                    else:
+                        self.status.set_text(
+                            'Your email forwarding address has been successfully cleared. '
+                            'Please check your CSC email regularly (via IMAP, POP, or locally) '
+                            'for updates from the CSC.')
+            except Exception, e:
+                self.status.set_text(
+                    'An exception occured updating your email:\n\n%s' % e)
+
 class TermPage(WizardPanel):
     def __init__(self, state, utype='member'):
         self.utype = utype
