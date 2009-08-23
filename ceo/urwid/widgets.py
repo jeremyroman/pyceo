@@ -11,6 +11,16 @@ def make_menu(items):
     items = [ urwid.AttrWrap( ButtonText( cb, data, txt ), 'menu', 'selected') for (txt, cb, data) in items ]
     return urwid.ListBox( items )
 
+def labelled_menu(itemses):
+    widgets = []
+    for label, items in itemses:
+        if label:
+            widgets.append(urwid.Text(label))
+        widgets += (urwid.AttrWrap(ButtonText(cb, data, txt), 'menu', 'selected') for (txt, cb, data) in items)
+        widgets.append(urwid.Divider())
+    widgets.pop()
+    return urwid.ListBox(widgets)
+
 def push_wizard(name, pages, dimensions=(50, 10)):
     state = {}
     wiz = Wizard()

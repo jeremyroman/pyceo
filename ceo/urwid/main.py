@@ -1,4 +1,4 @@
-import sys, random, urwid.curses_display
+import os, grp, pwd, sys, random, urwid.curses_display
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 from ceo.urwid import newmember, renew, info, search, positions, groups, \
@@ -143,26 +143,60 @@ def change_shell(data):
         shell.EndPage
     ], (50, 20))
 
-def run():
-    menu = make_menu([
+def check_group(group):
+    try:
+        me = pwd.getpwuid(os.getuid()).pw_name
+        return me in grp.getgrnam(group).gr_mem
+    except KeyError:
+        pass
+
+def top_menu():
+    office_only = [
         ("New Member", new_member, None),
         ("New Club Rep", new_club_user, None),
         ("Renew Membership", renew_member, None),
         ("Renew Club Rep", renew_club_user, None),
         ("New Club", new_club, None),
-        ("Display Member", display_member, None),
-        ("Change Shell", change_shell, None),
-        ("Search", search_members, None),
+        ("Library", library.library, None),
+        ("Databases", databases.databases, None),
+    ]
+    syscom_only = [
         ("Manage Club or Group Members", manage_group, None),
         ("Manage Positions", manage_positions, None),
         ("Manage Office Staff", groups.group_members, office_data),
         ("Manage Systems Committee", groups.group_members, syscom_data),
-        ("Library", library.library, None),
-        ("Databases", databases.databases, None),
+    ]
+    unrestricted = [
+        ("Display Member", display_member, None),
+        ("Change Shell", change_shell, None),
+        ("Search", search_members, None),
+    ]
+    footer = [
         ("Exit", raise_abort, None),
-    ])
-    push_window( menu, program_name() )
-    event_loop( ui )
+    ]
+    menu = None
+
+    # reorder the menu for convenience
+    if not check_group('office') and not check_group('syscom'):
+        menu = labelled_menu([
+            ('Unrestricted', unrestricted),
+            ('Office Staff', office_only),
+            ('Systems Committee', syscom_only),
+            (None, footer)
+        ])
+    else:
+        menu = labelled_menu([
+            ('Office Staff', office_only),
+            ('Unrestricted', unrestricted),
+            ('Systems Committee', syscom_only),
+            (None, footer)
+        ])
+
+    return menu
+
+def run():
+    push_window(top_menu(), program_name())
+    event_loop(ui)
 
 def start():
     ui.run_wrapper( run )
