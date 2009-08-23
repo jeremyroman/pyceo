@@ -7,7 +7,7 @@ DESTDIR :=
 PREFIX  := /usr/local
 
 BIN_PROGS := addmember addclub ceod
-LIB_PROGS := ceoc op-adduser
+LIB_PROGS := ceoc op-adduser op-mail
 EXT_PROGS := config-test
 
 LDAP_OBJECTS   := ldap.o
@@ -24,10 +24,10 @@ NET_LIBS       := -lsctp $(shell krb5-config --libs gssapi)
 NET_PROGS      := ceod ceoc
 PROTO_OBJECTS  := ceo.pb-c.o
 PROTO_LIBS     := -lprotobuf-c
-PROTO_PROGS    := op-adduser addmember addclub
+PROTO_PROGS    := op-adduser op-mail addmember addclub
 CONFIG_OBJECTS := config.o parser.o
 CONFIG_LIBS    :=
-CONFIG_PROGS   := $(LDAP_PROGS) $(KRB5_PROGS) $(NET_PROGS)
+CONFIG_PROGS   := $(LDAP_PROGS) $(KRB5_PROGS) $(NET_PROGS) $(PROTO_PROGS)
 UTIL_OBJECTS   := util.o strbuf.o
 UTIL_PROGS     := config-test $(CONFIG_PROGS)
 
@@ -63,6 +63,7 @@ install_daemon:
 	install -d $(DESTDIR)$(PREFIX)/sbin $(DESTDIR)$(PREFIX)/lib/ceod
 	install ceod $(DESTDIR)$(PREFIX)/sbin
 	install op-adduser $(DESTDIR)$(PREFIX)/lib/ceod
+	install op-mail $(DESTDIR)$(PREFIX)/lib/ceod
 
 install: install_clients install_daemon
 

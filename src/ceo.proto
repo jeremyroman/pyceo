@@ -22,3 +22,12 @@ message AddUser {
 message AddUserResponse {
   repeated StatusMessage messages = 1;
 }
+
+message UpdateMail {
+  required string username = 1;
+  optional string forward = 2;
+}
+
+message UpdateMailResponse {
+  repeated StatusMessage messages = 1;
+}

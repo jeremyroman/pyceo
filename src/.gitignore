@@ -5,6 +5,7 @@
 /addclub
 /adduser
 /op-adduser
+/op-mail
 /zfsaddhomedir
 /config-test
 /ceod

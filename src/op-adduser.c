@@ -42,6 +42,7 @@ Ceo__AddUserResponse *response_create(void) {
     return r;
 }
 
+PRINTF_LIKE(2)
 int32_t response_message(Ceo__AddUserResponse *r, int32_t status, char *fmt, ...) {
     va_list args;
     Ceo__StatusMessage *statusmsg = xmalloc(sizeof(Ceo__StatusMessage));
