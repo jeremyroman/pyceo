@@ -21,7 +21,7 @@ def configure():
     """
     Load configuration
     """
-    cfg_fields = [ "aws_account_key" ]
+    cfg_fields = [ "aws_account_key", "aws_secret_key" ]
     temp_cfg = conf.read(CONFIG_FILE)
     conf.check_string_fields(CONFIG_FILE, cfg_fields, temp_cfg)
     cfg.update(temp_cfg)
@@ -127,7 +127,7 @@ class BookAddPage(WizardPanel):
         isbn = self.isbn.get_edit_text()
 
         try:
-            pymazon = PyMazon(cfg["aws_account_key"])
+            pymazon = PyMazon(cfg["aws_account_key"], cfg["aws_secret_key"])
             book = pymazon.lookup(isbn)
 
             currents = lib.Book.select(lib.Book.q.isbn==isbn)

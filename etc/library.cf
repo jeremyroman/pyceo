@@ -2,3 +2,4 @@
 
 library_connect_string = "postgres://librarian:PWPWPWPWPWPWPWPWPWPW@127.0.0.1/library"
 aws_account_key = "KEYKEYKEYKEYKEYKEYKY"
+aws_secret_key = "KEYKEYKEYKEYKEYKEYKY"
