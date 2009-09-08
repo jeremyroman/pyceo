@@ -35,6 +35,7 @@ void make_env(char **envp, ...);
 void free_env(char **envp);
 void init_log(const char *ident, int option, int facility, int lstderr);
 int check_group(char *username, char *group);
+void log_set_maxprio(int prio);
 
 PRINTF_LIKE(0) NORETURN void fatal(const char *, ...);
 PRINTF_LIKE(0) NORETURN void fatalpe(const char *, ...);

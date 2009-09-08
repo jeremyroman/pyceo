@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <netdb.h>
 #include <alloca.h>
+#include <fcntl.h>
 
 #include "util.h"
 #include "net.h"
@@ -22,6 +23,7 @@
 
 static struct option opts[] = {
     { "detach", 0, NULL, 'd' },
+    { "quiet", 0, NULL, 'q' },
     { NULL, 0, NULL, '\0' },
 };
 
@@ -67,6 +69,25 @@ static void setup_signals(void) {
     signal(SIGCHLD, SIG_IGN);
 }
 
+static void setup_pidfile(void) {
+    int fd;
+    size_t pidlen;
+    char pidbuf[1024];
+    const char *pidfile = "/var/run/ceod.pid";
+
+    fd = open(pidfile, O_CREAT|O_RDWR, 0644);
+    if (fd < 0)
+        fatalpe("open: %s", pidfile);
+    if (lockf(fd, F_TLOCK, 0))
+        fatalpe("lockf: %s", pidfile);
+    if (ftruncate(fd, 0))
+        fatalpe("ftruncate: %s", pidfile);
+    pidlen = snprintf(pidbuf, sizeof(pidbuf), "%d\n", getpid());
+    if (pidlen >= sizeof(pidbuf))
+        fatal("pid too long");
+    full_write(fd, pidbuf, pidlen);
+}
+
 static void setup_daemon(void) {
     if (detach) {
         if (chdir("/"))
@@ -78,6 +99,9 @@ static void setup_daemon(void) {
             exit(0);
         if (setsid() < 0)
             fatalpe("setsid");
+
+        setup_pidfile();
+
         close(STDIN_FILENO);
         close(STDOUT_FILENO);
         close(STDERR_FILENO);
@@ -131,11 +155,11 @@ static int master_main(void) {
     if (listen(sock, 128))
         fatalpe("listen");
 
-    setup_daemon();
     setup_fqdn();
     setup_signals();
     setup_auth();
     setup_ops();
+    setup_daemon();
 
     notice("now accepting connections");
 
@@ -156,12 +180,13 @@ int main(int argc, char *argv[]) {
     prog = xstrdup(basename(argv[0]));
     init_log(prog, LOG_PID, LOG_DAEMON, 0);
 
-    configure();
-
-    while ((opt = getopt_long(argc, argv, "", opts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "dq", opts, NULL)) != -1) {
         switch (opt) {
             case 'd':
                 detach = 1;
+                break;
+            case 'q':
+                log_set_maxprio(LOG_WARNING);
                 break;
             case '?':
                 usage();
@@ -170,6 +195,8 @@ int main(int argc, char *argv[]) {
                 fatal("error parsing arguments");
         }
     }
+
+    configure();
 
     if (argc != optind)
         usage();

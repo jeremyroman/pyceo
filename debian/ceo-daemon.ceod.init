@@ -1,0 +1,55 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:		ceod
+# Required-Start:	$remote_fs $syslog $network
+# Required-Stop:	$remote_fs $syslog $network
+# Default-Start:	2 3 4 5
+# Default-Stop:		0 1 6
+# Short-Description:	CEO Daemon
+### END INIT INFO
+
+set -e
+
+test -x /usr/sbin/ceod || exit 0
+
+. /lib/lsb/init-functions
+
+case "$1" in
+  start)
+	log_daemon_msg "Starting CEO Daemon" "ceod"
+	if start-stop-daemon --start --quiet --oknodo --pidfile /var/run/ceod.pid --exec /usr/sbin/ceod -- -dq; then
+	    log_end_msg 0
+	else
+	    log_end_msg 1
+	fi
+	;;
+  stop)
+	log_daemon_msg "Stopping CEO Daemon" "ceod"
+	if start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/ceod.pid; then
+	    log_end_msg 0
+	else
+	    log_end_msg 1
+	fi
+	;;
+
+  restart|force-reload)
+	log_daemon_msg "Restarting CEO Daemon" "ceod"
+	start-stop-daemon --stop --quiet --oknodo --retry 30 --pidfile /var/run/ceod.pid
+	if start-stop-daemon --start --quiet --oknodo --pidfile /var/run/ceod.pid --exec /usr/sbin/ceod -- -dq; then
+	    log_end_msg 0
+	else
+	    log_end_msg 1
+	fi
+	;;
+
+  status)
+	status_of_proc -p /var/run/ceod.pid /usr/sbin/ceod ceod && exit 0 || exit $?
+	;;
+
+  *)
+	log_action_msg "Usage: /etc/init.d/ceod {start|stop|force-reload|restart|status}"
+	exit 1
+esac
+
+exit 0

@@ -13,10 +13,15 @@
 #include "strbuf.h"
 
 static int log_stderr = 1;
+static int log_maxprio = LOG_DEBUG;
 
 void init_log(const char *ident, int option, int facility, int lstderr) {
     openlog(ident, option, facility);
     log_stderr = lstderr || isatty(STDERR_FILENO);
+}
+
+void log_set_maxprio(int prio) {
+    log_maxprio = prio;
 }
 
 static void errmsg(int prio, const char *prefix, const char *fmt, va_list args) {
@@ -27,7 +32,7 @@ static void errmsg(int prio, const char *prefix, const char *fmt, va_list args) 
     strbuf_addch(&msg, '\n');
 
     syslog(prio, "%s", msg.buf);
-    if (log_stderr)
+    if (log_stderr && prio <= log_maxprio)
         fputs(msg.buf, stderr);
 
     strbuf_release(&msg);
@@ -41,7 +46,7 @@ static void errmsgpe(int prio, const char *prefix, const char *fmt, va_list args
     strbuf_addf(&msg, ": %s\n", strerror(errno));
 
     syslog(prio, "%s", msg.buf);
-    if (log_stderr)
+    if (log_stderr && prio <= log_maxprio)
         fputs(msg.buf, stderr);
 
     strbuf_release(&msg);
@@ -98,7 +103,7 @@ void logmsg(int priority, const char *msg, ...) {
     vsyslog(priority, msg, args);
     va_end(args);
     va_start(args, msg);
-    if (log_stderr) {
+    if (log_stderr && priority <= log_maxprio) {
         vfprintf(stderr, msg, args);
         fputc('\n', stderr);
     }
