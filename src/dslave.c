@@ -100,6 +100,9 @@ static void handle_op_message(uint32_t in_type, struct strbuf *in, struct strbuf
     if (spawnvem(op->path, argv, envp, in, out, 0))
         fatal("child %s failed", op->path);
 
+    if (!out->len)
+        fatal("no response from op");
+
     free_env(envp);
 }
 

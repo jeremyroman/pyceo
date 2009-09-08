@@ -102,9 +102,9 @@ static void setup_daemon(void) {
 
         setup_pidfile();
 
-        close(STDIN_FILENO);
-        close(STDOUT_FILENO);
-        close(STDERR_FILENO);
+        freopen("/dev/null", "r", stdin);
+        freopen("/dev/null", "w", stdout);
+        freopen("/dev/null", "w", stderr);
     }
 }
 
