@@ -1,74 +1,83 @@
-ceo (0.5.0) stable testing; urgency=low
+ceo (0.5.1) stable; urgency=low
+
+  * Add mysql magic.
+  * Add email forwarding magic.
+  * Labels on the menu.
+
+ -- Michael Spang <mspang@csclub.uwaterloo.ca>  Wed, 09 Sep 2009 17:54:49 -0400
+
+ceo (0.5.0) stable; urgency=low
 
   * Add ceo daemon.
 
  -- Michael Spang <mspang@uwaterloo.ca>  Thu, 30 Jul 2009 00:19:42 -0400
 
-ceo (0.4.24) stable testing; urgency=low
+ceo (0.4.24) stable; urgency=low
 
   * Bump standards version.
 
  -- Michael Spang <mspang@uwaterloo.ca>  Wed, 29 Jul 2009 07:31:24 -0400
-ceo (0.4.23) stable testing; urgency=low
+
+ceo (0.4.23) stable; urgency=low
 
   * CEO library now only finds books that are signed out as being overdue.
 
  -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Wed, 11 Mar 2009 03:30:01 -0500
 
-ceo (0.4.22) stable testing; urgency=low
+ceo (0.4.22) stable; urgency=low
 
   * CEO now closes window when it should.  (Sorry)
 
  -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Wed, 11 Mar 2009 02:25:01 -0500
 
-ceo (0.4.21) stable testing; urgency=low
+ceo (0.4.21) stable; urgency=low
 
   * CEO Library can now add boox.
 
  -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Wed, 11 Mar 2009 02:09:01 -0500
 
-ceo (0.4.20) stable testing; urgency=low
+ceo (0.4.20) stable; urgency=low
 
   * Update kadmin headers
 
  -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Tue, 24 Feb 2009 16:08:12 -0500
 
-ceo (0.4.19) stable testing; urgency=low
+ceo (0.4.19) stable; urgency=low
 
   * Rebuild for lenny.
 
  -- Michael Spang <mspang@uwaterloo.ca>  Tue, 17 Feb 2009 22:23:30 -0500
 
-ceo (0.4.18) stable testing; urgency=low
+ceo (0.4.18) stable; urgency=low
 
   [ Michael Gregson ]
   * Added new search function, and books now display due dates.
 
  -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Wed, 29 Jan 2009 01:04:00 -0500
 
-ceo (0.4.17) stable testing; urgency=low
+ceo (0.4.17) stable; urgency=low
 
   [ Michael Gregson ]
   * Books can now be returned!!!  Yay!
 
  -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Thu, 15 Jan 2009 23:42:00 -0500
 
-ceo (0.4.16) stable testing; urgency=low
+ceo (0.4.16) stable; urgency=low
 
   [ Michael Gregson ]
   * Fixed error in calling of members.current
 
  -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Thu, 15 Jan 2009 22:40:00 -0500
 
-ceo (0.4.15) stable testing; urgency=low
+ceo (0.4.15) stable; urgency=low
 
   [ Michael Gregson ]
   * Fixed incorrect usage of members.registered in library
 
  -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Thu, 15 Jan 2009 19:10:00 -0500
 
-ceo (0.4.14) stable testing; urgency=low
-  
+ceo (0.4.14) stable; urgency=low
+
   [ Michael Gregson ]
   * Corrected members.registered() to account for
     non-existent members.
@@ -76,8 +85,8 @@ ceo (0.4.14) stable testing; urgency=low
 
  -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Thu, 15 Jan 2009 18:40:00 -0500
 
-ceo (0.4.13) stable testing; urgency=low
-  
+ceo (0.4.13) stable; urgency=low
+
   [ Michael Gregson ]
   * Add user validation to library system
   * Add search function to library
@@ -85,7 +94,7 @@ ceo (0.4.13) stable testing; urgency=low
 
  -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Thu, 15 Jan 2009 17:00:00 -0500
 
-ceo (0.4.12) stable testing; urgency=low
+ceo (0.4.12) stable; urgency=low
 
   [ Michael Gregson ]
   * Rewrite library system.
@@ -94,7 +103,7 @@ ceo (0.4.12) stable testing; urgency=low
 
  -- Michael Gregson <mgregson@csclub.uwaterloo.ca>  Wed, 14 Jan 2009 19:38:00 -0400
 
-ceo (0.4.11) stable testing; urgency=low
+ceo (0.4.11) stable; urgency=low
 
   [ David Bartley ]
   * Add library path to config
@@ -111,7 +120,7 @@ ceo (0.4.11) stable testing; urgency=low
 
  -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Mon, 02 Jun 2008 23:49:09 -0400
 
-ceo (0.4.10) stable testing; urgency=low
+ceo (0.4.10) stable; urgency=low
 
   [ David Bartley ]
   * Always call deauth
@@ -122,7 +131,7 @@ ceo (0.4.10) stable testing; urgency=low
 
  -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Wed, 28 May 2008 02:01:53 -0400
 
-ceo (0.4.9) stable testing; urgency=low
+ceo (0.4.9) stable; urgency=low
 
   * Move mathsoc regex and exception userid's into config
   * Import sys
@@ -131,7 +140,7 @@ ceo (0.4.9) stable testing; urgency=low
 
  -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Thu, 15 May 2008 22:14:50 -0400
 
-ceo (0.4.8) stable testing; urgency=low
+ceo (0.4.8) stable; urgency=low
 
   * No point in recommending quota anymore
   * Add help for command-line ceo
@@ -143,7 +152,7 @@ ceo (0.4.8) stable testing; urgency=low
 
  -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Thu, 24 Apr 2008 19:57:12 -0400
 
-ceo (0.4.7) stable testing; urgency=low
+ceo (0.4.7) stable; urgency=low
 
   [ David Bartley ]
   * Add zfsaddhomedir
@@ -154,14 +163,14 @@ ceo (0.4.7) stable testing; urgency=low
 
  -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Tue, 25 Mar 2008 14:13:36 -0400
 
-ceo (0.4.6) stable testing; urgency=low
+ceo (0.4.6) stable; urgency=low
 
   * Fix off-by-one error
   * Search menu bug fix
 
  -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Sat, 15 Mar 2008 02:13:25 -0400
 
-ceo (0.4.5) stable testing; urgency=low
+ceo (0.4.5) stable; urgency=low
 
   * Don't offer to update to an empty program
   * It's doubtful that a user would need to mount a floppy disk
@@ -170,7 +179,7 @@ ceo (0.4.5) stable testing; urgency=low
 
  -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Mon, 10 Mar 2008 00:35:09 -0400
 
-ceo (0.4.4) stable testing; urgency=low
+ceo (0.4.4) stable; urgency=low
 
   [ David Bartley ]
   * Added console app
@@ -197,7 +206,7 @@ ceo (0.4.4) stable testing; urgency=low
 
  -- Michael Spang <mspang@uwaterloo.ca>  Fri, 25 Jan 2008 20:36:42 -0500
 
-ceo (0.4.3) stable testing; urgency=low
+ceo (0.4.3) stable; urgency=low
 
   * Add cro to positions
   * Fix typo
@@ -205,7 +214,7 @@ ceo (0.4.3) stable testing; urgency=low
 
  -- David Bartley <dtbartle@csclub.uwaterloo.ca>  Tue, 08 Jan 2008 19:58:19 -0500
 
-ceo (0.4.2) stable testing; urgency=low
+ceo (0.4.2) stable; urgency=low
 
   [ David Bartley ]
   * Add password prompt
@@ -241,25 +250,25 @@ ceo (0.4.2) stable testing; urgency=low
 
  -- Michael Spang <mspang@uwaterloo.ca>  Mon, 24 Dec 2007 13:41:27 -0500
 
-ceo (0.4.1) stable testing; urgency=low
+ceo (0.4.1) stable; urgency=low
 
   * Minor fixes
 
  -- Michael Spang <mspang@uwaterloo.ca>  Wed, 12 Dec 2007 03:40:17 -0500
 
-ceo (0.4.0) stable testing; urgency=low
+ceo (0.4.0) stable; urgency=low
 
   * New release
 
  -- Michael Spang <mspang@uwaterloo.ca>  Wed, 12 Dec 2007 03:07:05 -0500
 
-ceo (0.3.9) stable testing; urgency=low
+ceo (0.3.9) stable; urgency=low
 
   * New release
 
  -- Michael Spang <mspang@uwaterloo.ca>  Mon, 10 Dec 2007 03:56:06 -0500
 
-ceo (0.3.3) stable testing; urgency=low
+ceo (0.3.3) stable; urgency=low
 
   * Add club and group modify page
   * Add sasl support
