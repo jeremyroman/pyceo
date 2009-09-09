@@ -4,7 +4,6 @@ CFLAGS  := -g -O2 -fstack-protector-all -fPIE
 LDFLAGS := -pie -Wl,--as-needed
 
 build:
-	python setup.py -q build
 	cd src && make CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 clean:
@@ -12,13 +11,17 @@ clean:
 	dh_testroot
 	dh_clean
 	$(MAKE) -C src clean
-	python setup.py -q clean -a
+	python setup.py  -q clean -a --build-base=build-ceo
+	python setupd.py -q clean -a --build-base=build-ceod
+	rm -rf build-ceo build-ceod
 
 install: build
 	dh_testdir
 	dh_testroot
 	dh_installdirs
-	python setup.py -q install --no-compile -O0 --prefix=/usr --root=debian/ceo-python
+	python setup.py  -q build --build-base=build-ceo  install --no-compile -O0 --prefix=/usr --root=debian/ceo-python
+	python setupd.py -q build --build-base=build-ceod install --no-compile -O0 --prefix=/usr --root=debian/ceo-daemon \
+            --install-scripts=/usr/lib/ceod
 	$(MAKE) -C src DESTDIR=$(CURDIR)/debian/ceo-clients PREFIX=/usr install_clients
 	$(MAKE) -C src DESTDIR=$(CURDIR)/debian/ceo-daemon PREFIX=/usr install_daemon
 

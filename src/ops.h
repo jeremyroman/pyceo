@@ -6,6 +6,7 @@ struct op {
     char *path;
     struct in_addr addr;
     struct op *next;
+    char *user;
 };
 
 void setup_ops(void);

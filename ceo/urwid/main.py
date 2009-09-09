@@ -143,6 +143,13 @@ def change_shell(data):
         shell.EndPage
     ], (50, 20))
 
+def create_mysql_db(data):
+    push_wizard("Create MySQL database", [
+        databases.IntroPage,
+        databases.UserPage,
+        databases.EndPage,
+    ], (60, 15))
+
 def check_group(group):
     try:
         me = pwd.getpwuid(os.getuid()).pw_name
@@ -158,7 +165,6 @@ def top_menu():
         ("Renew Club Rep", renew_club_user, None),
         ("New Club", new_club, None),
         ("Library", library.library, None),
-        ("Databases", databases.databases, None),
     ]
     syscom_only = [
         ("Manage Club or Group Members", manage_group, None),
@@ -168,8 +174,9 @@ def top_menu():
     ]
     unrestricted = [
         ("Display Member", display_member, None),
-        ("Change Shell", change_shell, None),
         ("Search", search_members, None),
+        ("Change Shell", change_shell, None),
+        ("Create MySQL database", create_mysql_db, None),
     ]
     footer = [
         ("Exit", raise_abort, None),

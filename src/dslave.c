@@ -97,7 +97,7 @@ static void handle_op_message(uint32_t in_type, struct strbuf *in, struct strbuf
                    "CEO_CONFIG_DIR", config_dir, NULL);
     char *argv[] = { op->path, NULL, };
 
-    if (spawnvem(op->path, argv, envp, in, out, 0))
+    if (spawnvemu(op->path, argv, envp, in, out, 0, op->user))
         fatal("child %s failed", op->path);
 
     if (!out->len)

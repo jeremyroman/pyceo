@@ -91,6 +91,11 @@ def connect(auth_callback):
             if password == None:
                 raise e
 
+def connect_anonymous():
+    """Connect to LDAP."""
+
+    global ld
+    ld = ldap.initialize(cfg['ldap_server_url'])
 
 def disconnect():
     """Disconnect from LDAP."""

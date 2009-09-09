@@ -35,6 +35,7 @@ all: $(BIN_PROGS) $(LIB_PROGS) $(EXT_PROGS) ../ceo/ceo_pb2.py
 
 clean:
 	rm -f $(BIN_PROGS) $(LIB_PROGS) $(EXT_PROGS) *.o ceo.pb-c.c ceo.pb-c.h
+	rm -f ceo_pb2.py ../ceo/ceo_pb2.py
 
 op-adduser.o addmember.o addclub.o: ceo.pb-c.h
 

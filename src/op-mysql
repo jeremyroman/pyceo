@@ -1,0 +1,113 @@
+#!/usr/bin/python
+
+import os, sys, string, random, syslog, grp, errno, re
+from ceo import ceo_pb2, members, conf
+import MySQLdb
+
+CONFIG_FILE = '/etc/csc/mysql.cf'
+
+cfg = {}
+
+def configure():
+    string_fields = ['mysql_admin_username', 'mysql_admin_password']
+
+    # read configuration file
+    cfg_tmp = conf.read(CONFIG_FILE)
+
+    # verify configuration
+    conf.check_string_fields(CONFIG_FILE, string_fields, cfg_tmp)
+
+    # update the current configuration with the loaded values
+    cfg.update(cfg_tmp)
+
+def response_message(response, status, message):
+    priority = syslog.LOG_ERR if status else syslog.LOG_INFO
+    syslog.syslog(priority, message)
+    msg = response.messages.add()
+    msg.status = status
+    msg.message = message
+    return status
+
+def random_password():
+    chars = string.letters + string.digits
+    return ''.join(random.choice(chars) for i in xrange(20))
+
+def get_ceo_user():
+    user = os.environ.get('CEO_USER')
+    if not user:
+        raise Exception("environment variable CEO_USER not set");
+    return user
+
+def check_group(user, group):
+    try:
+        return user in grp.getgrnam(group).gr_mem
+    except KeyError:
+        return False
+
+def check_auth(remote_user, mysql_user, response):
+    if remote_user == mysql_user:
+        return response_message(response, 0, 'user %s creating database for self' % remote_user)
+    club = members.get(mysql_user)
+    if 'club' in club.get('objectClass', []):
+        if check_group(remote_user, mysql_user):
+            return response_message(response, 0, 'user %s is in club group %s' % (remote_user, mysql_user))
+        else:
+            return response_message(response, errno.EPERM, 'denied, user %s is not in club group %s' % (remote_user, mysql_user))
+    if check_group(remote_user, 'syscom'):
+        return response_message(response, 0, 'user %s is on systems committee' % remote_user)
+    else:
+        return response_message(response, errno.EPERM, 'denied, you may not create databases for other members')
+
+def mysql_createdb(remote_user, mysql_user, response):
+    if check_auth(remote_user, mysql_user, response):
+        return
+
+    response.password = random_password()
+
+    if not re.match('^[a-zA-Z0-9-]+$', mysql_user):
+        response_message(response, errno.EINVAL, 'invalid characters in username %s' % mysql_user)
+        return
+
+    if not re.match('^[a-zA-Z0-9-]+$', response.password):
+        response_message(response, errno.EINVAL, 'invalid characters in password %s' % response.password)
+        return
+
+    try:
+        connection = MySQLdb.Connect(user=cfg['mysql_admin_username'], passwd=cfg['mysql_admin_password'])
+        cursor = connection.cursor()
+        cursor.execute("GRANT ALL PRIVILEGES ON `%s`.* TO `%s`@`localhost` IDENTIFIED BY '%s'"
+                       % (mysql_user, mysql_user, response.password))
+        cursor.execute("CREATE DATABASE IF NOT EXISTS `%s`" % mysql_user)
+        cursor.close()
+        connection.close()
+
+        response_message(response, 0, 'successfully created database %s' % mysql_user)
+    except MySQLdb.MySQLError, e:
+        response_message(response, 1, 'exception occured creating database: %s' % e)
+
+
+def mysql_op():
+    input = sys.stdin.read()
+
+    request = ceo_pb2.AddMySQLUser()
+    request.ParseFromString(input)
+
+    remote_user = get_ceo_user()
+    mysql_user = request.username
+
+    response = ceo_pb2.AddMySQLUserResponse()
+    response_message(response, 0, 'mysql create db=%s by %s' % (mysql_user, remote_user))
+
+    mysql_createdb(remote_user, mysql_user, response)
+
+    sys.stdout.write(response.SerializeToString())
+
+def main():
+    configure()
+    members.configure()
+    members.connect_anonymous()
+    syslog.openlog('op-mysql', syslog.LOG_PID, syslog.LOG_DAEMON)
+    mysql_op()
+
+if __name__ == '__main__':
+    main()

@@ -28,6 +28,7 @@ extern char **environ;
 int spawnv(const char *path, char *const *argv);
 int spawnv_msg(const char *path, char *const *argv, const struct strbuf *output);
 int spawnvem(const char *path, char *const *argv, char *const *envp, const struct strbuf *output, struct strbuf *input, int cap_stderr);
+int spawnvemu(const char *path, char *const *argv, char *const *envp, const struct strbuf *output, struct strbuf *input, int cap_stderr, char *user);
 void full_write(int fd, const void *buf, size_t count);
 ssize_t full_read(int fd, void *buf, size_t len);
 FILE *fopenat(DIR *d, const char *path, int flags);

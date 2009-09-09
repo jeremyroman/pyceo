@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <netdb.h>
+#include <pwd.h>
 
 #include "strbuf.h"
 #include "ops.h"
@@ -15,13 +16,14 @@ static struct op *ops;
 static const char *default_op_dir = "/usr/lib/ceod";
 static const char *op_dir;
 
-static void add_op(char *host, char *name, uint32_t id) {
+static void add_op(char *host, char *name, char *user, uint32_t id) {
     struct op *new = xmalloc(sizeof(struct op));
     errno = 0;
     new->next = ops;
     new->name = xstrdup(name);
     new->id = id;
     new->path = NULL;
+    new->user = xstrdup(user);
 
     struct hostent *hostent = gethostbyname(host);
     if (!hostent)
@@ -35,11 +37,15 @@ static void add_op(char *host, char *name, uint32_t id) {
         sprintf(new->path, "%s/op-%s", op_dir, name);
         if (access(new->path, X_OK))
             fatalpe("cannot add op: %s: %s", name, new->path);
+
+        struct passwd *pw = getpwnam(user);
+        if (!pw)
+            fatalpe("cannot add op %s: getpwnam: %s", name, user);
     }
 
     ops = new;
-    debug("added op %s (%s%s)", new->name, new->local ? "" : "on ",
-            new->local ? "local" : host);
+    debug("added op %s (%s%s) [%s]", new->name, new->local ? "" : "on ",
+            new->local ? "local" : host, new->user);
 }
 
 struct op *get_local_op(uint32_t id) {
@@ -88,16 +94,16 @@ void setup_ops(void) {
 
             struct strbuf **words = strbuf_splitws(&line);
 
-            if (strbuf_list_len(words) != 3)
-                badconf("%s/%s: expected three words on line %d", op_config_dir, de->d_name, lineno);
+            if (strbuf_list_len(words) != 4)
+                badconf("%s/%s: expected four words on line %d", op_config_dir, de->d_name, lineno);
 
             errno = 0;
             char *end;
-            int id = strtol(words[2]->buf, &end, 0);
+            int id = strtol(words[3]->buf, &end, 0);
             if (errno || *end)
                 badconf("%s/%s: invalid id '%s' on line %d", op_config_dir, de->d_name, words[2]->buf, lineno);
 
-            add_op(words[0]->buf, words[1]->buf, id);
+            add_op(words[0]->buf, words[1]->buf, words[2]->buf, id);
             op_count++;
 
             strbuf_list_free(words);
@@ -115,6 +121,7 @@ void free_ops(void) {
         free(ops->name);
         free(ops->hostname);
         free(ops->path);
+        free(ops->user);
         free(ops);
         ops = next;
     }

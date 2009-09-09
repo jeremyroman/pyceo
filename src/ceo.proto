@@ -31,3 +31,12 @@ message UpdateMail {
 message UpdateMailResponse {
   repeated StatusMessage messages = 1;
 }
+
+message AddMySQLUser {
+  required string username = 1;
+}
+
+message AddMySQLUserResponse {
+  repeated StatusMessage messages = 1;
+  optional string password = 2;
+}

@@ -8,6 +8,7 @@
 #include <syslog.h>
 #include <errno.h>
 #include <grp.h>
+#include <pwd.h>
 
 #include "util.h"
 #include "strbuf.h"
@@ -173,6 +174,10 @@ void full_write(int fd, const void *buf, size_t count) {
 }
 
 int spawnvem(const char *path, char *const *argv, char *const *envp, const struct strbuf *output, struct strbuf *input, int cap_stderr) {
+    return spawnvemu(path, argv, envp, output, input, cap_stderr, NULL);
+}
+
+int spawnvemu(const char *path, char *const *argv, char *const *envp, const struct strbuf *output, struct strbuf *input, int cap_stderr, char *user) {
     int pid, wpid, status;
     int tochild[2];
     int fmchild[2];
@@ -197,6 +202,18 @@ int spawnvem(const char *path, char *const *argv, char *const *envp, const struc
         close(tochild[1]);
         close(fmchild[0]);
         close(fmchild[1]);
+
+        if (user) {
+            struct passwd *pw = getpwnam(user);
+            if (!pw)
+                fatalpe("getpwnam: %s", user);
+            if (initgroups(user, pw->pw_gid))
+                fatalpe("initgroups: %s", user);
+            if (setregid(pw->pw_gid, pw->pw_gid))
+                fatalpe("setregid: %s", user);
+            if (setreuid(pw->pw_uid, pw->pw_uid))
+                fatalpe("setreuid");
+        }
         execve(path, argv, envp);
         fatalpe("execve");
     } else {

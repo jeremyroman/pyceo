@@ -1,3 +1,5 @@
 /build-stamp
 /build
 *.pyc
+/build-ceo
+/build-ceod

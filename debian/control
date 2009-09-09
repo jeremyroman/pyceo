@@ -29,7 +29,7 @@ Description: Computer Science Club Administrative Clients
 
 Package: ceo-daemon
 Architecture: any
-Depends: ceo-python, ${shlibs:Depends}
+Depends: ceo-python, ${python:Depends}, ${shlibs:Depends}
 Description: Computer Science Club Administrative Daemon
  This package contains the CSC Electronic Office
  daemon.
