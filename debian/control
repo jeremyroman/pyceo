@@ -11,8 +11,10 @@ Description: Computer Science Club Common Files
  This package contains the CSC Electronic Office
  common files.
 
-Package: ceo-gui
+Package: ceo-python
 Architecture: all
+Replaces: ceo-gui
+Conflicts: ceo-gui
 Depends: ceo-clients, python-ldap, python-urwid, python-sqlobject, python-protobuf, python-psycopg | python-psycopg2, ${python:Depends}, ${shlibs:Depends}
 Description: Computer Science Club Administrative GUI
  This package contains the CSC Electronic Office
@@ -27,7 +29,7 @@ Description: Computer Science Club Administrative Clients
 
 Package: ceo-daemon
 Architecture: any
-Depends: ceo-common, ${shlibs:Depends}
+Depends: ceo-python, ${shlibs:Depends}
 Description: Computer Science Club Administrative Daemon
  This package contains the CSC Electronic Office
  daemon.

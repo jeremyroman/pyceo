@@ -2,7 +2,7 @@
 /ceo-common
 /ceo-clients
 /ceo-daemon
-/ceo-gui
+/ceo-python
 /files
 /*.debhelper
 /*.debhelper.log
