@@ -117,7 +117,7 @@ def search_members(data):
         ("Members by group", search_group, None),
         ("Back", raise_back, None),
     ])
-    push_window(menu, "Search")
+    push_window(menu, "Search Members")
 
 def search_name(data):
     push_wizard("By Name", [ search.NamePage ])
@@ -174,7 +174,7 @@ def top_menu():
     ]
     unrestricted = [
         ("Display Member", display_member, None),
-        ("Search", search_members, None),
+        ("Search Members", search_members, None),
         ("Change Shell", change_shell, None),
         ("Create MySQL database", create_mysql_db, None),
     ]
