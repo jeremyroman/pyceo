@@ -84,10 +84,10 @@ static void handle_op_message(uint32_t in_type, struct strbuf *in, struct strbuf
     struct op *op = get_local_op(in_type);
     char *envp[16];
 
-    debug("running op: %s", op->name);
-
-    if (!op->name)
+    if (!op)
         fatal("operation %x does not exist", in_type);
+
+    debug("running op: %s", op->name);
 
     /* TEMPORARY */
     if (!client_username())
