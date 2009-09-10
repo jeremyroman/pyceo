@@ -46,5 +46,3 @@ expire_hook = "/etc/csc/spam/expired-account"
 username_regex = "^[a-z][-a-z0-9]*$"
 min_password_length = 4
 shells_file = "/etc/shells"
-mathsoc_regex = ".*(mat/|vpa/se|computer science|math).*"
-mathsoc_dont_count = "cpdohert dlgawley dtbartle mbiggs saforres tmyklebu mgregson rridge dbelange"

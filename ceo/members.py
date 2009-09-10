@@ -25,7 +25,7 @@ def configure():
 
     string_fields = [ 'username_regex', 'shells_file', 'ldap_server_url',
             'ldap_users_base', 'ldap_groups_base', 'ldap_sasl_mech', 'ldap_sasl_realm',
-            'expire_hook', 'mathsoc_regex', 'mathsoc_dont_count' ]
+            'expire_hook' ]
     numeric_fields = [ 'min_password_length' ]
 
     # read configuration file

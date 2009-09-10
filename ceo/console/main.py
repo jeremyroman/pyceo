@@ -5,14 +5,12 @@ from ceo.console.memberlist import MemberList
 from ceo.console.updateprograms import UpdatePrograms
 from ceo.console.expiredaccounts import ExpiredAccounts
 from ceo.console.inactive import Inactive
-from ceo.console.mathsoclist import MathSocList
 
 commands = {
   'memberlist' : MemberList(),
   'updateprograms' : UpdatePrograms(),
   'expiredaccounts' : ExpiredAccounts(),
   'inactive': Inactive(),
-  'mathsoclist' : MathSocList(),
 }
 help_opts = [ '--help', '-h' ]
 
