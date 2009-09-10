@@ -60,6 +60,12 @@ class EndPage(WizardPanel):
         problem = None
         try:
             password = mysql.create_mysql(self.state['userid'])
+
+            try:
+                mysql.write_mysql_info(self.state['userid'], password)
+                helpfiletext = "Settings written to ~%s/ceo-mysql-info." % self.state['userid']
+            except (KeyError, IOError, OSError), e:
+                helpfiletext = "An error occured writing the settings file: %s" % e
             self.headtext.set_text("MySQL database created")
             self.midtext.set_text("Connection Information: \n"
                                   "\n"
@@ -68,8 +74,8 @@ class EndPage(WizardPanel):
                                   "Hostname: localhost\n"
                                   "Password: %s\n"
                                   "\n"
-                                  "Note: Databases are only accessible from caffeine\n"
-                                  % (self.state['userid'], self.state['userid'], password))
+                                  "%s\n"
+                                  % (self.state['userid'], self.state['userid'], password, helpfiletext))
         except mysql.MySQLException, e:
             self.headtext.set_text("Failed to create MySQL database")
             self.midtext.set_text("We failed to create the database. The error was:\n\n%s" % e)
