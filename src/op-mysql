@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
 import os, sys, string, random, syslog, grp, errno, re
-from ceo import ceo_pb2, members, conf
+from ceo import ceo_pb2, members, conf, ops
+from ceo.ops import response_message, get_ceo_user, check_group
 import MySQLdb
 
 CONFIG_FILE = '/etc/csc/mysql.cf'
@@ -20,29 +21,9 @@ def configure():
     # update the current configuration with the loaded values
     cfg.update(cfg_tmp)
 
-def response_message(response, status, message):
-    priority = syslog.LOG_ERR if status else syslog.LOG_INFO
-    syslog.syslog(priority, message)
-    msg = response.messages.add()
-    msg.status = status
-    msg.message = message
-    return status
-
 def random_password():
     chars = string.letters + string.digits
     return ''.join(random.choice(chars) for i in xrange(20))
-
-def get_ceo_user():
-    user = os.environ.get('CEO_USER')
-    if not user:
-        raise Exception("environment variable CEO_USER not set");
-    return user
-
-def check_group(user, group):
-    try:
-        return user in grp.getgrnam(group).gr_mem
-    except KeyError:
-        return False
 
 def check_auth(remote_user, mysql_user, response):
     if remote_user == mysql_user:
