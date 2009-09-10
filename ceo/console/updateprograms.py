@@ -1,6 +1,8 @@
 import ldap, sys, termios
 from ceo import members, uwldap, ldapi
 
+blacklist = ('orphaned', 'expired')
+
 class UpdatePrograms:
   help = '''
 updateprograms
@@ -20,7 +22,7 @@ Interactively updates the program field for an account by querying uwdir.
       user = user[0][1]
       oldprog = member.get('program', [''])[0]
       newprog = user.get('ou', [''])[0]
-      if oldprog == newprog or newprog == '':
+      if oldprog == newprog or newprog == '' or newprog.lower() in blacklist:
         continue
       sys.stdout.write("%s: '%s' => '%s'? (y/n) " % (uid, oldprog, newprog))
       new = old = termios.tcgetattr(fd)
