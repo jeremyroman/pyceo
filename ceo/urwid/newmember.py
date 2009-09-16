@@ -172,6 +172,7 @@ class EndPage(WizardPanel):
     def check(self):
         pop_window()
     def activate(self):
+        set_status("Contacting the gibson...")
         problem = None
         try:
             if self.utype == 'member':
