@@ -172,7 +172,14 @@ class EndPage(WizardPanel):
     def check(self):
         pop_window()
     def activate(self):
+        self.headtext.set_text("Adding %s" % self.state['userid'])
+        self.midtext.set_text("Please be patient while the user is added. "
+                              "If more than a few seconds pass, check for a "
+                              "phase variance and try inverting the polarity.")
         set_status("Contacting the gibson...")
+
+        redraw()
+
         problem = None
         try:
             if self.utype == 'member':
@@ -192,6 +199,8 @@ class EndPage(WizardPanel):
         except members.MemberException, e:
             problem = str(e)
 
+        clear_status()
+
         if problem:
             self.headtext.set_text("Failures Occured Adding User")
             self.midtext.set_text("The error was:\n\n%s\n\nThe account may be partially added "
@@ -199,6 +208,7 @@ class EndPage(WizardPanel):
                 "If this was not expected please contact systems committee." % problem)
             return
         else:
+            set_status("Strombola Delivers")
             self.headtext.set_text("User Added")
             self.midtext.set_text("Congratulations, %s has been added "
                 "successfully. You should also rebuild the website in "

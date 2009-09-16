@@ -4,16 +4,6 @@ from ceo.urwid.window import *
 from ceo.urwid import newmember, renew, info, search, positions, groups, \
     shell, library, databases
 
-ui = urwid.curses_display.Screen()
-
-ui.register_palette([
-    # name, foreground, background, mono
-    ('banner', 'light gray', 'default', None),
-    ('menu', 'light gray', 'default', 'bold'),
-    ('selected', 'black', 'light gray', 'bold'),
-])
-
-
 def program_name():
     cwords = [ "CSC" ] * 20 + [ "Club" ] * 10 + [ "Campus" ] * 5 + \
         [ "Communist", "Canadian", "Celestial", "Cryptographic", "Calum's",

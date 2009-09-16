@@ -5,6 +5,16 @@ window_names = []
 
 header = urwid.Text( "" )
 footer = urwid.Text( "" )
+
+ui = urwid.curses_display.Screen()
+
+ui.register_palette([
+    # name, foreground, background, mono
+    ('banner', 'light gray', 'default', None),
+    ('menu', 'light gray', 'default', 'bold'),
+    ('selected', 'black', 'light gray', 'bold'),
+])
+
 top = urwid.Frame( urwid.SolidFill(), header, footer )
 
 def push_window( frame, name=None ):
@@ -44,12 +54,16 @@ def raise_abort(*args, **kwargs):
 def raise_back(*args, **kwarg):
     raise Back()
 
+def redraw():
+   cols, rows = ui.get_cols_rows()
+   canvas = top.render( (cols, rows), focus=True )
+   ui.draw_screen( (cols, rows), canvas )
+   return cols, rows
+
 def event_loop(ui):
     while True:
         try:
-           cols, rows = ui.get_cols_rows()
-           canvas = top.render( (cols, rows), focus=True )
-           ui.draw_screen( (cols, rows), canvas )
+           cols, rows = redraw()
 
            keys = ui.get_input()
            for k in keys:
