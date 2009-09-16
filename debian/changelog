@@ -1,3 +1,16 @@
+ceo (0.5.2) stable; urgency=low
+
+  * Clarify search operation in menu
+  * Move some code
+  * Fix segfault
+  * Write mysql file to ~club
+  * Kill mathsoclist
+  * Blacklist orphaned/expired from updateprograms
+  * Add status thing
+  * Force redraw after status thing
+
+ -- Michael Spang <mspang@csclub.uwaterloo.ca>  Wed, 16 Sep 2009 18:32:56 -0400
+
 ceo (0.5.1) stable; urgency=low
 
   * Add mysql magic.
