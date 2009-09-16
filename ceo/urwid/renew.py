@@ -56,8 +56,10 @@ class EmailPage(WizardPanel):
         self.widgets = [
             urwid.Text( "Mail Forwarding" ),
             urwid.Divider(),
-            urwid.Text("Please ensure the forwarding address for "
-                       "your CSC email is up to date."),
+            urwid.Text("Please ensure the forwarding address for your CSC "
+                "email is up to date. You may leave this blank if you do not "
+                "want your CSC email forwarded, and intend to log in "
+                "regularly to check it."),
             urwid.Divider(),
             urwid.Text("Warning: Changing this overwrites ~/.forward"),
             urwid.Divider(),
