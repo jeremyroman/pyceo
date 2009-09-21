@@ -49,21 +49,33 @@ void free_gss(void) {
     free(peer_username);
 }
 
+static char *gssbuf2str(gss_buffer_t buf) {
+    char *msgstr = xmalloc(buf->length + 1);
+    memcpy(msgstr, buf->value, buf->length);
+    msgstr[buf->length] = '\0';
+    return msgstr;
+}
+
 static void display_status(char *prefix, OM_uint32 code, int type) {
     OM_uint32 maj_stat, min_stat;
     gss_buffer_desc msg;
     OM_uint32 msg_ctx = 0;
+    char *msgstr;
 
     maj_stat = gss_display_status(&min_stat, code, type, GSS_C_NULL_OID,
                                   &msg_ctx, &msg);
-    logmsg(LOG_ERR, "%s: %s", prefix, (char *)msg.value);
+    msgstr = gssbuf2str(&msg);
+    logmsg(LOG_ERR, "%s: %s", prefix, msgstr);
     gss_release_buffer(&min_stat, &msg);
+    free(msgstr);
 
     while (msg_ctx) {
         maj_stat = gss_display_status(&min_stat, code, type, GSS_C_NULL_OID,
                                       &msg_ctx, &msg);
-        logmsg(LOG_ERR, "additional: %s", (char *)msg.value);
+        msgstr = gssbuf2str(&msg);
+        logmsg(LOG_ERR, "additional: %s", msgstr);
         gss_release_buffer(&min_stat, &msg);
+        free(msgstr);
     }
 }
 
