@@ -85,7 +85,8 @@ static void setup_pidfile(void) {
     pidlen = snprintf(pidbuf, sizeof(pidbuf), "%d\n", getpid());
     if (pidlen >= sizeof(pidbuf))
         fatal("pid too long");
-    full_write(fd, pidbuf, pidlen);
+    if (full_write(fd, pidbuf, pidlen))
+        fatalpe("write: %s", pidfile);
 }
 
 static void setup_daemon(void) {

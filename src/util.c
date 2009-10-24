@@ -162,15 +162,17 @@ int spawnv(const char *path, char *const argv[]) {
     return status;
 }
 
-void full_write(int fd, const void *buf, size_t count) {
+int full_write(int fd, const void *buf, size_t count) {
     ssize_t total = 0;
 
     while (total < count) {
         ssize_t wcount = write(fd, (char *)buf + total, count - total);
         if (wcount < 0)
-            fatalpe("write");
+            return wcount;
         total += wcount;
     }
+
+    return 0;
 }
 
 int spawnvem(const char *path, char *const *argv, char *const *envp, const struct strbuf *output, struct strbuf *input, int cap_stderr) {

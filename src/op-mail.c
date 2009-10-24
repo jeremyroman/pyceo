@@ -150,7 +150,8 @@ static int32_t update_mail(Ceo__UpdateMail *in, Ceo__UpdateMailResponse *out, ch
             struct strbuf file_contents = STRBUF_INIT;
             strbuf_addf(&file_contents, "%s\n", in->forward);
 
-            full_write(fd, file_contents.buf, file_contents.len);
+            if (full_write(fd, file_contents.buf, file_contents.len))
+                response_message(out, errno, "write: %s: %s", path, strerror(errno));
 
             strbuf_release(&file_contents);
 
@@ -190,7 +191,9 @@ void cmd_update_mail(void) {
 
     strbuf_grow(&out, ceo__update_mail_response__get_packed_size(out_proto));
     strbuf_setlen(&out, ceo__update_mail_response__pack(out_proto, (uint8_t *)out.buf));
-    full_write(STDOUT_FILENO, out.buf, out.len);
+
+    if (full_write(STDOUT_FILENO, out.buf, out.len))
+        fatalpe("write: stdout");
 
     ceo__update_mail__free_unpacked(in_proto, &protobuf_c_default_allocator);
     response_delete(out_proto);

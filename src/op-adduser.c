@@ -272,7 +272,9 @@ void cmd_adduser(void) {
 
     strbuf_grow(&out, ceo__add_user_response__get_packed_size(out_proto));
     strbuf_setlen(&out, ceo__add_user_response__pack(out_proto, (uint8_t *)out.buf));
-    full_write(STDOUT_FILENO, out.buf, out.len);
+
+    if (full_write(STDOUT_FILENO, out.buf, out.len))
+        fatalpe("write: stdout");
 
     ceo__add_user__free_unpacked(in_proto, &protobuf_c_default_allocator);
     response_delete(out_proto);

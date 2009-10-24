@@ -91,8 +91,8 @@ int ceo_create_home(char *homedir, char *skel, uid_t uid, gid_t gid, char *acces
                     warnpe("read");
                     break;
                 }
-                if (write(destfd, buf, bytes) < 0) {
-                    warnpe("write");
+                if (full_write(destfd, buf, bytes)) {
+                    warnpe("write: %s", src);
                     break;
                 }
             }
@@ -131,25 +131,25 @@ int ceo_create_home(char *homedir, char *skel, uid_t uid, gid_t gid, char *acces
 
     closedir(skeldir);
 
-    if (email && strlen(email) >0) {
-	char dest[PATH_MAX];
-        snprintf(dest, sizeof(dest), "%s/%s", homedir, ".forward"); 
+    if (email && *email) {
+        char dest[PATH_MAX];
+        snprintf(dest, sizeof(dest), "%s/%s", homedir, ".forward");
         int destfd = open(dest, O_WRONLY|O_CREAT|O_EXCL, 0644);
-        if (write(destfd, email, sizeof(char)*strlen(email)) < 0) {
-            warnpe ("write");
-        }
+
+        if (full_write(destfd, email, strlen(email)))
+            warnpe("write: %s", dest);
 
         if (fchown(destfd, uid, gid))
             errorpe("chown: %s", dest);
 
-	close(destfd);
+        close(destfd);
     }
 
     if (chown(homedir, uid, gid)) {
         errorpe("failed to chown %s", homedir);
         return -1;
     }
-    
+
     umask(mask);
 
     return 0;
