@@ -223,10 +223,14 @@ int initial_client_token(gss_buffer_t outgoing_tok) {
 }
 
 char *client_principal(void) {
+    if (!complete)
+        fatal("authentication checked before finishing");
     return peer_principal;
 }
 
 char *client_username(void) {
+    if (!complete)
+        fatal("authentication checked before finishing");
     return peer_username;
 }
 
