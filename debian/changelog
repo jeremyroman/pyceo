@@ -1,3 +1,13 @@
+ceo (0.5.3) stable; urgency=low
+
+  * Fix gss error reporting bug
+  * Clarify email forwarding upon renewal
+  * Fail fast if not authenticated
+  * Encrypt all post-auth ceoc<->ceod communication
+  * Improve error handling when writing
+
+ -- Michael Spang <mspang@csclub.uwaterloo.ca>  Sat, 24 Oct 2009 14:49:51 -0400
+
 ceo (0.5.2) stable; urgency=low
 
   * Clarify search operation in menu
