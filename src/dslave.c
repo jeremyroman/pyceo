@@ -82,6 +82,7 @@ static void handle_auth_message(struct strbuf *in, struct strbuf *out) {
 
 static void handle_op_message(uint32_t in_type, struct strbuf *in, struct strbuf *out) {
     struct op *op = get_local_op(in_type);
+    struct strbuf in_plain = STRBUF_INIT, out_plain = STRBUF_INIT;
     char *envp[16];
 
     if (!op)
@@ -93,17 +94,23 @@ static void handle_op_message(uint32_t in_type, struct strbuf *in, struct strbuf
     if (!client_username())
         fatal("unathenticated");
 
+    gss_decipher(in, &in_plain);
+
     make_env(envp, "LANG", "C", "CEO_USER", client_username(),
                    "CEO_CONFIG_DIR", config_dir, NULL);
     char *argv[] = { op->path, NULL, };
 
-    if (spawnvemu(op->path, argv, envp, in, out, 0, op->user))
+    if (spawnvemu(op->path, argv, envp, &in_plain, &out_plain, 0, op->user))
         fatal("child %s failed", op->path);
+
+    gss_encipher(&out_plain, out);
 
     if (!out->len)
         fatal("no response from op");
 
     free_env(envp);
+    strbuf_release(&in_plain);
+    strbuf_release(&out_plain);
 }
 
 static void handle_one_message(int sock, struct sctp_meta *in_meta, struct strbuf *in) {

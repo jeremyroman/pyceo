@@ -10,3 +10,6 @@ int initial_client_token(gss_buffer_t outgoing_tok);
 char *client_principal(void);
 char *client_username(void);
 void free_gss(void);
+
+void gss_encipher(struct strbuf *plain, struct strbuf *cipher);
+void gss_decipher(struct strbuf *cipher, struct strbuf *plain);

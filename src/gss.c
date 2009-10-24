@@ -234,3 +234,51 @@ char *client_username(void) {
     return peer_username;
 }
 
+void gss_encipher(struct strbuf *plain, struct strbuf *cipher) {
+    OM_uint32 maj_stat, min_stat;
+    gss_buffer_desc plain_tok, cipher_tok;
+    int conf_state;
+
+    plain_tok.value = plain->buf;
+    plain_tok.length = plain->len;
+
+    maj_stat = gss_wrap(&min_stat, context_handle, 1, GSS_C_QOP_DEFAULT,
+                        &plain_tok, &conf_state, &cipher_tok);
+    if (maj_stat != GSS_S_COMPLETE)
+        gss_fatal("gss_wrap", maj_stat, min_stat);
+
+    if (!conf_state)
+        fatal("gss_encipher: confidentiality service required");
+
+    strbuf_add(cipher, cipher_tok.value, cipher_tok.length);
+
+    maj_stat = gss_release_buffer(&min_stat, &cipher_tok);
+    if (maj_stat != GSS_S_COMPLETE)
+        gss_fatal("gss_release_buffer", maj_stat, min_stat);
+}
+
+void gss_decipher(struct strbuf *cipher, struct strbuf *plain) {
+    OM_uint32 maj_stat, min_stat;
+    gss_buffer_desc plain_tok, cipher_tok;
+    int conf_state;
+    gss_qop_t qop_state;
+
+    cipher_tok.value = cipher->buf;
+    cipher_tok.length = cipher->len;
+
+    maj_stat = gss_unwrap(&min_stat, context_handle, &cipher_tok,
+                          &plain_tok, &conf_state, &qop_state);
+    if (maj_stat != GSS_S_COMPLETE)
+        gss_fatal("gss_unwrap", maj_stat, min_stat);
+
+    if (!conf_state)
+        fatal("gss_encipher: confidentiality service required");
+
+    strbuf_add(plain, plain_tok.value, plain_tok.length);
+
+    maj_stat = gss_release_buffer(&min_stat, &plain_tok);
+    if (maj_stat != GSS_S_COMPLETE)
+        gss_fatal("gss_release_buffer", maj_stat, min_stat);
+}
+
+

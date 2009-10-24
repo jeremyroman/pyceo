@@ -70,6 +70,7 @@ void run_remote(struct op *op, struct strbuf *in, struct strbuf *out) {
     int sock = socket(PF_INET, SOCK_SEQPACKET, IPPROTO_SCTP);
     struct sockaddr_in addr;
     struct sctp_meta response_meta;
+    struct strbuf in_cipher = STRBUF_INIT, out_cipher = STRBUF_INIT;
 
     if (!in->len)
         fatal("no data to send");
@@ -96,12 +97,16 @@ void run_remote(struct op *op, struct strbuf *in, struct strbuf *out) {
     client_acquire_creds("ceod", hostname);
     client_gss_auth(sock, (sa *)&addr, sizeof(addr));
 
-    if (sctp_sendmsg(sock, in->buf, in->len, (struct sockaddr *)&addr,
+    gss_encipher(in, &in_cipher);
+
+    if (sctp_sendmsg(sock, in_cipher.buf, in_cipher.len, (struct sockaddr *)&addr,
                      sizeof(addr), op->id, 0, 0, 0, 0) < 0)
         fatalpe("sctp_sendmsg");
 
-    if (!receive_one_message(sock, &response_meta, out))
+    if (!receive_one_message(sock, &response_meta, &out_cipher))
         fatal("no response received for op %s", op->name);
+
+    gss_decipher(&out_cipher, out);
 
     if (response_meta.sinfo.sinfo_ppid != op->id)
         fatal("wrong ppid from server: expected %d got %d", op->id, response_meta.sinfo.sinfo_ppid);
@@ -109,6 +114,9 @@ void run_remote(struct op *op, struct strbuf *in, struct strbuf *out) {
     if (sctp_sendmsg(sock, NULL, 0, (struct sockaddr *)&addr,
                 sizeof(addr), 0, SCTP_EOF, 0, 0 ,0) < 0)
         fatalpe("sctp_sendmsg");
+
+    strbuf_release(&in_cipher);
+    strbuf_release(&out_cipher);
 }
 
 int client_main(char *op_name) {
