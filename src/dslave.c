@@ -48,20 +48,6 @@ static void setup_slave_sigs(void) {
         raise(fatal_signal);
 }
 
-static void setup_client(int client, struct sockaddr *addr) {
-    struct sctp_event_subscribe events;
-    memset(&events, 0, sizeof(events));
-    events.sctp_data_io_event = 1;
-    events.sctp_address_event = 1;
-    events.sctp_send_failure_event = 1;
-    events.sctp_peer_error_event = 1;
-    events.sctp_partial_delivery_event = 1;
-    events.sctp_adaptation_layer_event = 1;
-
-    if (setsockopt(client, IPPROTO_SCTP, SCTP_EVENTS, &events, sizeof(events)))
-        fatalpe("setsockopt(SCTP_EVENTS)");
-}
-
 static void handle_auth_message(struct strbuf *in, struct strbuf *out) {
     gss_buffer_desc incoming_tok, outgoing_tok;
     OM_uint32 maj_stat, min_stat;
@@ -113,19 +99,16 @@ static void handle_op_message(uint32_t in_type, struct strbuf *in, struct strbuf
     strbuf_release(&out_plain);
 }
 
-static void handle_one_message(int sock, struct sctp_meta *in_meta, struct strbuf *in) {
+static void handle_one_message(int sock, struct strbuf *in, uint32_t msgtype) {
     struct strbuf out = STRBUF_INIT;
-    uint32_t ppid = in_meta->sinfo.sinfo_ppid;
 
-    if (ppid == MSG_AUTH)
+    if (msgtype == MSG_AUTH)
         handle_auth_message(in, &out);
     else
-        handle_op_message(ppid, in, &out);
+        handle_op_message(msgtype, in, &out);
 
-    if (out.len && sctp_sendmsg(sock, out.buf, out.len,
-                (sa *)&in_meta->from, in_meta->fromlen, ppid,
-                0, 0, 0, 0) < 0)
-        fatalpe("sctp_sendmsg");
+    if (out.len && ceo_send_message(sock, out.buf, out.len, msgtype))
+        fatalpe("write");
 
     strbuf_release(&out);
 }
@@ -133,7 +116,7 @@ static void handle_one_message(int sock, struct sctp_meta *in_meta, struct strbu
 void slave_main(int sock, struct sockaddr *addr) {
     char addrstr[INET_ADDRSTRLEN];
     struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
-    struct sctp_meta msg_meta;
+    uint32_t msgtype;
     struct strbuf msg = STRBUF_INIT;
 
     if (addr->sa_family != AF_INET)
@@ -145,12 +128,11 @@ void slave_main(int sock, struct sockaddr *addr) {
     notice("accepted connection from %s", addrstr);
 
     setup_slave_sigs();
-    setup_client(sock, addr);
 
     while (!terminate) {
-        if (!receive_one_message(sock, &msg_meta, &msg))
+        if (ceo_receive_message(sock, &msg, &msgtype))
             break;
-        handle_one_message(sock, &msg_meta, &msg);
+        handle_one_message(sock, &msg, msgtype);
     }
 
     notice("connection closed by peer %s", addrstr);

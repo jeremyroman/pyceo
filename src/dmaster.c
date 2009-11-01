@@ -138,7 +138,7 @@ static void accept_one_client(int server) {
 }
 
 static int master_main(void) {
-    int sock;
+    int sock, opt;
     struct sockaddr_in addr;
 
     memset(&addr, 0, sizeof(addr));
@@ -146,9 +146,13 @@ static int master_main(void) {
     addr.sin_port = htons(9987);
     addr.sin_addr.s_addr = INADDR_ANY;
 
-    sock = socket(PF_INET, SOCK_STREAM, IPPROTO_SCTP);
+    sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock < 0)
         fatalpe("socket");
+
+    opt = 1;
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
+        fatalpe("setsockopt");
 
     if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)))
         fatalpe("bind");

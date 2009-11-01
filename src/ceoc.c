@@ -24,9 +24,8 @@ static void usage() {
 static void send_gss_token(int sock, struct sockaddr *addr, socklen_t addrlen, gss_buffer_t token) {
     OM_uint32 maj_stat, min_stat;
 
-    if (sctp_sendmsg(sock, token->value, token->length,
-                     addr, addrlen, MSG_AUTH, 0, 0, 0, 0) < 0)
-        fatalpe("sctp_sendmsg");
+    if (ceo_send_message(sock, token->value, token->length, MSG_AUTH))
+        fatalpe("write");
 
     maj_stat = gss_release_buffer(&min_stat, token);
     if (maj_stat != GSS_S_COMPLETE)
@@ -35,8 +34,8 @@ static void send_gss_token(int sock, struct sockaddr *addr, socklen_t addrlen, g
 
 static void client_gss_auth(int sock, struct sockaddr *addr, socklen_t addrlen) {
     gss_buffer_desc incoming_tok, outgoing_tok;
-    struct sctp_meta msg_meta;
     struct strbuf msg = STRBUF_INIT;
+    uint32_t msgtype;
     int complete;
 
     complete = initial_client_token(&outgoing_tok);
@@ -50,11 +49,11 @@ static void client_gss_auth(int sock, struct sockaddr *addr, socklen_t addrlen) 
         if (complete)
             break;
 
-        if (!receive_one_message(sock, &msg_meta, &msg))
+        if (ceo_receive_message(sock, &msg, &msgtype))
             fatal("connection closed during auth");
 
-        if (msg_meta.sinfo.sinfo_ppid != MSG_AUTH)
-            fatal("unexpected message type 0x%x", msg_meta.sinfo.sinfo_ppid);
+        if (msgtype != MSG_AUTH)
+            fatal("unexpected message type 0x%x", msgtype);
 
         incoming_tok.value = msg.buf;
         incoming_tok.length = msg.len;
@@ -67,9 +66,9 @@ static void client_gss_auth(int sock, struct sockaddr *addr, socklen_t addrlen) 
 
 void run_remote(struct op *op, struct strbuf *in, struct strbuf *out) {
     const char *hostname = op->hostname;
-    int sock = socket(PF_INET, SOCK_SEQPACKET, IPPROTO_SCTP);
+    int sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     struct sockaddr_in addr;
-    struct sctp_meta response_meta;
+    uint32_t msgtype;
     struct strbuf in_cipher = STRBUF_INIT, out_cipher = STRBUF_INIT;
 
     if (!in->len)
@@ -80,40 +79,27 @@ void run_remote(struct op *op, struct strbuf *in, struct strbuf *out) {
     addr.sin_port = htons(9987);
     addr.sin_addr = op->addr;
 
-    struct sctp_event_subscribe events;
-    memset(&events, 0, sizeof(events));
-    events.sctp_data_io_event = 1;
-    events.sctp_association_event = 1;
-    events.sctp_address_event = 1;
-    events.sctp_send_failure_event = 1;
-    events.sctp_peer_error_event = 1;
-    events.sctp_shutdown_event = 1;
-    events.sctp_partial_delivery_event = 1;
-    events.sctp_adaptation_layer_event = 1;
-
-    if (setsockopt(sock, IPPROTO_SCTP, SCTP_EVENTS, &events, sizeof(events)))
-        fatalpe("setsockopt");
+    if (connect(sock, (struct sockaddr *)&addr, sizeof(addr)))
+        fatalpe("connect");
 
     client_acquire_creds("ceod", hostname);
     client_gss_auth(sock, (sa *)&addr, sizeof(addr));
 
     gss_encipher(in, &in_cipher);
 
-    if (sctp_sendmsg(sock, in_cipher.buf, in_cipher.len, (struct sockaddr *)&addr,
-                     sizeof(addr), op->id, 0, 0, 0, 0) < 0)
-        fatalpe("sctp_sendmsg");
+    if (ceo_send_message(sock, in_cipher.buf, in_cipher.len, op->id))
+        fatalpe("write");
 
-    if (!receive_one_message(sock, &response_meta, &out_cipher))
+    if (ceo_receive_message(sock, &out_cipher, &msgtype))
         fatal("no response received for op %s", op->name);
 
     gss_decipher(&out_cipher, out);
 
-    if (response_meta.sinfo.sinfo_ppid != op->id)
-        fatal("wrong ppid from server: expected %d got %d", op->id, response_meta.sinfo.sinfo_ppid);
+    if (msgtype != op->id)
+        fatal("wrong message type from server: expected %d got %d", op->id, msgtype);
 
-    if (sctp_sendmsg(sock, NULL, 0, (struct sockaddr *)&addr,
-                sizeof(addr), 0, SCTP_EOF, 0, 0 ,0) < 0)
-        fatalpe("sctp_sendmsg");
+    if (close(sock))
+        fatalpe("close");
 
     strbuf_release(&in_cipher);
     strbuf_release(&out_cipher);
