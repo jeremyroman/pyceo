@@ -1,3 +1,9 @@
+ceo (0.5.4) stable; urgency=low
+
+  * Switch from SCTP to TCP
+
+ -- Michael Spang <mspang@csclub.uwaterloo.ca>  Mon, 02 Nov 2009 03:04:52 +0000
+
 ceo (0.5.3) stable; urgency=low
 
   * Fix gss error reporting bug
