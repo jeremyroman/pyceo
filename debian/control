@@ -18,7 +18,7 @@ Package: ceo-python
 Architecture: all
 Replaces: ceo-gui
 Conflicts: ceo-gui
-Depends: ceo-clients, python-ldap, python-urwid, python-sqlobject, python-protobuf, python-psycopg | python-psycopg2, ${python:Depends}, ${shlibs:Depends}
+Depends: ceo-clients, python-ldap, python-urwid, python-sqlobject, python-protobuf, python-psycopg | python-psycopg2, python-mysqldb, ${python:Depends}, ${shlibs:Depends}
 Description: Computer Science Club Administrative GUI
  This package contains the CSC Electronic Office
  graphical user interface.
