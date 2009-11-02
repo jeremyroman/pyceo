@@ -5,15 +5,16 @@ from ceo.console.memberlist import MemberList
 from ceo.console.updateprograms import UpdatePrograms
 from ceo.console.expiredaccounts import ExpiredAccounts
 from ceo.console.inactive import Inactive
+from ceo.console.mysql import MySQL
 
 commands = {
   'memberlist' : MemberList(),
   'updateprograms' : UpdatePrograms(),
   'expiredaccounts' : ExpiredAccounts(),
   'inactive': Inactive(),
+  'mysql': MySQL(),
 }
 help_opts = [ '--help', '-h' ]
-
 def start():
   args = sys.argv[1:]
   if args[0] in help_opts:

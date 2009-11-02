@@ -29,6 +29,8 @@ def check_auth(remote_user, mysql_user, response):
     if remote_user == mysql_user:
         return response_message(response, 0, 'user %s creating database for self' % remote_user)
     club = members.get(mysql_user)
+    if not club:
+        return response_message(response, errno.EPERM, 'user %s does not exist' % mysql_user)
     if 'club' in club.get('objectClass', []):
         if check_group(remote_user, mysql_user):
             return response_message(response, 0, 'user %s is in club group %s' % (remote_user, mysql_user))

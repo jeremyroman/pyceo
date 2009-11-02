@@ -8,16 +8,19 @@ from ceo import ldapi, members, library
 
 def start():
     try:
-        print "Reading config file...",
-        members.configure()
-        library.configure()
-
-        print "Connecting to LDAP..."
-        members.connect(AuthCallback())
-
         if len(sys.argv) == 1:
+          print "Reading config file...",
+          members.configure()
+          library.configure()
+
+          print "Connecting to LDAP..."
+          members.connect(AuthCallback())
+
           ceo.urwid.main.start()
         else:
+          members.configure()
+          library.configure()
+          members.connect(AuthCallback())
           ceo.console.main.start()
     except ldap.LOCAL_ERROR, e:
         print ldapi.format_ldaperror(e)
