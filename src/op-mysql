@@ -34,12 +34,15 @@ def check_auth(remote_user, mysql_user, response):
     if 'club' in club.get('objectClass', []):
         if check_group(remote_user, mysql_user):
             return response_message(response, 0, 'user %s is in club group %s' % (remote_user, mysql_user))
+        elif check_group(remote_user, 'syscom'):
+            return response_message(response, 0, 'user %s is on systems committee' % remote_user)
         else:
             return response_message(response, errno.EPERM, 'denied, user %s is not in club group %s' % (remote_user, mysql_user))
-    if check_group(remote_user, 'syscom'):
-        return response_message(response, 0, 'user %s is on systems committee' % remote_user)
     else:
-        return response_message(response, errno.EPERM, 'denied, you may not create databases for other members')
+        if check_group(remote_user, 'syscom'):
+            return response_message(response, 0, 'user %s is on systems committee' % remote_user)
+        else:
+            return response_message(response, errno.EPERM, 'denied, you may not create databases for other members')
 
 def mysql_createdb(remote_user, mysql_user, response):
     if check_auth(remote_user, mysql_user, response):
