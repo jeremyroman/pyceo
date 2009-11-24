@@ -1,4 +1,4 @@
-import urwid, ldap
+import urwid, ldap, sys
 from ceo.urwid.window import raise_back, push_window
 import ceo.ldapi as ldapi
 
@@ -9,7 +9,7 @@ csclub_base = "dc=csclub,dc=uwaterloo,dc=ca"
 
 def make_menu(items):
     items = [ urwid.AttrWrap( ButtonText( cb, data, txt ), 'menu', 'selected') for (txt, cb, data) in items ]
-    return urwid.ListBox( items )
+    return ShortcutListBox(items)
 
 def labelled_menu(itemses):
     widgets = []
@@ -19,7 +19,7 @@ def labelled_menu(itemses):
         widgets += (urwid.AttrWrap(ButtonText(cb, data, txt), 'menu', 'selected') for (txt, cb, data) in items)
         widgets.append(urwid.Divider())
     widgets.pop()
-    return urwid.ListBox(widgets)
+    return ShortcutListBox(widgets)
 
 def push_wizard(name, pages, dimensions=(50, 10)):
     state = {}
@@ -197,3 +197,24 @@ class WizardPanel(urwid.WidgetWrap):
         return
     def activate(self):
         return
+
+# assumes that a SimpleListWalker containing
+# urwid.Text or subclass is used
+class ShortcutListBox(urwid.ListBox):
+    def keypress(self, size, key):
+        # only process single letters; pass all else to super
+        if len(key) == 1 and key.isalpha():
+            next = self.get_focus()[1] + 1
+            shifted_contents = self.body.contents[next:] + self.body.contents[:next]
+
+            # find the next item matching the letter requested
+            try:
+                new_focus = (i for i,w in enumerate(shifted_contents)
+                             if w.selectable() and w.text[0].upper() == key.upper()).next()
+                new_focus = (new_focus + next) % len(self.body.contents)
+                self.set_focus(new_focus)
+            except:
+                # ring the bell if it isn't found
+                sys.stdout.write('\a')
+        else:
+            urwid.ListBox.keypress(self, size, key)
