@@ -67,7 +67,10 @@ class EmailPage(WizardPanel):
         ]
     def activate(self):
         cfwd = members.current_email(self.state['userid'])
-        self.state['old_forward'] = cfwd if cfwd else ''
+        if cfwd:
+            self.state['old_forward'] = cfwd
+        else:
+            self.state['old_forward'] = ''
         self.email.set_edit_text(self.state['old_forward'])
     def check(self):
         fwd = self.email.get_edit_text().strip().lower()

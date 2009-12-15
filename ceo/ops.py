@@ -1,7 +1,10 @@
 import os, syslog, grp
 
 def response_message(response, status, message):
-    priority = syslog.LOG_ERR if status else syslog.LOG_INFO
+    if status:
+        priority = syslog.LOG_ERR
+    else:
+        priority = syslog.LOG_INFO
     syslog.syslog(priority, message)
     msg = response.messages.add()
     msg.status = status
