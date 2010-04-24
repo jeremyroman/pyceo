@@ -154,3 +154,18 @@ int ceo_create_home(char *homedir, char *skel, uid_t uid, gid_t gid, char *acces
 
     return 0;
 }
+
+int ceo_set_quota(char *proto, int id) {
+    char user[128];
+    char *sqargs[] = { "setquota", "-a", "-p", proto, NULL, NULL };
+
+    snprintf(user, sizeof(user), "%d", id);
+    sqargs[4] = user;
+
+    if (spawnv("/usr/sbin/setquota", sqargs)) {
+        error("failed to set quota for %s", user);
+        return -1;
+    }
+
+    return 0;
+}

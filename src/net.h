@@ -18,6 +18,7 @@ enum {
 #define EKERB -2
 #define ELDAP -3
 #define EHOME -4
+#define EQUOTA -5
 
 int ceo_receive_message(int sock, struct strbuf *msg, uint32_t *msgtype);
 int ceo_send_message(int sock, void *msg, size_t len, uint32_t msgtype);

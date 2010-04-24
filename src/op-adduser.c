@@ -139,7 +139,7 @@ static void adduser_spam(Ceo__AddUser *in, Ceo__AddUserResponse *out, char *clie
 static int32_t addmember(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     char homedir[1024];
     char principal[1024];
-    int user_stat, group_stat, krb_stat, home_stat;
+    int user_stat, group_stat, krb_stat, home_stat, quota_stat;
     int id;
 
     if (snprintf(principal, sizeof(principal), "%s@%s",
@@ -177,14 +177,18 @@ static int32_t addmember(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     else
         response_message(out, 0, "successfully created home directory");
 
+    if ((quota_stat = ceo_set_quota("ctdalek", id)))
+        response_message(out, EQUOTA, "unable to set quota for %s", in->username);
+    else
+        response_message(out, 0, "successfully set quota");
 
-    return krb_stat || user_stat || group_stat || home_stat;
+    return krb_stat || user_stat || group_stat || home_stat || quota_stat;
 }
 
 static int32_t addclub(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     char homedir[1024];
     char acl[64];
-    int krb_stat, user_stat, group_stat, sudo_stat, home_stat;
+    int krb_stat, user_stat, group_stat, sudo_stat, home_stat, quota_stat;
     int id;
 
     if (snprintf(homedir, sizeof(homedir), "%s/%s", club_home, in->username) >= sizeof(homedir))
@@ -221,7 +225,12 @@ static int32_t addclub(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     else
         response_message(out, 0, "successfully created home directory");
 
-    return user_stat || group_stat || sudo_stat || home_stat;
+    if ((quota_stat = ceo_set_quota("csc", id)))
+        response_message(out, EQUOTA, "unable to set quota for %s", in->username);
+    else
+        response_message(out, 0, "successfully set quota");
+
+    return user_stat || group_stat || sudo_stat || home_stat || quota_stat;
 }
 
 static int32_t adduser(Ceo__AddUser *in, Ceo__AddUserResponse *out, char *client) {
