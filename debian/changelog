@@ -1,3 +1,17 @@
+ceo (0.5.7) stable; urgency=low
+
+  [ Michael Spang ]
+  * Fix expiredaccounts
+
+  [ Michael Ellis ]
+  * Reworded expired account email. Club rep accounts can be renewed for
+    free (as usual).
+
+  [ Michael Spang ]
+  * Readd quota support
+
+ -- Michael Spang <mspang@csclub.uwaterloo.ca>  Sun, 09 May 2010 02:10:48 -0400
+
 ceo (0.5.6) stable; urgency=low
 
   [ Michael Spang ]
