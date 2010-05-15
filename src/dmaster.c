@@ -103,9 +103,12 @@ static void setup_daemon(void) {
 
         setup_pidfile();
 
-        stdin = freopen("/dev/null", "r", stdin);
-        stdout = freopen("/dev/null", "w", stdout);
-        stderr = freopen("/dev/null", "w", stderr);
+        if (!freopen("/dev/null", "r", stdin))
+            fatalpe("freopen");
+        if (!freopen("/dev/null", "w", stdout))
+            fatalpe("freopen");
+        if (!freopen("/dev/null", "w", stderr))
+            fatalpe("freopen");
     }
 }
 
