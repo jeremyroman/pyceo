@@ -12,7 +12,7 @@ class ExpiredAccounts:
 expiredaccounts [--email]
 
 Displays a list of expired accounts. If --email is specified, expired account
-owners will be emailed. The email will go to the email listed in uwdir.
+owners will be emailed.
 '''
 
   def main(self, args):
@@ -38,13 +38,3 @@ owners will be emailed. The email will go to the email listed in uwdir.
         if send_email:
           print "  sending mail to %s" % uid
           members.send_account_expired_email(name, uid)
-        user = uwl.search_s(uwldap.base(), ldap.SCOPE_SUBTREE,
-          '(uid=%s)' % ldapi.escape(uid))
-        if len(user) > 0  and 'mailLocalAddress' in user[0][1]:
-          email = user[0][1]['mailLocalAddress'][0]
-          if send_email:
-            print "  sending mail to %s" % email
-            members.send_account_expired_email(name, email)
-          else:
-            print "  would also mail to %s" % email
-
