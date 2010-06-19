@@ -232,6 +232,15 @@ def get(userid):
 
     return ldapi.lookup(ld, 'uid', userid, cfg['ldap_users_base'])
 
+def get_group(group):
+    """
+    Look up group by groupname
+
+    Returns a dictionary of group attributes
+    """
+
+    return ldapi.lookup(ld, 'cn', group, cfg['ldap_groups_base'])
+
 def uid2dn(uid):
     return 'uid=%s,%s' % (ldapi.escape(uid), cfg['ldap_users_base'])
 

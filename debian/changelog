@@ -1,3 +1,10 @@
+ceo (0.5.7+nmu2) stable; urgency=low
+
+  * Removed the need for separate entries to manage office and syscom
+  * Added check to ensure group is valid 
+
+ -- Michael Ellis <m2ellis@caffeine.csclub.uwaterloo.ca>  Fri, 18 Jun 2010 20:59:40 -0400
+
 ceo (0.5.7+nmu1) stable; urgency=low
 
   * Non-maintainer upload.

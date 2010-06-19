@@ -30,18 +30,6 @@ def program_name():
 
     return "%s %s %s" % (cword, eword, oword)
 
-office_data = {
-    "name" : "Office Staff",
-    "group" : "office",
-    "groups" : [ "cdrom", "audio", "video", "www" ],
-}
-
-syscom_data = {
-    "name" : "Systems Committee",
-    "group" : "syscom",
-    "groups" : [ "office", "staff", "adm", "src" ],
-}
-
 def new_member(*args, **kwargs):
     push_wizard("New Member", [
         newmember.IntroPage,
@@ -159,8 +147,6 @@ def top_menu():
     syscom_only = [
         ("Manage Club or Group Members", manage_group, None),
         ("Manage Positions", manage_positions, None),
-        ("Manage Office Staff", groups.group_members, office_data),
-        ("Manage Systems Committee", groups.group_members, syscom_data),
     ]
     unrestricted = [
         ("Display Member", display_member, None),

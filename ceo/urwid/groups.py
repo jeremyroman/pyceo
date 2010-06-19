@@ -37,11 +37,7 @@ class IntroPage(WizardPanel):
             urwid.Text( "Adding a member to a club will also grant them "
                         "access to the club's files and allow them to "
                         "become_club."
-                        "\n\n"
-                        "Do not manage office and syscom related groups using "
-                        "this interface. Instead use the \"Manage Office "
-                        "Staff\" and \"Manage Systems Committee\" entries "
-                        "from the main menu." )
+                        "\n\n")
         ]
     def focusable(self):
         return False
@@ -57,13 +53,27 @@ class InfoPage(WizardPanel):
         ]
     def check(self):
         group = self.group.get_edit_text()
-        # TODO - check that group is valid
-        group_name = group # TODO
+
+        # check if group is valid
+        if not group or not members.get_group(group):
+            set_status("Group not found")
+            self.focus_widget(self.group)
+            return True
+
         data = {
             "name" : group,
-            "group" : group_name,
+            "group" : group,
             "groups" : [],
         }
+
+        # Office Staff and Syscom get added to more groups
+        if group == "syscom":
+            data["name"] = "Systems Committee"
+            data["groups"] = [ "office", "staff", "adm", "src" ]
+        elif group == "office":
+            data["name"] = "Office Staff"
+            data["groups"] = [ "cdrom", "audio", "video", "www" ]
+
         group_members(data)
 
 class ChangeMember(WizardPanel):
