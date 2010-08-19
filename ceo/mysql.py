@@ -26,6 +26,10 @@ The command to connect using the MySQL command-line client is
 
   mysql %(username)s -u %(username)s -p
 
+If you prefer a GUI you can use phpmyadmin at
+
+ http://csclub.uwaterloo.ca/phpmyadmin
+
 This database is only accessible from caffeine.
 """ % { 'username': username, 'password': password })
 
