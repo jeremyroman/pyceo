@@ -13,6 +13,7 @@ position_data = [
     ('librarian',       'Librarian'),
     ('imapd',           'Imapd'),
     ('webmaster',       'Web Master'),
+    ('offsck',          'Office Manager'),
 ]
 
 class IntroPage(WizardPanel):
