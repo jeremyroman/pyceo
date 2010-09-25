@@ -34,6 +34,7 @@ def new_member(*args, **kwargs):
     push_wizard("New Member", [
         newmember.IntroPage,
         newmember.InfoPage,
+        newmember.NumberOfTermsPage,
         newmember.SignPage,
         newmember.PassPage,
         newmember.EndPage,
@@ -50,6 +51,7 @@ def new_club_user(*args, **kwargs):
     push_wizard("New Club Rep Account", [
         newmember.ClubUserIntroPage,
         newmember.InfoPage,
+        newmember.NumberOfTermsPage,
         newmember.SignPage,
         newmember.PassPage,
         (newmember.EndPage, "clubuser"),

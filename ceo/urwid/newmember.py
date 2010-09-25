@@ -8,7 +8,7 @@ class IntroPage(WizardPanel):
         self.widgets = [
             urwid.Text( "Joining the Computer Science Club" ),
             urwid.Divider(),
-            urwid.Text( "CSC membership is $2.00 for one term. Please ensure "
+            urwid.Text( "CSC membership is $2.00 per term. Please ensure "
                         "the fee is deposited into the safe before continuing." ),
         ]
     def focusable(self):
@@ -113,6 +113,30 @@ class ClubInfoPage(WizardPanel):
             return True
         clear_status()
 
+class NumberOfTermsPage(WizardPanel):
+    def init_widgets(self):
+        self.count = SingleIntEdit("Count: ")
+        self.widgets = [
+            urwid.Text("Number of Terms"),
+            urwid.Divider(),
+            urwid.Text("The member will be initially registered for this many "
+                       "consecutive terms.\n"),
+            self.count
+        ]
+    
+    def activate(self):
+        self.count.set_edit_text("1")
+        self.focus_widget(self.count)
+    
+    def check(self):
+        self.state['terms'] = terms.interval(terms.current(), self.count.value())
+        
+        if len(self.state['terms']) == 0:
+            self.focus_widget(self.count)
+            set_status("Registering for zero terms?")
+            return True
+        clear_status()
+
 class SignPage(WizardPanel):
     def init_widgets(self):
         self.widgets = [
@@ -184,10 +208,10 @@ class EndPage(WizardPanel):
         try:
             if self.utype == 'member':
                 members.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'], self.state['email'] )
-                members.register( self.state['userid'], terms.current() )
+                members.register( self.state['userid'], self.state['terms'] )
             elif self.utype == 'clubuser':
                 members.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'], self.state['email'] )
-                members.register_nonmember( self.state['userid'], terms.current() )
+                members.register_nonmember( self.state['userid'], self.state['terms'] )
             elif self.utype == 'club':
                 members.create_club( self.state['userid'], self.state['name'] )
             else:
