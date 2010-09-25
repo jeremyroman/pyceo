@@ -595,3 +595,10 @@ def expired_accounts():
 def send_account_expired_email(name, email):
     args = [ cfg['expire_hook'], name, email ]
     os.spawnv(os.P_WAIT, cfg['expire_hook'], args)
+
+def subscribe_to_mailing_list(name):
+    member = get(name)
+    if member is not None:
+        return remote.run_remote('mailman', name)
+    else:
+        return 'Error: member does not exist'

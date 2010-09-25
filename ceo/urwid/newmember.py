@@ -1,5 +1,5 @@
 import ldap, urwid #, re
-from ceo import members, terms, uwldap
+from ceo import members, terms, remote, uwldap
 from ceo.urwid.widgets import *
 from ceo.urwid.window import *
 
@@ -209,6 +209,10 @@ class EndPage(WizardPanel):
             if self.utype == 'member':
                 members.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'], self.state['email'] )
                 members.register( self.state['userid'], self.state['terms'] )
+
+                mailman_result = members.subscribe_to_mailing_list( self.state['userid'] )
+                if mailman_result.split(': ',1)[0] not in ('Subscribed', 'Already a member'):
+                    problem = mailman_result
             elif self.utype == 'clubuser':
                 members.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'], self.state['email'] )
                 members.register_nonmember( self.state['userid'], self.state['terms'] )
@@ -221,6 +225,8 @@ class EndPage(WizardPanel):
         except ldap.LDAPError, e:
             problem = str(e)
         except members.MemberException, e:
+            problem = str(e)
+        except remote.RemoteException, e:
             problem = str(e)
 
         clear_status()

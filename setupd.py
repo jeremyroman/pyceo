@@ -5,6 +5,6 @@ from distutils.core import setup
 setup(
     name='ceod',
     description='CSC Electronic Office Daemon',
-    scripts=['src/op-mysql'],
+    scripts=['src/op-mysql','src/op-mailman'],
 )
 
