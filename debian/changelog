@@ -1,7 +1,6 @@
 ceo (0.5.8) stable; urgency=low
 
-  * tab support in most forms (note that the tab key is already bound
-	for the LDAP lookup fields, such as the one that looks up UW usernames)
+  * tab support in most forms (note that the tab key is already bound for the LDAP lookup fields)
   * new members can be added for multiple terms without going through renewal
   * fix for the squeeze version of urwid
   * new members are automatically added to csc-general
