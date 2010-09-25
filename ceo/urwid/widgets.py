@@ -178,7 +178,7 @@ class Wizard(urwid.WidgetWrap):
     def select(self, panelno, set_focus=True):
         if 0 <= panelno < len(self.panels):
             self.selected = panelno
-            self.panelwrap.set_w( self.panels[panelno] )
+            self.panelwrap._w = self.panels[panelno]
             self.panels[panelno].activate()
 
             if set_focus:
