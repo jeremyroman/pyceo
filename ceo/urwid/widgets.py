@@ -56,8 +56,16 @@ class CaptionedText(urwid.Text):
 
 class SingleEdit(urwid.Edit):
     def keypress(self, size, key):
-        if key == 'enter':
-            return urwid.Edit.keypress(self, size, 'down')
+        key_mappings = {
+            'enter': 'down',
+            'tab': 'down',
+            'shift tab': 'up',
+            'ctrl a': 'home',
+            'ctrl e': 'end'
+        }
+        
+        if key in key_mappings:
+            return urwid.Edit.keypress(self, size, key_mappings[key])
         else:
             return urwid.Edit.keypress(self, size, key)
 
@@ -140,14 +148,23 @@ class PassEdit(SingleEdit):
         text = urwid.Edit.get_text(self)
         return (self.caption + " " * len(self.get_edit_text()), text[1])
 
+class EnhancedButton(urwid.Button):
+    def keypress(self, size, key):
+        if key == 'tab':
+            return urwid.Button.keypress(self, size, 'down')
+        elif key == 'shift tab':
+            return urwid.Button.keypress(self, size, 'up')
+        else:
+            return urwid.Button.keypress(self, size, key)
+
 class Wizard(urwid.WidgetWrap):
     def __init__(self):
         self.selected = None
         self.panels = []
 
         self.panelwrap = urwid.WidgetWrap( urwid.SolidFill() )
-        self.back = urwid.Button("Back", self.back)
-        self.next = urwid.Button("Next", self.next)
+        self.back = EnhancedButton("Back", self.back)
+        self.next = EnhancedButton("Next", self.next)
         self.buttons = urwid.Columns( [ self.back, self.next ], dividechars=3, focus_column=1 )
         pad = urwid.Padding( self.buttons, ('fixed right', 2), 19 )
         self.pile = urwid.Pile( [self.panelwrap, ('flow', pad)], 0 )
