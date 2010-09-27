@@ -1,3 +1,9 @@
+ceo (0.5.8+nmu1) stable; urgency=low
+
+  * fixed bug reported by jdonland
+
+ -- Jeremy Brandon Roman <jbroman@csclub.uwaterloo.ca>  Sun, 26 Sep 2010 22:32:50 -0400
+
 ceo (0.5.8) stable; urgency=low
 
   * tab support in most forms (note that the tab key is already bound for the LDAP lookup fields)
