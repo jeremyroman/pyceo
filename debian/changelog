@@ -1,3 +1,9 @@
+ceo (0.5.9) stable; urgency=low
+
+  * Fix build for squeeze.
+
+ -- Michael Spang <mspang@csclub.uwaterloo.ca>  Thu, 14 Oct 2010 14:22:04 -0400
+
 ceo (0.5.8+nmu1) stable; urgency=low
 
   * fixed bug reported by jdonland
@@ -29,8 +35,7 @@ ceo (0.5.7+nmu3) stable; urgency=low
 ceo (0.5.7+nmu2) stable; urgency=low
 
   * Removed the need for separate entries to manage office and syscom
-  * Added check to ensure group is valid 
-  * 
+  * Added check to ensure group is valid
 
  -- Michael Ellis <me@michaelellis.ca>  Fri, 18 Jun 2010 21:29:48 -0400
 
