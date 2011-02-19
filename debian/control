@@ -7,10 +7,11 @@ Uploaders: Michael Spang <mspang@csclub.uwaterloo.ca>,
  Michael Gregson <mgregson@csclub.uwaterloo.ca>,
  Jeremy Roman <jbroman@csclub.uwaterloo.ca>
 Build-Depends: debhelper (>= 5.0.0), python-dev (>= 2.4), python-support (>= 0.3), libkrb5-dev (>= 1.7), libldap2-dev, libsasl2-dev, libsctp-dev, libprotobuf-c0-dev, libacl1-dev, protobuf-compiler, protobuf-c-compiler
-Standards-Version: 3.8.2
+Standards-Version: 3.9.1
 
 Package: ceo-common
 Architecture: all
+Depends: ${misc:Depends}
 Description: Computer Science Club Common Files
  This package contains the CSC Electronic Office
  common files.
@@ -19,21 +20,21 @@ Package: ceo-python
 Architecture: all
 Replaces: ceo-gui
 Conflicts: ceo-gui
-Depends: ceo-clients, python-ldap, python-urwid, python-sqlobject, python-protobuf, python-psycopg | python-psycopg2, python-mysqldb, ${python:Depends}, ${shlibs:Depends}
+Depends: ceo-clients, python-ldap, python-urwid, python-sqlobject, python-protobuf, python-psycopg | python-psycopg2, python-mysqldb, ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}
 Description: Computer Science Club Administrative GUI
  This package contains the CSC Electronic Office
  graphical user interface.
 
 Package: ceo-clients
 Architecture: any
-Depends: ceo-common, ${shlibs:Depends}
+Depends: ceo-common, ${shlibs:Depends}, ${misc:Depends}
 Description: Computer Science Club Administrative Clients
  This package contains the CSC Electronic Office
  client programs.
 
 Package: ceo-daemon
 Architecture: any
-Depends: ceo-python, ${python:Depends}, ${shlibs:Depends}
+Depends: ceo-python, ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}
 Description: Computer Science Club Administrative Daemon
  This package contains the CSC Electronic Office
  daemon.
