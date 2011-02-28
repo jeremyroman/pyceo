@@ -1,3 +1,10 @@
+ceo (0.5.9+nmu1) stable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix library book search page to display message when no books are found.
+
+ -- Marc Burns <m4burns@csclub.uwaterloo.ca>  Mon, 28 Feb 2011 13:00:24 -0500
+
 ceo (0.5.9) stable; urgency=low
 
   * Fix build for squeeze.

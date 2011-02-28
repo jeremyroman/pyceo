@@ -284,6 +284,10 @@ class SearchPage(urwid.WidgetWrap):
             for s in st:
                 books.append(s.book)
 
+        if not books.count():
+            widgets.append(urwid.Text("No results. Hit ESC to return to search page."))
+            widgets.append(urwid.Divider())
+
         for b in books:
             widgets.append(urwid.AttrWrap(ButtonText(self.select, b, str(b)),
                                           None, 'selected'))
