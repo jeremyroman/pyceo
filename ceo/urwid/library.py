@@ -284,7 +284,7 @@ class SearchPage(urwid.WidgetWrap):
             for s in st:
                 books.append(s.book)
 
-        if not books.count():
+        if ((type(books) != type([])) and books.count() == 0) or books == []:
             widgets.append(urwid.Text("No results. Hit ESC to return to search page."))
             widgets.append(urwid.Divider())
 
