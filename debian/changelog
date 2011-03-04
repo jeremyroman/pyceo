@@ -1,3 +1,10 @@
+ceo (0.5.10) stable; urgency=low
+
+  * Fix squeeze build warnings
+  * Add m4burns to debian/control
+
+ -- Michael Spang <mspang@csclub.uwaterloo.ca>  Fri, 04 Mar 2011 00:47:09 -0500
+
 ceo (0.5.9+nmu1) stable; urgency=low
 
   * Non-maintainer upload.
