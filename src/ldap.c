@@ -150,7 +150,7 @@ int ceo_add_group_sudo(char *group, char *basedn) {
 
     mods[++i] = xmalloc(sizeof(LDAPMod));
     mods[i]->mod_op = LDAP_MOD_ADD;
-    mods[i]->mod_type = "sudoRunAs";
+    mods[i]->mod_type = "sudoRunAsUser";
     char *sudorunas[] = { group, NULL };
     mods[i]->mod_values = sudorunas;
 
