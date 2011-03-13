@@ -1,3 +1,9 @@
+ceo (0.5.12) stable; urgency=low
+
+  * Change sudoRunAs to sudoRunAsUser.
+
+ -- Michael Spang <mspang@csclub.uwaterloo.ca>  Sun, 13 Mar 2011 03:24:30 -0400
+
 ceo (0.5.11) stable; urgency=low
 
   * Fix library check in and search bug introduced in 0.5.9+nmu1.
