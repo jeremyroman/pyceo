@@ -1,8 +1,14 @@
-ceo (0.5.12) stable; urgency=low
+ceo (0.5.13) stable; urgency=low
 
   * Fix Mailman path
 
  -- Jeremy Roman <jbroman@csclub.uwaterloo.ca>  Mon, 09 May 2011 19:12:09 -0400
+
+ceo (0.5.12) stable; urgency=low
+
+  * Change sudoRunAs to sudoRunAsUser.
+
+ -- Michael Spang <mspang@csclub.uwaterloo.ca>  Sun, 13 Mar 2011 03:24:30 -0400
 
 ceo (0.5.11) stable; urgency=low
 
