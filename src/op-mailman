@@ -9,7 +9,7 @@ def main():
     user_to_add = raw_input()
     
     if remote_user == user_to_add or check_group(remote_user, 'office') or check_group(remote_user, 'syscom'):
-        mailman = Popen(["/var/lib/vmailman/csclub/bin/add_members", "-r", "-", "csc-general"],
+        mailman = Popen(["/var/lib/mailman/bin/add_members", "-r", "-", "csc-general"],
                         stdin=PIPE, stdout=PIPE, stderr=STDOUT)
         out, err = mailman.communicate("%s@csclub.uwaterloo.ca\n" % user_to_add)
         syslog.syslog(syslog.LOG_INFO, out)
