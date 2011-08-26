@@ -1,3 +1,9 @@
+ceo (0.5.14) stable; urgency=low
+
+  * Add support for sending a welcome message.
+
+ -- Jeremy Roman <jbroman@csclub.uwaterloo.ca>  Fri, 26 Aug 2011 00:59:08 -0400
+
 ceo (0.5.13) stable; urgency=low
 
   * Fix Mailman path

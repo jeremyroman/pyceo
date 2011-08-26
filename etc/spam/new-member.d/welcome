@@ -1,0 +1,84 @@
+#!/bin/bash -p
+
+# This is a privileged script.
+IFS=$' \t\n'
+PATH=/usr/bin:/bin
+unset ENV BASH_ENV CDPATH
+umask 077
+
+prog=$CEO_PROG
+auth=$CEO_AUTH
+
+tmp="$(tempfile)"
+trap "rm $tmp" 0
+exec >"$tmp"
+
+h_from="Computer Science Club <exec@csclub.uwaterloo.ca>"
+h_to="$CEO_NAME <$CEO_USER@csclub.uwaterloo.ca>"
+subj="Welcome to the Computer Science Club"
+
+if test "$prog" = addmember; then
+    user="$CEO_USER" name="$CEO_NAME"
+    body="Hello $name:
+
+Welcome to the Computer Science Club! We are pleased that you have chosen to join us. We welcome you to come out to our events, or just hang out in our office (MC 3036/3037). You have been automatically subscribed to our mailing list, csc-general, which we use to keep you informed of upcoming events.
+
+
+Typical events include:
+* Talks: these mostly technical talks are given by members, faculty and distinguished guests. Past topics include randomized algorithms, video encoding, computer security and adaptable user interfaces. People of all skill levels are welcome, and snacks are often served after talks.
+* Code parties: late-night hackathons perfect for contributing to open source, working on personal projects, or making progress on a CS assignment you've been putting off. Refreshments provided, and both music and geek classic movies have been played in the past.
+* Unix tutorials: whether you need to use the Unix environment for a course, or are just curious about how to use a command-line shell, the Computer Science Club holds a series of tutorials which help get you up to speed so you'll be using vi like a pro in no time at all.
+
+You can hear about upcoming events in a number of ways:
+* Check our website from time to time: http://csclub.uwaterloo.ca/
+* Subscribe to our events calendar feed: http://csclub.uwaterloo.ca/events.ics
+* Like the CSC on Facebook: https://www.facebook.com/watcsc
+* Read your email: announcements are sent via the csc-general mailing list
+* Keep an eye out in the MC: posters for upcoming events appear in stairwells and hallways
+
+
+Even when events aren't being held, you are welcome to hang out in the club office (MC 3036/3037, across the hall from MathSoc). It's often open late into the evening, and sells pop and snacks at reasonable prices. If you're so inclined, you are also welcome in our IRC channel, #csc on FreeNode.
+
+
+You now have a CSC user account with username \"$user\" and the password you supplied when you joined. You can use this account to log into almost any CSC system, including our office terminals and servers. A complete list is available at:
+
+    http://wiki.csclub.uwaterloo.ca/Machine_List
+
+You can connect remotely using SSH. On Windows, PuTTY is a popular SSH client; on Unix-like operating systems, you can connect with the 'ssh' command, like this:
+
+    ssh $user@corn-syrup.csclub.uwaterloo.ca
+
+To use CSC web hosting, simply place files in the 'www' directory in your home directory. Files placed there will be available at:
+
+    http://csclub.uwaterloo.ca/~$user/
+
+We support many server-side technologies, including PHP, Perl and Python. If you need a MySQL database, you can create one for yourself using the 'ceo' command-line tool.
+
+In addition to the csc-general mailing list, we offer an opt-in mailing list through which companies and other organizations can send information about opportunities they wish to advertise. If you are interested, see:
+
+    http://csclub.uwaterloo.ca/industry
+
+For problems or questions about the systems, contact:
+    CSC Systems Committee <syscom@csclub.uwaterloo.ca>
+
+To contact the executive, email:
+    CSC Executive <exec@csclub.uwaterloo.ca>
+
+Regards,
+
+Computer Science Club Executive
+"
+elif test "$prog" = addclub; then
+    exit 0
+else
+    exit 1
+fi
+
+echo "From: $h_from"
+echo "To: $h_to"
+echo "Subject: $subj"
+echo
+echo "$body" | fmt -s
+
+exec >&2
+env - /usr/sbin/sendmail -t -f "exec@csclub.uwaterloo.ca" < "$tmp"
