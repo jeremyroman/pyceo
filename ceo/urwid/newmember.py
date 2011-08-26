@@ -207,17 +207,29 @@ class EndPage(WizardPanel):
         problem = None
         try:
             if self.utype == 'member':
-                members.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'], self.state['email'] )
-                members.register( self.state['userid'], self.state['terms'] )
+                members.create_member(
+                        self.state['userid'],
+                        self.state['password'],
+                        self.state['name'],
+                        self.state['program'],
+                        self.state['email'])
+                members.register(self.state['userid'], self.state['terms'])
 
-                mailman_result = members.subscribe_to_mailing_list( self.state['userid'] )
+                mailman_result = members.subscribe_to_mailing_list(self.state['userid'])
                 if mailman_result.split(': ',1)[0] not in ('Subscribed', 'Already a member'):
                     problem = mailman_result
+
             elif self.utype == 'clubuser':
-                members.create_member( self.state['userid'], self.state['password'], self.state['name'], self.state['program'], self.state['email'] )
-                members.register_nonmember( self.state['userid'], self.state['terms'] )
+                members.create_member(
+                        self.state['userid'],
+                        self.state['password'],
+                        self.state['name'],
+                        self.state['program'],
+                        self.state['email'],
+                        club_rep=True)
+                members.register_nonmember(self.state['userid'], self.state['terms'])
             elif self.utype == 'club':
-                members.create_club( self.state['userid'], self.state['name'] )
+                members.create_club(self.state['userid'], self.state['name'])
             else:
                 raise Exception("Internal Error")
         except members.InvalidArgument, e:

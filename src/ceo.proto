@@ -9,6 +9,7 @@ message AddUser {
   enum Type {
     MEMBER = 1;
     CLUB = 2;
+    CLUB_REP = 3;
   }
 
   required Type type = 1;

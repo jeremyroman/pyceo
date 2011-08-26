@@ -32,6 +32,7 @@ static const int MAX_MESGSIZE = 512;
 char *user_types[] = {
     [CEO__ADD_USER__TYPE__MEMBER] = "member",
     [CEO__ADD_USER__TYPE__CLUB] = "club",
+    [CEO__ADD_USER__TYPE__CLUB_REP] = "clubrep",
 };
 
 Ceo__AddUserResponse *response_create(void) {
@@ -94,16 +95,22 @@ static int check_adduser(Ceo__AddUser *in, Ceo__AddUserResponse *out, char *clie
     if (!in->realname)
         return response_message(out, EINVAL, "missing required argument: realname");
 
-    if (in->type == CEO__ADD_USER__TYPE__MEMBER) {
-        if (!in->password)
-            return response_message(out, EINVAL, "missing required argument: password");
-    } else if (in->type == CEO__ADD_USER__TYPE__CLUB) {
-        if (in->password)
-            return response_message(out, EINVAL, "club accounts cannot have passwords");
-        if (in->program)
-            return response_message(out, EINVAL, "club accounts cannot have programs");
-    } else {
-        return response_message(out, EINVAL, "invalid user type: %d", in->type);
+    switch (in->type) {
+        case CEO__ADD_USER__TYPE__MEMBER:
+        case CEO__ADD_USER__TYPE__CLUB_REP:
+            if (!in->password)
+                return response_message(out, EINVAL, "missing required argument: password");
+            break;
+
+        case CEO__ADD_USER__TYPE__CLUB:
+            if (in->password)
+                return response_message(out, EINVAL, "club accounts cannot have passwords");
+            if (in->program)
+                return response_message(out, EINVAL, "club accounts cannot have programs");
+            break;
+
+        default:
+            return response_message(out, EINVAL, "invalid user type: %d", in->type);
     }
 
     if (getpwnam(in->username) != NULL)
@@ -244,6 +251,9 @@ static int32_t adduser(Ceo__AddUser *in, Ceo__AddUserResponse *out, char *client
     if (in->type == CEO__ADD_USER__TYPE__MEMBER) {
         status = addmember(in, out);
         prog = "addmember";
+    } else if (in->type == CEO__ADD_USER__TYPE__CLUB_REP) {
+        status = addmember(in, out);
+        prog = "addclubrep";
     } else if (in->type == CEO__ADD_USER__TYPE__CLUB) {
         status = addclub(in, out);
         prog = "addclub";

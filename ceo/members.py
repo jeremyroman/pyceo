@@ -114,7 +114,7 @@ def connected():
 
 ### Members ###
 
-def create_member(username, password, name, program, email):
+def create_member(username, password, name, program, email, club_rep=False):
     """
     Creates a UNIX user account with options tailored to CSC members.
 
@@ -123,7 +123,8 @@ def create_member(username, password, name, program, email):
         password - the desired UNIX password
         name     - the member's real name
         program  - the member's program of study
-	email	 - email to place in .forward
+        club_rep - whether the user is a club rep
+        email    - email to place in .forward
 
     Exceptions:
         InvalidArgument - on bad account attributes provided
@@ -143,12 +144,16 @@ def create_member(username, password, name, program, email):
 
     try:
         request = ceo_pb2.AddUser()
-        request.type = ceo_pb2.AddUser.MEMBER
         request.username = username
         request.password = password
         request.realname = name
         request.program = program
-	request.email = email
+        request.email = email
+
+        if club_rep:
+            request.type = ceo_pb2.AddUser.CLUB_REP
+        else:
+            request.type = ceo_pb2.AddUser.MEMBER
 
         out = remote.run_remote('adduser', request.SerializeToString())
 
@@ -158,11 +163,6 @@ def create_member(username, password, name, program, email):
         if any(message.status != 0 for message in response.messages):
             raise MemberException('\n'.join(message.message for message in response.messages))
 
-        # # If the user was created, consider adding them to the mailing list
-        # if not status:
-        #     listadmin_cfg_file = "/path/to/the/listadmin/config/file"
-        #     mail = subprocess.Popen(["/usr/bin/listadmin", "-f", listadmin_cfg_file, "--add-member", username + "@csclub.uwaterloo.ca"])
-        #     status2 = mail.wait() # Fuck if I care about errors!
     except remote.RemoteException, e:
         raise MemberException(e)
     except OSError, e:

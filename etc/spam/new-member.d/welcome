@@ -68,7 +68,7 @@ Regards,
 
 Computer Science Club Executive
 "
-elif test "$prog" = addclub; then
+elif [[ "$prog" = addclubrep || "$prog" = addclub ]]; then
     exit 0
 else
     exit 1
