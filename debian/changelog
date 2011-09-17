@@ -1,3 +1,9 @@
+ceo (0.5.16) stable; urgency=low
+
+  * Fix CEO for CMC by allow mailman to be disabled.
+
+ -- Michael Spang <mspang@csclub.uwaterloo.ca>  Sat, 17 Sep 2011 16:36:01 -0400
+
 ceo (0.5.14) stable; urgency=low
 
   * Add support for sending a welcome message.
