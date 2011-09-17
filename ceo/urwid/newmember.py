@@ -216,7 +216,7 @@ class EndPage(WizardPanel):
                 members.register(self.state['userid'], self.state['terms'])
 
                 mailman_result = members.subscribe_to_mailing_list(self.state['userid'])
-                if mailman_result.split(': ',1)[0] not in ('Subscribed', 'Already a member'):
+                if mailman_result.split(': ',1)[0] not in ('Subscribed', 'Already a member', 'Disabled'):
                     problem = mailman_result
 
             elif self.utype == 'clubuser':

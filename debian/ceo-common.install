@@ -1,1 +1,1 @@
-etc/accounts.cf etc/library.cf etc/ops etc/spam etc/csc
+etc/*.cf etc/ops etc/spam etc/csc

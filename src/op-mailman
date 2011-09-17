@@ -2,20 +2,43 @@
 
 import os, syslog
 from subprocess import Popen, PIPE, STDOUT
+from ceo import conf
 from ceo.ops import get_ceo_user, check_group
 
+CONFIG_FILE = '/etc/csc/mailman.cf'
+
+cfg = {}
+
+def configure():
+    string_fields = ['members_list', 'list_domain']
+
+    # read configuration file
+    cfg_tmp = conf.read(CONFIG_FILE)
+
+    # verify configuration
+    conf.check_string_fields(CONFIG_FILE, string_fields, cfg_tmp)
+
+    # update the current configuration with the loaded values
+    cfg.update(cfg_tmp)
+
 def main():
+    configure()
+
     remote_user = get_ceo_user()
     user_to_add = raw_input()
-    
+
+    if cfg['members_list'] == 'none':
+        print 'Disabled: %s' % user_to_add
+        return
+
     if remote_user == user_to_add or check_group(remote_user, 'office') or check_group(remote_user, 'syscom'):
-        mailman = Popen(["/var/lib/mailman/bin/add_members", "-r", "-", "csc-general"],
+        mailman = Popen(["/var/lib/mailman/bin/add_members", "-r", "-", cfg['members_list']],
                         stdin=PIPE, stdout=PIPE, stderr=STDOUT)
-        out, err = mailman.communicate("%s@csclub.uwaterloo.ca\n" % user_to_add)
+        out, err = mailman.communicate("%s@%s\n" % (user_to_add, cfg['list_domain']))
         syslog.syslog(syslog.LOG_INFO, out)
         print out
     else:
-        message = "Access denied: user '%s' cannot subscribe users to csc-general" % remote_user
+        message = "Access denied: user '%s' cannot subscribe users to %s" % (remote_user, cfg['members_list'])
         syslog.syslog(syslog.LOG_NOTICE, message)
         print message
 
