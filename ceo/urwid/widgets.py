@@ -157,6 +157,15 @@ class EnhancedButton(urwid.Button):
         else:
             return urwid.Button.keypress(self, size, key)
 
+class DumbColumns(urwid.Columns):
+    """Dumb columns widget
+
+    The normal one tries to focus the "nearest" widget to the cursor.
+    This makes the Back button default instead of the Next button.
+    """
+    def move_cursor_to_coords(self, size, col, row):
+        pass
+
 class Wizard(urwid.WidgetWrap):
     def __init__(self):
         self.selected = None
@@ -165,7 +174,7 @@ class Wizard(urwid.WidgetWrap):
         self.panelwrap = urwid.WidgetWrap( urwid.SolidFill() )
         self.back = EnhancedButton("Back", self.back)
         self.next = EnhancedButton("Next", self.next)
-        self.buttons = urwid.Columns( [ self.back, self.next ], dividechars=3, focus_column=1 )
+        self.buttons = DumbColumns( [ self.back, self.next ], dividechars=3, focus_column=1 )
         pad = urwid.Padding( self.buttons, ('fixed right', 2), 19 )
         self.pile = urwid.Pile( [self.panelwrap, ('flow', pad)], 0 )
         urwid.WidgetWrap.__init__(self, self.pile)
