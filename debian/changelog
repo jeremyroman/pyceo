@@ -1,3 +1,11 @@
+ceo (0.5.16+nmu1) stable; urgency=low
+
+  * Non-maintainer upload.
+  * Change behavior of ceod to add Kerberos principal,
+  * as opposed to changing principal password.
+
+ -- Marc Burns <m4burns@csclub.uwaterloo.ca>  Fri, 16 Mar 2012 15:27:35 -0400
+
 ceo (0.5.16) stable; urgency=low
 
   * Fix CEO for CMC by allow mailman to be disabled.
