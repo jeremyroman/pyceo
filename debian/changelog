@@ -1,3 +1,9 @@
+ceo (0.5.16ubuntu1) oneiric; urgency=low
+
+  * Build for oneiric.
+
+ -- Jeremy Roman <jbroman@csclub.uwaterloo.ca>  Wed, 14 Mar 2012 21:35:51 -0400
+
 ceo (0.5.16) stable; urgency=low
 
   * Fix CEO for CMC by allow mailman to be disabled.
