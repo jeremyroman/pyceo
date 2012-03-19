@@ -36,22 +36,42 @@ void ceo_kadm_cleanup() {
 
 int ceo_add_princ(char *user, char *password) {
     krb5_error_code retval;
-    krb5_principal princ;
-    memset((void *) &princ, 0, sizeof(princ));
 
     debug("kadmin: adding principal %s", user);
 
-    if ((retval = krb5_parse_name(context, user, &princ))) {
-        com_err(prog, retval, "while parsing principal name");
+    // Added March 2012: Change behavior of ceod to add the kerberos principal.
+    kadm5_policy_ent_rec defpol;
+    kadm5_principal_ent_rec princ;
+
+    memset((void*) &princ, 0, sizeof(princ));
+
+    if ((retval = kadm5_get_policy(handle, "default", &defpol))) {
+        com_err(prog, retval, "while retrieving default policy");
+        return retval;
+    }
+    kadm5_free_policy_ent(handle, &defpol);
+
+    princ.policy = "default";
+
+    if ((retval = krb5_parse_name(context, user, &princ.principal))) {
+        com_err(prog, retval, "while parsing user name");
         return retval;
     }
 
-    if ((retval = kadm5_chpass_principal(handle, princ, password))) {
-        com_err(prog, retval, "while creating principal");
-        return retval;
+    long flags = KADM5_POLICY | KADM5_PRINCIPAL;
+    if ((retval = kadm5_create_principal(handle, &princ, flags, password))) {
+        if(retval == KADM5_DUP) {
+            if ((retval = kadm5_chpass_principal(handle, princ.principal, password))) {
+                com_err(prog, retval, "while setting principal password");
+                return retval;
+            }
+        } else {
+            com_err(prog, retval, "while creating principal");
+            return retval;
+        }
     }
 
-    krb5_free_principal(context, princ);
+    krb5_free_principal(context, princ.principal);
     return 0;
 }
 

@@ -1,8 +1,9 @@
-ceo (0.5.16ubuntu1) oneiric; urgency=low
+ceo (0.5.17) stable; urgency=low
 
-  * Build for oneiric.
+  * Change behavior of ceod to add Kerberos principal,
+  * as opposed to changing principal password.
 
- -- Jeremy Roman <jbroman@csclub.uwaterloo.ca>  Wed, 14 Mar 2012 21:35:51 -0400
+ -- Marc Burns <m4burns@csclub.uwaterloo.ca>  Fri, 16 Mar 2012 15:27:35 -0400
 
 ceo (0.5.16) stable; urgency=low
 
