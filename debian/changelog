@@ -1,3 +1,9 @@
+ceo (0.5.17ubuntu2) precise; urgency=low
+
+  * Accidentally merged in broken changes. Fixing.
+
+ -- Jeremy Roman <jbroman@csclub.uwaterloo.ca>  Thu, 26 Apr 2012 15:19:03 -0400
+
 ceo (0.5.17) stable; urgency=low
 
   * Change behavior of ceod to add Kerberos principal,
