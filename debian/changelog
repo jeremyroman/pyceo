@@ -1,3 +1,10 @@
+ceo (0.5.17ubuntu2+nmu1) precise; urgency=low
+
+  * Non-maintainer upload.
+  * Updated mailman host to be mail, not caffeine (following mail container migration) 
+
+ -- Sarah Harvey <sharvey@taurine.csclub.uwaterloo.ca>  Mon, 10 Sep 2012 19:06:16 -0400
+
 ceo (0.5.17ubuntu2) precise; urgency=low
 
   * Accidentally merged in broken changes. Fixing.
