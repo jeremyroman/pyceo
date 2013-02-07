@@ -1,3 +1,15 @@
+ceo (0.5.19ubuntu1) precise; urgency=low
+
+  * Added precise package with changes
+
+ -- Sarah Harvey <sharvey@csclub.uwaterloo.ca>  Wed, 06 Feb 2013 23:44:18 -0500
+
+ceo (0.5.19) stable; urgency=low
+
+  * Updated mail, adduser host to be aspartame, not ginseng (following filesystem migration)
+
+ -- Sarah Harvey <sharvey@csclub.uwaterloo.ca>  Wed, 06 Feb 2013 23:36:46 -0500
+
 ceo (0.5.18ubuntu1) precise; urgency=low
 
   * Added precise package with changes.
