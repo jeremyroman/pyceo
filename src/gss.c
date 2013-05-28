@@ -64,6 +64,7 @@ static void display_status(char *prefix, OM_uint32 code, int type) {
 
     maj_stat = gss_display_status(&min_stat, code, type, GSS_C_NULL_OID,
                                   &msg_ctx, &msg);
+    (void)maj_stat;
     msgstr = gssbuf2str(&msg);
     logmsg(LOG_ERR, "%s: %s", prefix, msgstr);
     gss_release_buffer(&min_stat, &msg);
@@ -135,8 +136,30 @@ void server_acquire_creds(const char *service) {
     if (maj_stat != GSS_S_COMPLETE)
         gss_fatal("gss_acquire_cred", maj_stat, min_stat);
 
-    if (time_rec != GSS_C_INDEFINITE)
-        fatal("credentials valid for %d seconds (oops)", time_rec);
+    /* Work around bug in libgssapi 2.0.25 / gssapi_krb5 2.2:
+     *  The expiry time returned by gss_acquire_cred is always zero. */
+    {
+        int names_match = 0;
+        gss_name_t cred_service;
+        gss_cred_usage_t cred_usage;
+        maj_stat = gss_inquire_cred(&min_stat, my_creds, &cred_service, &time_rec, &cred_usage, NULL);
+        if (maj_stat != GSS_S_COMPLETE)
+            gss_fatal("gss_inquire_cred", maj_stat, min_stat);
+
+        if (time_rec != GSS_C_INDEFINITE)
+            fatal("credentials valid for %d seconds (oops)", time_rec);
+
+        maj_stat = gss_compare_name(&min_stat, imported_service, cred_service, &names_match);
+
+        if (maj_stat != GSS_S_COMPLETE)
+            gss_fatal("gss_compare_name", maj_stat, min_stat);
+
+        if (!names_match)
+            fatal("credentials granted for wrong service (oops)");
+
+        if (!(cred_usage & GSS_C_ACCEPT))
+            fatal("credentials lack usage GSS_C_ACCEPT (oops)");
+    }
 }
 
 void client_acquire_creds(const char *service, const char *hostname) {
