@@ -1,3 +1,9 @@
+ceo (0.5.21) testing; urgency=low
+
+  * Build with older protoc-c for compatibility with squeeze.
+
+ -- Marc Burns <m4burns@csclub.uwaterloo.ca>  Tue, 28 May 2013 11:14:36 -0400
+
 ceo (0.5.20) testing; urgency=low
 
   * Work around bug in libgssapi 2.0.25 present in wheezy.
