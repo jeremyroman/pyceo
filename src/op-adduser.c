@@ -163,7 +163,7 @@ static int32_t addmember(Ceo__AddUser *in, Ceo__AddUserResponse *out) {
     if ((krb_stat = ceo_del_princ(in->username)))
         return response_message(out, EEXIST, "unable to overwrite orphaned kerberos principal %s", in->username);
 
-    if ((user_stat = ceo_add_user(in->username, ldap_users_base, "member", in->realname, homedir, principal,
+    if ((user_stat = ceo_add_user(in->username, ldap_users_base, "member", in->realname, homedir,
             member_shell, id, "program", in->program, NULL)))
         return response_message(out, ELDAP, "unable to create ldap account %s", in->username);
     response_message(out, 0, "successfully created ldap account");
