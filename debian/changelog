@@ -1,3 +1,15 @@
+ceo (0.5.23) stable; urgency=low
+
+  * Stable is now wheezy; rebuild.
+
+ -- Jeremy Roman <jbroman@csclub.uwaterloo.ca>  Sat, 07 Sep 2013 11:59:24 -0400
+
+ceo (0.5.22) stable; urgency=low
+
+  * Drop support for Kerberos LDAP backend; this is not the current CSC setup.
+
+ -- Jeremy Roman <jbroman@csclub.uwaterloo.ca>  Sat, 07 Sep 2013 11:45:33 -0400
+
 ceo (0.5.21) testing; urgency=low
 
   * Build with older protoc-c for compatibility with squeeze.
